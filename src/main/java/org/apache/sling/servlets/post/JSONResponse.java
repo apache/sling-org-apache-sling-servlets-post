@@ -24,7 +24,6 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -104,12 +103,7 @@ public class JSONResponse extends AbstractPostResponse {
         JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
         for (Map.Entry<String, Object> entry : json.entrySet()) {
             if (entry.getValue() != null) {
-                try {
-                    //let's see if we can create a json object out of entry value
-                    jsonBuilder.add(entry.getKey(), Json.createReader(new StringReader(entry.getValue().toString())).readObject());
-                } catch (Exception ex) {
-                    jsonBuilder.add(entry.getKey(), entry.getValue().toString());
-                }
+                jsonBuilder.add(entry.getKey(), entry.getValue().toString());
             } else {
                 jsonBuilder.addNull(entry.getKey());
             }
