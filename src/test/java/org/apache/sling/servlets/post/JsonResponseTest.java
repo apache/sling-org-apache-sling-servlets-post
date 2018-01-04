@@ -108,12 +108,13 @@ public class JsonResponseTest extends TestCase {
     }
 
     public void testSend_401() throws Exception {
-        JsonObject customProp = Json.createReader(new StringReader("{\"user\":\"testUser\",\"properties\":{\"id\":\"testId\", \"name\":\"test\"}}")).readObject();
-        res.setProperty("response", "{\"user\":\"testUser\",\"properties\":{\"id\":\"testId\", \"name\":\"test\"}}");
+        String testResponseJson = "{\"user\":\"testUser\",\"properties\":{\"id\":\"testId\", \"name\":\"test\"}}";
+        JsonObject customProperty = Json.createReader(new StringReader(testResponseJson)).readObject();
+        res.setProperty("response", testResponseJson);
         MockResponseWithHeader response = new MockResponseWithHeader();
         res.send(response, true);
         JsonObject result = Json.createReader(new StringReader(response.getOutput().toString())).readObject();
-        assertProperty(result, "response", customProp);
+        assertProperty(result, "response", customProperty);
     }
 
     public void testNoChangesOnError() throws Exception {
