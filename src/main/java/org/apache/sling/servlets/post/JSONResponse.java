@@ -156,5 +156,4 @@ public class JSONResponse extends AbstractPostResponse {
            super("Error building JSON response", e);
         }
     }
-
 }
