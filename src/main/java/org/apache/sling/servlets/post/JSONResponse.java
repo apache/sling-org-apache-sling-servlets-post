@@ -106,7 +106,13 @@ public class JSONResponse extends AbstractPostResponse {
             if (entry.getValue() != null) {
                 try {
                     //let's see if we can create a json object out of entry value
-                    jsonBuilder.add(entry.getKey(), Json.createReader(new StringReader(entry.getValue().toString())).readObject());
+                    if(entry.getValue() instanceof String || entry.getValue() instanceof Integer || entry.getValue()
+                        instanceof Boolean) {
+                        jsonBuilder.add(entry.getKey(), entry.getValue().toString());
+                    } else {
+                        jsonBuilder.add(entry.getKey(),
+                            Json.createReader(new StringReader(entry.getValue().toString())).readObject());
+                    }
                 } catch (Exception ex) {
                     jsonBuilder.add(entry.getKey(), entry.getValue().toString());
                 }
