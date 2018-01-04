@@ -104,9 +104,10 @@ public class JSONResponse extends AbstractPostResponse {
         JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
         for (Map.Entry<String, Object> entry : json.entrySet()) {
             if (entry.getValue() != null) {
-                if(entry.getValue().getClass().getClassLoader() != null) {
+                try {
+                    //let's see if we can create a json object out entry value
                     jsonBuilder.add(entry.getKey(), Json.createReader(new StringReader(entry.getValue().toString())).readObject());
-                } else {
+                } catch (Exception ex) {
                     jsonBuilder.add(entry.getKey(), entry.getValue().toString());
                 }
             } else {
@@ -155,4 +156,5 @@ public class JSONResponse extends AbstractPostResponse {
            super("Error building JSON response", e);
         }
     }
+
 }
