@@ -105,7 +105,7 @@ public class JSONResponse extends AbstractPostResponse {
         for (Map.Entry<String, Object> entry : json.entrySet()) {
             if (entry.getValue() != null) {
                 try {
-                    //let's see if we can create a json object out entry value
+                    //let's see if we can create a json object out of entry value
                     jsonBuilder.add(entry.getKey(), Json.createReader(new StringReader(entry.getValue().toString())).readObject());
                 } catch (Exception ex) {
                     jsonBuilder.add(entry.getKey(), entry.getValue().toString());
