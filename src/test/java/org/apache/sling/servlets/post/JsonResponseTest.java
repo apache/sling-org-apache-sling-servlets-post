@@ -110,7 +110,7 @@ public class JsonResponseTest extends TestCase {
     public void testSendWithJsonAsPropertyValue() throws Exception {
         String testResponseJson = "{\"user\":\"testUser\",\"properties\":{\"id\":\"testId\", \"name\":\"test\"}}";
         JsonObject customProperty = Json.createReader(new StringReader(testResponseJson)).readObject();
-        res.setProperty("response", testResponseJson);
+        res.setProperty("response", customProperty);
         MockResponseWithHeader response = new MockResponseWithHeader();
         res.send(response, true);
         JsonObject result = Json.createReader(new StringReader(response.getOutput().toString())).readObject();
