@@ -107,7 +107,7 @@ public class JsonResponseTest extends TestCase {
         }
     }
 
-    public void testSend_401() throws Exception {
+    public void testSendWithJsonAsPropertyValue() throws Exception {
         String testResponseJson = "{\"user\":\"testUser\",\"properties\":{\"id\":\"testId\", \"name\":\"test\"}}";
         JsonObject customProperty = Json.createReader(new StringReader(testResponseJson)).readObject();
         res.setProperty("response", testResponseJson);
