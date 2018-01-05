@@ -104,16 +104,11 @@ public class JSONResponse extends AbstractPostResponse {
         JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
         for (Map.Entry<String, Object> entry : json.entrySet()) {
             if (entry.getValue() != null) {
-                try {
-                    //let's see if we can create a json object out of entry value
-                    if(entry.getValue() instanceof String || entry.getValue() instanceof Integer || entry.getValue()
-                        instanceof Boolean) {
-                        jsonBuilder.add(entry.getKey(), entry.getValue().toString());
-                    } else {
-                        jsonBuilder.add(entry.getKey(),
+                //Check for org.apache.sling.commons.json.JSONObject for backward compatibility
+                if(entry.getValue().getClass().getName().equals("org.apache.sling.commons.json.JSONObject") || entry.getValue() instanceof JsonObject) {
+                    jsonBuilder.add(entry.getKey(),
                             Json.createReader(new StringReader(entry.getValue().toString())).readObject());
-                    }
-                } catch (Exception ex) {
+                } else {
                     jsonBuilder.add(entry.getKey(), entry.getValue().toString());
                 }
             } else {
