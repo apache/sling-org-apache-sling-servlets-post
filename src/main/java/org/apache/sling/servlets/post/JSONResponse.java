@@ -104,7 +104,8 @@ public class JSONResponse extends AbstractPostResponse {
         for (Map.Entry<String, Object> entry : json.entrySet()) {
             if (entry.getValue() != null) {
                 jsonBuilder.add(entry.getKey(), entry.getValue().toString());
-            } else {
+            } 
+            else {
                 jsonBuilder.addNull(entry.getKey());
             }
         }
