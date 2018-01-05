@@ -24,6 +24,7 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -103,9 +104,14 @@ public class JSONResponse extends AbstractPostResponse {
         JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
         for (Map.Entry<String, Object> entry : json.entrySet()) {
             if (entry.getValue() != null) {
-                jsonBuilder.add(entry.getKey(), entry.getValue().toString());
-            }
-            else {
+                //Check for org.apache.sling.commons.json.JSONObject for backward compatibility
+                if(entry.getValue().getClass().getName().equals("org.apache.sling.commons.json.JSONObject") || entry.getValue() instanceof JsonObject) {
+                    jsonBuilder.add(entry.getKey(),
+                            Json.createReader(new StringReader(entry.getValue().toString())).readObject());
+                } else {
+                    jsonBuilder.add(entry.getKey(), entry.getValue().toString());
+                }
+            } else {
                 jsonBuilder.addNull(entry.getKey());
             }
         }
