@@ -107,6 +107,16 @@ public class JsonResponseTest extends TestCase {
         }
     }
 
+    public void testSendWithJsonAsPropertyValue() throws Exception {
+        String testResponseJson = "{\"user\":\"testUser\",\"properties\":{\"id\":\"testId\", \"name\":\"test\"}}";
+        JsonObject customProperty = Json.createReader(new StringReader(testResponseJson)).readObject();
+        res.setProperty("response", customProperty);
+        MockResponseWithHeader response = new MockResponseWithHeader();
+        res.send(response, true);
+        JsonObject result = Json.createReader(new StringReader(response.getOutput().toString())).readObject();
+        assertProperty(result, "response", customProperty);
+    }
+
     public void testNoChangesOnError() throws Exception {
         res.onChange("modified", "argument1");
         res.setError(new Exception("some exception"));
@@ -124,6 +134,13 @@ public class JsonResponseTest extends TestCase {
     private static JsonString assertProperty(JsonObject obj, String key, String expected) {
         JsonString res = (JsonString) assertProperty(obj, key);
         assertEquals(expected, res.getString());
+        return res;
+    }
+
+    @SuppressWarnings({"unchecked"})
+    private static JsonObject assertProperty(JsonObject obj, String key, JsonObject expected) {
+        JsonObject res = (JsonObject) assertProperty(obj, key);
+        assertEquals(expected, res);
         return res;
     }
 
