@@ -19,7 +19,7 @@
 package org.apache.sling.servlets.post;
 
 
-import org.apache.sling.servlets.post.impl.JsonTicksConverter;
+import org.apache.sling.jcr.contentparser.impl.JsonTicksConverter;
 
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
