@@ -18,12 +18,19 @@
  */
 package org.apache.sling.servlets.post;
 
+
+import org.apache.sling.jcr.contentparser.impl.JsonTicksConverter;
+
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.json.JsonStructure;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.StringReader;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -50,6 +57,8 @@ public class JSONResponse extends AbstractPostResponse {
     private static final String PROP_CHANGES = "changes";
 
     private Map<String, Object> json = new HashMap<>();
+
+    private Map<String, JsonStructure> jsonCached = new HashMap<>();
 
     private List<Map<String, Object>> changes = new ArrayList<>();
 
@@ -78,9 +87,31 @@ public class JSONResponse extends AbstractPostResponse {
         return this.error;
     }
 
+    /**
+     * This method accepts values that correspond  to json primitives or otherwise assumes that the toString() of the value
+     * can be parsed as json. If neither is the case it will throw an Exception.
+     *
+     * Assuming the above holds, it will put the value as json directly into the json value part of the response.
+     *
+     * @param name name of the property
+     * @param value value of the property - either of type {String, Boolean, Number, null}
+     *             or the toString() is parseable as json
+     * @throws JSONResponseException if the value is not usable
+     */
     @Override
     public void setProperty(String name, Object value) {
-        json.put(name, value);
+        if (value instanceof String || value instanceof Boolean || value instanceof Number || value == null) {
+            json.put(name, value);
+        }
+        else {
+            try {
+                String valueString = JsonTicksConverter.tickToDoubleQuote(value.toString());
+                jsonCached.put(name, Json.createReader(new StringReader(valueString)).read());
+                json.put(name, value);
+            } catch (Exception ex) {
+                throw new JSONResponseException(ex);
+            }
+        }
     }
 
     @Override
@@ -102,11 +133,42 @@ public class JSONResponse extends AbstractPostResponse {
     JsonObject getJson() {
         JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
         for (Map.Entry<String, Object> entry : json.entrySet()) {
-            if (entry.getValue() != null) {
-                jsonBuilder.add(entry.getKey(), entry.getValue().toString());
+            Object value = entry.getValue();
+            if (value instanceof String) {
+                jsonBuilder.add(entry.getKey(), (String) entry.getValue());
+            }
+            else if (value instanceof Boolean) {
+                jsonBuilder.add(entry.getKey(), (Boolean) value);
+            }
+            else if (value instanceof BigInteger) {
+                jsonBuilder.add(entry.getKey(), (BigInteger) value);
+            }
+            else if (value instanceof BigDecimal) {
+                jsonBuilder.add(entry.getKey(), (BigDecimal) value);
+            }
+            else if (value instanceof Byte) {
+                jsonBuilder.add(entry.getKey(), (Byte) value);
+            }
+            else if (value instanceof Short) {
+                jsonBuilder.add(entry.getKey(), (Short) value);
+            }
+            else if (value instanceof Integer) {
+                jsonBuilder.add(entry.getKey(), (Integer) value);
+            }
+            else if (value instanceof Long) {
+                jsonBuilder.add(entry.getKey(), (Long) value);
+            }
+            else if (value instanceof Double) {
+                jsonBuilder.add(entry.getKey(), (Double) value);
+            }
+            else if (value instanceof Float) {
+                jsonBuilder.add(entry.getKey(), (Float) value);
+            }
+            else if (value == null) {
+                jsonBuilder.addNull(entry.getKey());
             }
             else {
-                jsonBuilder.addNull(entry.getKey());
+                jsonBuilder.add(entry.getKey(), jsonCached.get(entry.getKey()));
             }
         }
         if (this.error != null) {

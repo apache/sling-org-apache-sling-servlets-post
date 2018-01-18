@@ -24,7 +24,9 @@ import java.util.Map;
 
 import javax.json.Json;
 import javax.json.JsonArray;
+import javax.json.JsonNumber;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import javax.json.JsonString;
 import javax.json.JsonValue;
 import javax.servlet.http.HttpServletResponse;
@@ -75,7 +77,7 @@ public class JsonResponseTest extends TestCase {
         MockSlingHttpServletResponse response = new MockSlingHttpServletResponse();
         res.send(response, true);
         JsonObject result = Json.createReader(new StringReader(response.getOutput().toString())).readObject();
-        assertProperty(result, HtmlResponse.PN_STATUS_CODE, Integer.toString(HttpServletResponse.SC_OK));
+        assertProperty(result, HtmlResponse.PN_STATUS_CODE, HttpServletResponse.SC_OK);
         assertEquals(JSONResponse.RESPONSE_CONTENT_TYPE, response.getContentType());
         assertEquals(JSONResponse.RESPONSE_CHARSET, response.getCharacterEncoding());
     }
@@ -88,7 +90,7 @@ public class JsonResponseTest extends TestCase {
         MockResponseWithHeader response = new MockResponseWithHeader();
         res.send(response, true);
         JsonObject result = Json.createReader(new StringReader(response.getOutput().toString())).readObject();
-        assertProperty(result, HtmlResponse.PN_STATUS_CODE, Integer.toString(HttpServletResponse.SC_CREATED));
+        assertProperty(result, HtmlResponse.PN_STATUS_CODE, HttpServletResponse.SC_CREATED);
         assertEquals(location, response.getHeader("Location"));
     }
 
@@ -102,7 +104,7 @@ public class JsonResponseTest extends TestCase {
             MockResponseWithHeader response = new MockResponseWithHeader();
             res.send(response, true);
             JsonObject result = Json.createReader(new StringReader(response.getOutput().toString())).readObject();
-            assertProperty(result, HtmlResponse.PN_STATUS_CODE, Integer.toString(status));
+            assertProperty(result, HtmlResponse.PN_STATUS_CODE, status);
             assertEquals(location, response.getHeader("Location"));
         }
     }
@@ -115,15 +117,37 @@ public class JsonResponseTest extends TestCase {
         assertEquals(0, obj.getJsonArray("changes").size());
     }
 
+    public void testSendWithJsonAsPropertyValue() throws Exception {
+        String testResponseJson = "{\"user\":\"testUser\",\"properties\":{\"id\":\"testId\", \"name\":\"test\"}}";
+        JsonObject customProperty = Json.createReader(new StringReader(testResponseJson)).readObject();
+        res.setProperty("response", customProperty);
+        MockResponseWithHeader response = new MockResponseWithHeader();
+        res.send(response, true);
+        JsonObject result = Json.createReader(new StringReader(response.getOutput().toString())).readObject();
+        assertProperty(result, "response", customProperty);
+    }
+
     private static JsonValue assertProperty(JsonObject obj, String key) {
         assertTrue("JSON object does not have property " + key, obj.containsKey(key));
         return obj.get(key);
     }
 
     @SuppressWarnings({"unchecked"})
-    private static JsonString assertProperty(JsonObject obj, String key, String expected) {
+    private static JsonValue assertProperty(JsonObject obj, String key, int expected) {
+        JsonNumber res = (JsonNumber) assertProperty(obj, key);
+        assertEquals(expected, res.intValue());
+        return res;
+    }
+
+    private static JsonValue assertProperty(JsonObject obj, String key, String expected) {
         JsonString res = (JsonString) assertProperty(obj, key);
         assertEquals(expected, res.getString());
+        return res;
+    }
+
+    private static JsonValue assertProperty(JsonObject obj, String key, JsonObject expected) {
+        JsonObject res = (JsonObject) assertProperty(obj, key);
+        assertEquals(expected, res);
         return res;
     }
 
