@@ -190,7 +190,9 @@ public class JSONResponse extends AbstractPostResponse {
                         JsonArrayBuilder argumentsBuilder = Json.createArrayBuilder();
 
                         for (String argument : ((List<String>) arguments)) {
-                            argumentsBuilder.add(argument);
+                        	if(argument != null) {
+                                argumentsBuilder.add(argument);
+                        	}
                         }
 
                         entryBuilder.add(PROP_ARGUMENT, argumentsBuilder);
