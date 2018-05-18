@@ -28,7 +28,7 @@
 
     <artifactId>org.apache.sling.servlets.post</artifactId>
     <packaging>bundle</packaging>
-    <version>2.3.25-SNAPSHOT</version>
+    <version>2.3.26</version>
 
     <name>Apache Sling Default POST Servlets</name>
     <description>
@@ -39,7 +39,7 @@
         <connection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-servlets-post.git</connection>
         <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-servlets-post.git</developerConnection>
         <url>https://gitbox.apache.org/repos/asf?p=sling-org-apache-sling-servlets-post.git</url>
-      <tag>HEAD</tag>
+      <tag>org.apache.sling.servlets.post-2.3.26</tag>
   </scm>
 
     <properties>
