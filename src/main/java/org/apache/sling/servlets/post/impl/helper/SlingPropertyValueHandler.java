@@ -209,12 +209,14 @@ public class SlingPropertyValueHandler {
 
         String[] values = prop.getStringValues();
 
-        if (values == null || (values.length == 1 && values[0].length() == 0)) {
-            // if no value is present or a single empty string is given,
+        if (values == null
+                || (values.length == 1 && values[0].length() == 0 && getType(parent, prop) != PropertyType.STRING)) {
+            // if no value is present or a single empty non string is given,
             // just remove the existing property (if any)
             removeProperty(parent, prop);
 
-        } else if (values.length == 0) {
+        } else if (values.length == 0
+                || (values.length == 1 && values[0].length() == 0 && getType(parent, prop) == PropertyType.STRING)) {
             // do not create new prop here, but clear existing
             clearProperty(parent, prop);
 
