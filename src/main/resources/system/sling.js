@@ -61,15 +61,23 @@ var Sling = null;
     /**
      * HTTP GET XHR Helper
      * @param {String} url The URL
+     * @param {Function} optional second parameter for async version of the method.
+     *        The callback will get the XHR object, method returns immediately
      * @return the XHR object, use .responseText for the data
      * @type String
      */
-    Sling.httpGet = function(url) {
+    Sling.httpGet = function(url, callback) {
         var httpcon = Sling.getXHR();
         if (httpcon) {
-            httpcon.open('GET', url, false);
-            httpcon.send(null);
-            return httpcon;
+            if(callback) {
+                httpcon.onload = function() { callback(this); };
+                httpcon.open('GET', url);
+                httpcon.send(null);
+            } else {
+                httpcon.open('GET', url, false);
+                httpcon.send(null);
+                return httpcon;
+            }
         } else {
             return null;
         }
@@ -209,7 +217,24 @@ var Sling = null;
         }
         return null;
     }
-    
+
+    /** Get "session info" from repository. Mainly answers the question: "Who am I"
+     *  and "Which workspace am I logged into. Async version of getSessionInfo
+     * @param {Function} callback function, will get an An Object tree as first argument
+     *        containing the session information, null if server status <> 200
+     */
+    Sling.getSessionInfoAsync = function(callback) {
+        var res=Sling.httpGet(Sling.baseurl+"/system/sling/info.sessionInfo.json",
+            function(res) {
+                if(res.status == 200) {
+                    var info = Sling.evalString(res.responseText);
+                    callback(info);
+                } else {
+                    callback(null);
+                }
+            });
+    }
+
     /** Replace extension in a path */
     Sling._replaceExtension = function(path,newExtension) {
         var i = path.lastIndexOf(".");
