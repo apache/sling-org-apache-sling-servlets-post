@@ -91,7 +91,7 @@ var Sling = null;
      * @type String
      */
     Sling.dumpObj = function(obj, level) {
-        var res="";
+        var res = "";
         for (var a in obj) {
             if (typeof(obj[a])!="object") {
                 res+=a+":"+obj[a]+"  ";
@@ -112,7 +112,7 @@ var Sling = null;
      * @type Array
      */
     Sling.getAllPropNames = function(obj, names) {
-        var root=false;
+        var root = false;
         if (!names) {
             names=new Object();
             root=true;
@@ -224,7 +224,7 @@ var Sling = null;
      *        containing the session information, null if server status <> 200
      */
     Sling.getSessionInfoAsync = function(callback) {
-        var res=Sling.httpGet(Sling.baseurl+"/system/sling/info.sessionInfo.json",
+        var res = Sling.httpGet(Sling.baseurl+"/system/sling/info.sessionInfo.json",
             function(res) {
                 if(res.status == 200) {
                     var info = Sling.evalString(res.responseText);
