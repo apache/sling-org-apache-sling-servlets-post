@@ -77,6 +77,33 @@
                     </instructions>
                 </configuration>
             </plugin>
+           <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.2.1</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <createSourcesJar>true</createSourcesJar>
+                            <shadeSourcesContent>true</shadeSourcesContent>
+                            <relocations>
+                                <relocation>
+                                    <pattern>org.apache.jackrabbit.util</pattern>
+                                    <shadedPattern>org.apache.sling.servlets.post.impl.jackrabbit</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.apache.sling.jcr.contentparser</pattern>
+                                    <shadedPattern>org.apache.sling.servlets.post.impl.contentparser</shadedPattern>
+                                </relocation>
+                            </relocations>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
               <groupId>org.apache.rat</groupId>
               <artifactId>apache-rat-plugin</artifactId>
