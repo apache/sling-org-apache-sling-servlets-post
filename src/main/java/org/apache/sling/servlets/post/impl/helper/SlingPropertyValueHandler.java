@@ -211,7 +211,11 @@ public class SlingPropertyValueHandler {
 
         // RequestProperty#getStringValues already takes care of the configs ignoreBlanks, defaultValues etc.
         // and provides values as null, new String[0] etc. accordingly.
-        if (values == null) {
+        final int type = getType(parent, prop);
+
+        if (values == null
+                || (values.length == 1 && values[0].length() == 0 && type != PropertyType.STRING
+                        && type != PropertyType.UNDEFINED)) {
             // if no value is present, just remove the existing property (if any)
             removeProperty(parent, prop);
 
@@ -229,7 +233,6 @@ public class SlingPropertyValueHandler {
             }
 
             final boolean multiValue = isMultiValue(parent, prop, values);
-            final int type = getType(parent, prop);
 
             if (multiValue) {
                 // converting single into multi value props requires deleting it first
@@ -383,6 +386,7 @@ public class SlingPropertyValueHandler {
                     changes.add(Modification.onDeleted(removePath));
                 }
             } else {
+                parent.valueMap.put(prop.getName(), "");
                 changes.add(Modification.onModified(parent.resource.getPath() + '/' + prop.getName()));
             }
         }

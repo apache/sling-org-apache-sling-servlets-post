@@ -17,15 +17,17 @@
 package org.apache.sling.servlets.post.impl.helper;
 
 import static org.junit.Assert.assertEquals;
+
 import org.junit.Test;
 
 /** Verify the AutoType values of property names for which
  *  we automatically set values.
  */
 public class SlingPropertyValueHandlerAutotypeTest {
+
     private void assertAlias(String propertyNameA) {
         final String propertyNameB = "jcr:" + propertyNameA;
-                
+
         assertEquals("Expecting same AutotType for " + propertyNameA + " and " + propertyNameB,
                 SlingPropertyValueHandler.getAutoType(propertyNameA),
                 SlingPropertyValueHandler.getAutoType(propertyNameB)
