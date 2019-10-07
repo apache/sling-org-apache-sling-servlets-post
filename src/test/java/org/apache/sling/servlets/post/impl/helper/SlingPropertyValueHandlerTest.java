@@ -132,10 +132,9 @@ public class SlingPropertyValueHandlerTest {
         handler.setProperty(rsrc, prop);
 
         // value map should be empty, one change: delete
-        assertEquals(1, valueMap.size());
-        assertEquals("", valueMap.get("property"));
+        assertTrue(valueMap.isEmpty());
         assertEquals(1, mods.size());
-        assertEquals(ModificationType.MODIFY, mods.get(0).getType());
+        assertEquals(ModificationType.DELETE, mods.get(0).getType());
         assertEquals("/content/property", mods.get(0).getSource());
     }
 }
