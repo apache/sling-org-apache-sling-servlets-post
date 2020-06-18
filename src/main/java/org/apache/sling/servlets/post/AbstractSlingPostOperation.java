@@ -21,6 +21,7 @@ import java.util.List;
 import javax.jcr.RepositoryException;
 
 import org.apache.sling.api.SlingHttpServletRequest;
+import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.servlets.HtmlResponse;
 import org.apache.sling.servlets.post.impl.helper.HtmlPostResponseProxy;
 import org.apache.sling.servlets.post.impl.helper.HtmlResponseProxy;
@@ -59,11 +60,15 @@ public abstract class AbstractSlingPostOperation extends AbstractPostOperation
      */
     protected void doRun(SlingHttpServletRequest request,
             PostResponse response, List<Modification> changes)
-            throws RepositoryException {
+            throws PersistenceException {
         final HtmlResponse htmlResponseProxy = (response instanceof HtmlPostResponseProxy)
                 ? ((HtmlPostResponseProxy) response).getHtmlResponse()
                 : new HtmlResponseProxy(response);
-        doRun(request, htmlResponseProxy, changes);
+        try {
+            doRun(request, htmlResponseProxy, changes);
+        } catch (RepositoryException e) {
+            throw new PersistenceException(e.getMessage(), e);
+        }
     }
 
     /**

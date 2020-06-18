@@ -17,6 +17,7 @@
 package org.apache.sling.servlets.post;
 
 import org.apache.sling.api.SlingHttpServletRequest;
+import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.commons.testing.sling.MockResourceResolver;
 import org.apache.sling.servlets.post.impl.helper.MockSlingHttpServlet3Request;
 import org.junit.Test;
@@ -38,7 +39,7 @@ public class AbstractPostOperationTest {
 
         final PostOperation operation = new AbstractPostOperation() {
             @Override
-            protected void doRun(SlingHttpServletRequest request, PostResponse response, List<Modification> changes) throws RepositoryException {
+            protected void doRun(SlingHttpServletRequest request, PostResponse response, List<Modification> changes) throws PersistenceException {
                 changes.add(Modification.onChange(ModificationType.CREATE, "/content/test"));
                 changes.add(Modification.onChange(ModificationType.CREATE, "/content/test@Postfix"));
             }
@@ -60,7 +61,7 @@ public class AbstractPostOperationTest {
 
         final PostOperation operation = new AbstractPostOperation() {
             @Override
-            protected void doRun(SlingHttpServletRequest request, PostResponse response, List<Modification> changes) throws RepositoryException {
+            protected void doRun(SlingHttpServletRequest request, PostResponse response, List<Modification> changes) throws PersistenceException {
                 changes.add(Modification.onChange(ModificationType.CREATE, "/content/test"));
             }
         };
@@ -81,7 +82,7 @@ public class AbstractPostOperationTest {
 
         final PostOperation operation = new AbstractPostOperation() {
             @Override
-            protected void doRun(SlingHttpServletRequest request, PostResponse response, List<Modification> changes) throws RepositoryException {
+            protected void doRun(SlingHttpServletRequest request, PostResponse response, List<Modification> changes) throws PersistenceException {
                 changes.add(Modification.onChange(ModificationType.CREATE, "/content/test@Postfix"));
             }
         };
