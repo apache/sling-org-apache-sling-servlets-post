@@ -49,6 +49,10 @@ import org.slf4j.LoggerFactory;
  * {@link PostOperation} service interface providing actual implementations with
  * useful tooling and common functionality like preparing the change logs or
  * saving or refreshing.
+ *
+ * As this package is not exported, if you want to use this as a base class for
+ * custom operations you'll need to embed it in your bundles using the appropriate
+ * bnd directive.
  */
 public abstract class AbstractPostOperation implements PostOperation {
 
