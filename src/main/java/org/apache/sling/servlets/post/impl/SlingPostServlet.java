@@ -198,7 +198,12 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
     public SlingPostServlet() {
         // the following operations require JCR:
         if ( JCRSupport.INSTANCE.jcrEnabled()) {
-            importOperation = new ImportOperation();
+            try {
+                importOperation = new ImportOperation();
+            } catch ( final Throwable t) {
+                log.warn("Support for JCR operations like checkin, checkout, import, ordering etc. is currently disabled " +
+                    "in the servlets post module. Check whether the JCR API is available.", t);
+            }
         }
     }
 
@@ -440,7 +445,7 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
             SlingPostConstants.OPERATION_NOP, new NopOperation()));
 
         // the following operations require JCR:
-        if ( JCRSupport.INSTANCE.jcrEnabled()) {
+        if ( JCRSupport.INSTANCE.jcrEnabled() && importOperation != null) {
             providedServices.add(registerOperation(bundleContext,
                 SlingPostConstants.OPERATION_IMPORT, importOperation));
             providedServices.add(registerOperation(bundleContext,

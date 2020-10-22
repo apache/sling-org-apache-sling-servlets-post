@@ -48,7 +48,11 @@ import org.slf4j.LoggerFactory;
  * {@link PostOperation} service interface providing actual implementations with
  * useful tooling and common functionality like preparing the change logs or
  * saving or refreshing the JCR Session.
- * @deprecated
+ *
+ * @deprecated (SLING-6722): this class mixes Sling and JCR APIs which is not
+ *  optimal as nowadays we favor the Sling APIs. There's no intention to remove
+ *  it however, if you're using JCR APIs anyways in your project it's fine to
+ *  use it. Theres no public replacement for it as I write this.
  */
 @Deprecated
 public abstract class AbstractPostOperation implements PostOperation {

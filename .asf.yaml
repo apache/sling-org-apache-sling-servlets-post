@@ -1,0 +1,7 @@
+github:
+  description: "Apache Sling Default POST Servlets"
+  homepage: "https://sling.apache.org/"
+  labels:
+    - sling
+    - java
+    - servlets

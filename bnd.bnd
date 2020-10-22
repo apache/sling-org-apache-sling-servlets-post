@@ -1,0 +1,22 @@
+Import-Package: javax.jcr;resolution:=optional,\
+  javax.jcr.nodetype;resolution:=optional,\
+  javax.jcr.version;resolution:=optional,\
+  org.apache.sling.jcr.contentloader;resolution:=optional,\
+  *
+
+Sling-Bundle-Resources: /system/sling.js
+
+Sling-Namespaces: sling=http://sling.apache.org/jcr/sling/1.0
+
+Sling-Nodetypes: SLING-INF/nodetypes/chunk.cnd
+
+-exportcontents: ${packages;VERSIONED}
+
+-includeresource:\
+  @jackrabbit-jcr-commons-*.jar!/org/apache/jackrabbit/util/ISO8601.class,\
+  @jackrabbit-jcr-commons-*.jar!/org/apache/jackrabbit/util/Text.class,\
+  @org.apache.sling.jcr.contentparser-*.jar!/org/apache/sling/jcr/contentparser/impl/JsonTicksConverter.class
+  
+-removeheaders:\
+  Include-Resource,\
+  Private-Package
