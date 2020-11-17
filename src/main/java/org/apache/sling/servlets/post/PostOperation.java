@@ -19,6 +19,7 @@
 package org.apache.sling.servlets.post;
 
 import org.apache.sling.api.SlingHttpServletRequest;
+import org.apache.sling.api.resource.PersistenceException;
 
 /**
  * The <code>PostOperation</code> interface defines the service API to be
@@ -72,14 +73,8 @@ public interface PostOperation {
      * @param processors The {@link SlingPostProcessor} services to be called
      *            after applying the operation. This may be <code>null</code> if
      *            there are none.
-     * @throws org.apache.sling.api.resource.ResourceNotFoundException May be
-     *             thrown if the operation requires an existing request
-     *             resource. If this exception is thrown the Sling POST servlet
-     *             sends back a <code>404/NOT FOUND</code> response to the
-     *             client.
-     * @throws org.apache.sling.api.SlingException May be thrown if an error
-     *             occurrs running the operation.
+     * @throws PersistenceException in case of errors during persistence of changes
      */
     void run(SlingHttpServletRequest request, PostResponse response,
-            SlingPostProcessor[] processors);
+            SlingPostProcessor[] processors) throws PersistenceException;
 }

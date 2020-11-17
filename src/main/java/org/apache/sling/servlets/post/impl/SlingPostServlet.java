@@ -34,6 +34,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
+import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.ResourceNotFoundException;
 import org.apache.sling.api.resource.ResourceUtil;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
@@ -234,6 +235,11 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
             } catch (ResourceNotFoundException rnfe) {
                 htmlResponse.setStatus(HttpServletResponse.SC_NOT_FOUND,
                     rnfe.getMessage());
+            } catch (final PersistenceException pe) {
+                log.warn("PersistenceException while handling POST "
+                  + request.getResource().getPath() + " with "
+                  + operation.getClass().getName(), pe);
+                htmlResponse.setStatus(HttpServletResponse.SC_METHOD_NOT_ALLOWED,"invalid POST request");
             } catch (final Exception exception) {
                 log.warn("Exception while handling POST "
                     + request.getResource().getPath() + " with "

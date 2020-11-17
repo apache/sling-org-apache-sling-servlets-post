@@ -17,6 +17,7 @@
 package org.apache.sling.servlets.post;
 
 import org.apache.sling.api.SlingHttpServletRequest;
+import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.commons.testing.sling.MockResourceResolver;
 import org.apache.sling.servlets.post.impl.helper.MockSlingHttpServlet3Request;
 import org.junit.Test;
@@ -30,7 +31,7 @@ import static org.junit.Assert.*;
 public class AbstractPostOperationTest {
 
     @Test
-    public void testRemainingPostfixCausesFailure() {
+    public void testRemainingPostfixCausesFailure() throws PersistenceException {
         TestingResourceResolver resourceResolver = new TestingResourceResolver();
 
         MockSlingHttpServlet3Request request = new MockSlingHttpServlet3Request("/test", null, null, null, null);
@@ -52,7 +53,7 @@ public class AbstractPostOperationTest {
     }
 
     @Test
-    public void testNoRemainingPostfixIsSuccessful() {
+    public void testNoRemainingPostfixIsSuccessful() throws PersistenceException {
         TestingResourceResolver resourceResolver = new TestingResourceResolver();
 
         MockSlingHttpServlet3Request request = new MockSlingHttpServlet3Request("/test", null, null, null, null);
@@ -73,7 +74,7 @@ public class AbstractPostOperationTest {
     }
 
     @Test
-    public void testRemainingPostfixWithoutUnPostfixedIsSuccessful() {
+    public void testRemainingPostfixWithoutUnPostfixedIsSuccessful() throws PersistenceException {
         TestingResourceResolver resourceResolver = new TestingResourceResolver();
 
         MockSlingHttpServlet3Request request = new MockSlingHttpServlet3Request("/test", null, null, null, null);
