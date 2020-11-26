@@ -152,6 +152,11 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
                             "content to the repository. By default this is \"j_.*\" thus ignoring all "+
                             "request parameters starting with j_ such as j_username.")
         String servlet_post_ignorePattern() default "j_.*";
+
+        @AttributeDefinition(name="Backwards compatible statuscode",
+                    description="In backwards compatibility mode exceptions will always create a statuscode "
+                        + "500 (see SLING-9896)")
+        boolean backwards_compatible_statuscode() default false;
     }
 
     /**
@@ -196,6 +201,8 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
 
     private ImportOperation importOperation;
 
+    private boolean backwardsCompatibleStatuscode;
+
     public SlingPostServlet() {
         // the following operations require JCR:
         if ( JCRSupport.INSTANCE.jcrEnabled()) {
@@ -239,6 +246,9 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
                 log.warn("PersistenceException while handling POST "
                   + request.getResource().getPath() + " with "
                   + operation.getClass().getName(), pe);
+                if (backwardsCompatibleStatuscode) {
+                  htmlResponse.setError(pe);
+                }
                 htmlResponse.setStatus(HttpServletResponse.SC_METHOD_NOT_ALLOWED,"invalid POST request");
             } catch (final Exception exception) {
                 log.warn("Exception while handling POST "
@@ -513,6 +523,7 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
             this.importOperation.setDefaultNodeNameGenerator(nodeNameGenerator);
             this.importOperation.setIgnoredParameterNamePattern(paramMatchPattern);
         }
+        this.backwardsCompatibleStatuscode = configuration.backwards_compatible_statuscode();
     }
 
     @Override
