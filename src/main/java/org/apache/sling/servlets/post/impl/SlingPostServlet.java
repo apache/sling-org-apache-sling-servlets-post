@@ -156,7 +156,7 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
         @AttributeDefinition(name="Backwards compatible statuscode",
                     description="In backwards compatibility mode exceptions will always create a statuscode "
                         + "500 (see SLING-9896)")
-        boolean backwards_compatible_statuscode() default false;
+        boolean legacy_statuscode_on_persistence_exception() default false;
     }
 
     /**
@@ -243,17 +243,18 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
                 htmlResponse.setStatus(HttpServletResponse.SC_NOT_FOUND,
                     rnfe.getMessage());
             } catch (final PersistenceException pe) {
-                log.warn("PersistenceException while handling POST "
-                  + request.getResource().getPath() + " with "
-                  + operation.getClass().getName(), pe);
+                log.warn("Exception while handling POST {} with {} ",
+                    request.getResource().getPath(),
+                    operation.getClass().getName(),pe);
                 if (backwardsCompatibleStatuscode) {
                   htmlResponse.setError(pe);
+                } else {
+                  htmlResponse.setStatus(HttpServletResponse.SC_METHOD_NOT_ALLOWED,"Invalid POST request");
                 }
-                htmlResponse.setStatus(HttpServletResponse.SC_METHOD_NOT_ALLOWED,"invalid POST request");
             } catch (final Exception exception) {
-                log.warn("Exception while handling POST "
-                    + request.getResource().getPath() + " with "
-                    + operation.getClass().getName(), exception);
+                log.warn("Exception while handling POST {} with {}",
+                    request.getResource().getPath(),
+                    operation.getClass().getName(), exception);
                 htmlResponse.setError(exception);
             }
 
@@ -523,7 +524,7 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
             this.importOperation.setDefaultNodeNameGenerator(nodeNameGenerator);
             this.importOperation.setIgnoredParameterNamePattern(paramMatchPattern);
         }
-        this.backwardsCompatibleStatuscode = configuration.backwards_compatible_statuscode();
+        this.backwardsCompatibleStatuscode = configuration.legacy_statuscode_on_persistence_exception();
     }
 
     @Override
