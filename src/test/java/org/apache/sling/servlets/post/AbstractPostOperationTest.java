@@ -18,6 +18,8 @@ package org.apache.sling.servlets.post;
 
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.commons.testing.sling.MockResourceResolver;
+import org.apache.sling.servlets.post.exceptions.IncorrectInputException;
+import org.apache.sling.servlets.post.exceptions.RetryableOperationException;
 import org.apache.sling.servlets.post.impl.helper.MockSlingHttpServlet3Request;
 import org.junit.Test;
 
@@ -30,7 +32,7 @@ import static org.junit.Assert.*;
 public class AbstractPostOperationTest {
 
     @Test
-    public void testRemainingPostfixCausesFailure() {
+    public void testRemainingPostfixCausesFailure() throws Exception {
         TestingResourceResolver resourceResolver = new TestingResourceResolver();
 
         MockSlingHttpServlet3Request request = new MockSlingHttpServlet3Request("/test", null, null, null, null);
@@ -38,7 +40,7 @@ public class AbstractPostOperationTest {
 
         final PostOperation operation = new AbstractPostOperation() {
             @Override
-            protected void doRun(SlingHttpServletRequest request, PostResponse response, List<Modification> changes) throws RepositoryException {
+            protected void doRun(SlingHttpServletRequest request, PostResponse response, List<Modification> changes) throws RepositoryException, IncorrectInputException, RetryableOperationException {
                 changes.add(Modification.onChange(ModificationType.CREATE, "/content/test"));
                 changes.add(Modification.onChange(ModificationType.CREATE, "/content/test@Postfix"));
             }
@@ -52,7 +54,7 @@ public class AbstractPostOperationTest {
     }
 
     @Test
-    public void testNoRemainingPostfixIsSuccessful() {
+    public void testNoRemainingPostfixIsSuccessful() throws Exception {
         TestingResourceResolver resourceResolver = new TestingResourceResolver();
 
         MockSlingHttpServlet3Request request = new MockSlingHttpServlet3Request("/test", null, null, null, null);
@@ -73,7 +75,7 @@ public class AbstractPostOperationTest {
     }
 
     @Test
-    public void testRemainingPostfixWithoutUnPostfixedIsSuccessful() {
+    public void testRemainingPostfixWithoutUnPostfixedIsSuccessful() throws Exception {
         TestingResourceResolver resourceResolver = new TestingResourceResolver();
 
         MockSlingHttpServlet3Request request = new MockSlingHttpServlet3Request("/test", null, null, null, null);

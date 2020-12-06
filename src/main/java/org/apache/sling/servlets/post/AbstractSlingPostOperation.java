@@ -22,6 +22,8 @@ import javax.jcr.RepositoryException;
 
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.servlets.HtmlResponse;
+import org.apache.sling.servlets.post.exceptions.IncorrectInputException;
+import org.apache.sling.servlets.post.exceptions.RetryableOperationException;
 import org.apache.sling.servlets.post.impl.helper.HtmlPostResponseProxy;
 import org.apache.sling.servlets.post.impl.helper.HtmlResponseProxy;
 
@@ -74,7 +76,7 @@ public abstract class AbstractSlingPostOperation extends AbstractPostOperation
      * with a proxy around the Sling API <code>HtmlResponse</code> provided.
      */
     public void run(SlingHttpServletRequest request, HtmlResponse response,
-            SlingPostProcessor[] processors) {
+            SlingPostProcessor[] processors) throws IncorrectInputException, RetryableOperationException {
         final PostResponse postResponseProxy = new HtmlPostResponseProxy(
             response);
         run(request, postResponseProxy, processors);

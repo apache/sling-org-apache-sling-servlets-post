@@ -19,6 +19,8 @@
 package org.apache.sling.servlets.post;
 
 import org.apache.sling.api.SlingHttpServletRequest;
+import org.apache.sling.servlets.post.exceptions.IncorrectInputException;
+import org.apache.sling.servlets.post.exceptions.RetryableOperationException;
 
 /**
  * The <code>PostOperation</code> interface defines the service API to be
@@ -81,5 +83,5 @@ public interface PostOperation {
      *             occurrs running the operation.
      */
     void run(SlingHttpServletRequest request, PostResponse response,
-            SlingPostProcessor[] processors);
+            SlingPostProcessor[] processors) throws IncorrectInputException, RetryableOperationException;
 }

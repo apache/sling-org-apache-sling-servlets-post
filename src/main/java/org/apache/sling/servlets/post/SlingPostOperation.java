@@ -20,6 +20,8 @@ package org.apache.sling.servlets.post;
 
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.servlets.HtmlResponse;
+import org.apache.sling.servlets.post.exceptions.IncorrectInputException;
+import org.apache.sling.servlets.post.exceptions.RetryableOperationException;
 
 /**
  * The <code>SlingPostOperation</code> interface defines the service API to be
@@ -69,6 +71,8 @@ public interface SlingPostOperation {
      * @param processors The {@link SlingPostProcessor} services to be called
      *            after applying the operation. This may be <code>null</code> if
      *            there are none.
+     * @throws RetryableOperationException 
+     * @throws IncorrectInputException 
      * @throws org.apache.sling.api.resource.ResourceNotFoundException May be
      *             thrown if the operation requires an existing request
      *             resource. If this exception is thrown the Sling default POST
@@ -78,5 +82,5 @@ public interface SlingPostOperation {
      *             occurrs running the operation.
      */
     void run(SlingHttpServletRequest request, HtmlResponse response,
-            SlingPostProcessor[] processors);
+            SlingPostProcessor[] processors) throws IncorrectInputException, RetryableOperationException;
 }

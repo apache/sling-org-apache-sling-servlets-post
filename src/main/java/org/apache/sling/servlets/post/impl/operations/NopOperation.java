@@ -23,6 +23,8 @@ import org.apache.sling.servlets.post.PostOperation;
 import org.apache.sling.servlets.post.PostResponse;
 import org.apache.sling.servlets.post.SlingPostConstants;
 import org.apache.sling.servlets.post.SlingPostProcessor;
+import org.apache.sling.servlets.post.exceptions.IncorrectInputException;
+import org.apache.sling.servlets.post.exceptions.RetryableOperationException;
 
 /**
  * The <code>NopOperation</code> class implements no operation at all. It just
@@ -33,7 +35,7 @@ public class NopOperation implements PostOperation {
 
     @Override
     public void run(SlingHttpServletRequest request, PostResponse response,
-            SlingPostProcessor[] processors) {
+            SlingPostProcessor[] processors) throws IncorrectInputException, RetryableOperationException {
 
         // get the :nopstatus parameter for a specific code
         int status = SlingPostConstants.NOPSTATUS_VALUE_DEFAULT;
