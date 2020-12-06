@@ -34,6 +34,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
+import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.ResourceNotFoundException;
 import org.apache.sling.api.resource.ResourceUtil;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
@@ -258,6 +259,14 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
                     htmlResponse.setError(e);
                 } else {
                     htmlResponse.setStatus(HttpServletResponse.SC_CONFLICT, "repository state conflicting with request");
+                }
+            } catch (final PersistenceException e) {
+                log.warn("Exception while handling POST {} with {}",
+                        new Object[] {request.getResource().getPath(),operation.getClass().getName()},e);
+                if (backwardsCompatibleStatuscode) {
+                    htmlResponse.setError(e);
+                } else {
+                    htmlResponse.setStatus(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "Invalid POST request");
                 }
             } catch (final Exception exception) {
                 log.warn("Exception while handling POST {} with {}",
