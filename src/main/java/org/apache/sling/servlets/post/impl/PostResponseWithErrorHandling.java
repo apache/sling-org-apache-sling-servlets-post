@@ -27,12 +27,12 @@ import org.apache.sling.servlets.post.HtmlResponse;
 import org.apache.sling.servlets.post.PostResponse;
 import org.apache.sling.servlets.post.PostResponseCreator;
 import org.apache.sling.servlets.post.SlingPostConstants;
-import org.osgi.service.component.annotations.Component;
 
-@Component(service = PostResponseCreator.class,
-    property = {
-            "service.vendor=The Apache Software Foundation"
-    })
+/**
+ * @deprecated SLING-10006 - this component is now deprecated no longer registered as an
+ * OSGi component as the error handling is now done in a different way in {@link SlingPostServlet#createPostResponse(SlingHttpServletRequest)}.
+ */
+@Deprecated
 public class PostResponseWithErrorHandling implements PostResponseCreator {
 
 	@Override

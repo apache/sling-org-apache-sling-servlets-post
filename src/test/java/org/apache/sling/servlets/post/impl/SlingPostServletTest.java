@@ -23,8 +23,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.StringTokenizer;
 
-import junit.framework.TestCase;
-
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.commons.testing.sling.MockSlingHttpServletRequest;
 import org.apache.sling.servlets.post.HtmlResponse;
@@ -34,6 +32,8 @@ import org.apache.sling.servlets.post.SlingPostConstants;
 import org.apache.sling.servlets.post.impl.helper.MediaRangeList;
 import org.apache.sling.servlets.post.impl.helper.MockSlingHttpServlet3Request;
 import org.apache.sling.servlets.post.impl.helper.MockSlingHttpServlet3Response;
+
+import junit.framework.TestCase;
 
 public class SlingPostServletTest extends TestCase {
     
@@ -84,9 +84,52 @@ public class SlingPostServletTest extends TestCase {
             }
         };
         PostResponse result = servlet.createPostResponse(req);
+        assertFalse("Did not expect ErrorHandlingPostResponseWrapper PostResonse", result instanceof ErrorHandlingPostResponseWrapper);
         assertTrue(result instanceof JSONResponse);
     }
-    
+
+    public void testGetHtmlResponse() {
+        MockSlingHttpServletRequest req = new MockSlingHttpServlet3Request(null, null, null, null, null);
+        PostResponse result = servlet.createPostResponse(req);
+        assertFalse("Did not expect ErrorHandlingPostResponseWrapper PostResonse", result instanceof ErrorHandlingPostResponseWrapper);
+        assertTrue(result instanceof HtmlResponse);
+    }
+
+    /**
+     * SLING-10006 - verify we get the error handling wrapped PostResponse
+     */
+    public void testGetJsonResponseWithSendError() {
+    	SendErrorParamSlingHttpServletRequest req = new SendErrorParamSlingHttpServletRequest() {
+            @Override
+            public String getHeader(String name) {
+                return name.equals(MediaRangeList.HEADER_ACCEPT) ? "application/json" : super.getHeader(name);
+            }
+
+            public <AdapterType> AdapterType adaptTo(Class<AdapterType> type) {
+                return null;
+            }
+        };
+        req.setSendError("true");
+        
+        PostResponse result = servlet.createPostResponse(req);
+        assertTrue("Expected ErrorHandlingPostResponseWrapper PostResonse", result instanceof ErrorHandlingPostResponseWrapper);
+       	result = ((ErrorHandlingPostResponseWrapper)result).getWrapped();
+        assertTrue(result instanceof JSONResponse);
+    }
+
+    /**
+     * SLING-10006 - verify we get the error handling wrapped PostResponse
+     */
+    public void testGetHtmlResponseWithSendError() {
+    	SendErrorParamSlingHttpServletRequest req = new SendErrorParamSlingHttpServletRequest();
+        req.setSendError("true");
+        
+        PostResponse result = servlet.createPostResponse(req);
+        assertTrue(result instanceof ErrorHandlingPostResponseWrapper);
+       	result = ((ErrorHandlingPostResponseWrapper)result).getWrapped();
+        assertTrue(result instanceof HtmlResponse);
+    }
+
     public void testRedirection() throws Exception {
         String utf8Path = "\u0414\u0440\u0443\u0433\u0430";
         String encodedUtf8 = "%D0%94%D1%80%D1%83%D0%B3%D0%B0";
@@ -193,4 +236,33 @@ public class SlingPostServletTest extends TestCase {
             return null;
         }
     }
+
+    private static class SendErrorParamSlingHttpServletRequest extends
+	    MockSlingHttpServlet3Request {
+		
+		private String sendError;
+		
+		public SendErrorParamSlingHttpServletRequest() {
+		    // nothing to setup, we don't care
+		    super(null, null, null, null, null);
+		}
+		
+		@Override
+		public String getParameter(String name) {
+		    if (SlingPostConstants.RP_SEND_ERROR.equals(name)) {
+		        return sendError;
+		    }
+		
+		    return super.getParameter(name);
+		}
+		
+		void setSendError(String sendErrorParam) {
+		    this.sendError = sendErrorParam;
+		}
+		
+		public <AdapterType> AdapterType adaptTo(Class<AdapterType> type) {
+		    return null;
+		}
+	}
+
 }
