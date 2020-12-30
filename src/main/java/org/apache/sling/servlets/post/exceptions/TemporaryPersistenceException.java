@@ -22,27 +22,26 @@ import org.apache.sling.api.resource.PersistenceException;
 
 
 /**
- *  Indicates that the input does not meet the necessary preconditions required by JCR.
- *  In that case the client should redo the request with a changed input.
+ * This exceptions indicates errors, which might be temporary and for which a retry
+ * with the same parameters could work.
  *
  */
+public class TemporaryPersistenceException extends PersistenceException {
 
-public class IncorrectInputException extends PersistenceException {
 
+    private static final long serialVersionUID = 8922639484264855481L;
 
-  private static final long serialVersionUID = 1L;
+    public TemporaryPersistenceException(String message, Exception e) {
+        super(message, e);
+    }
   
-  public IncorrectInputException(String message, Exception e) {
-    super(message, e);
-  }
-  
-  public IncorrectInputException(final String msg,
+    public TemporaryPersistenceException(final String msg,
           final Throwable cause,
           final String resourcePath,
           final String propertyName) {
             super(msg,cause,resourcePath,propertyName);
             
             }
-  
+
 
 }

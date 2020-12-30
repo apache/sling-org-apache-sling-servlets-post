@@ -40,8 +40,8 @@ import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceUtil;
 import org.apache.sling.api.wrappers.SlingRequestPaths;
-import org.apache.sling.servlets.post.exceptions.IncorrectInputException;
-import org.apache.sling.servlets.post.exceptions.RetryableOperationException;
+import org.apache.sling.servlets.post.exceptions.PreconditionViolatedPersistenceException;
+import org.apache.sling.servlets.post.exceptions.TemporaryPersistenceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,7 +81,7 @@ public abstract class AbstractPostOperation implements PostOperation {
     @Override
     public void run(final SlingHttpServletRequest request,
                     final PostResponse response,
-                    final SlingPostProcessor[] processors) throws IncorrectInputException, RetryableOperationException {
+                    final SlingPostProcessor[] processors) throws PreconditionViolatedPersistenceException, TemporaryPersistenceException {
         final Session session = request.getResourceResolver().adaptTo(Session.class);
 
         final VersioningConfiguration versionableConfiguration = getVersioningConfiguration(request);
@@ -214,12 +214,12 @@ public abstract class AbstractPostOperation implements PostOperation {
      *            representing the operations done.
      * @throws RepositoryException Maybe thrown if any error occurrs while
      *             accessing the repository.
-     * @throws RetryableOperationException 
-     * @throws IncorrectInputException 
+     * @throws TemporaryPersistenceException 
+     * @throws PreconditionViolatedPersistenceException 
      */
     protected abstract void doRun(SlingHttpServletRequest request,
             PostResponse response,
-            List<Modification> changes) throws RepositoryException, IncorrectInputException, RetryableOperationException;
+            List<Modification> changes) throws RepositoryException, PreconditionViolatedPersistenceException, TemporaryPersistenceException;
 
     /**
      * Get the versioning configuration.

@@ -49,8 +49,8 @@ import org.apache.sling.servlets.post.PostResponseCreator;
 import org.apache.sling.servlets.post.SlingPostConstants;
 import org.apache.sling.servlets.post.SlingPostProcessor;
 import org.apache.sling.servlets.post.VersioningConfiguration;
-import org.apache.sling.servlets.post.exceptions.IncorrectInputException;
-import org.apache.sling.servlets.post.exceptions.RetryableOperationException;
+import org.apache.sling.servlets.post.exceptions.PreconditionViolatedPersistenceException;
+import org.apache.sling.servlets.post.exceptions.TemporaryPersistenceException;
 import org.apache.sling.servlets.post.impl.helper.DateParser;
 import org.apache.sling.servlets.post.impl.helper.DefaultNodeNameGenerator;
 import org.apache.sling.servlets.post.impl.helper.JCRSupport;
@@ -244,7 +244,7 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
             } catch (ResourceNotFoundException rnfe) {
                 htmlResponse.setStatus(HttpServletResponse.SC_NOT_FOUND,
                     rnfe.getMessage());
-            } catch (final IncorrectInputException e) {
+            } catch (final PreconditionViolatedPersistenceException e) {
                 log.warn("Exception while handling POST {} with {}",
                         new Object[] {request.getResource().getPath(),operation.getClass().getName()},e);
                 if (backwardsCompatibleStatuscode) {

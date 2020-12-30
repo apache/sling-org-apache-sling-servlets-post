@@ -29,8 +29,8 @@ import org.apache.sling.servlets.post.PostOperation;
 import org.apache.sling.servlets.post.PostResponse;
 import org.apache.sling.servlets.post.SlingPostOperation;
 import org.apache.sling.servlets.post.SlingPostProcessor;
-import org.apache.sling.servlets.post.exceptions.IncorrectInputException;
-import org.apache.sling.servlets.post.exceptions.RetryableOperationException;
+import org.apache.sling.servlets.post.exceptions.PreconditionViolatedPersistenceException;
+import org.apache.sling.servlets.post.exceptions.TemporaryPersistenceException;
 import org.apache.sling.servlets.post.impl.helper.HtmlResponseProxy;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
@@ -248,7 +248,7 @@ public class PostOperationProxyProvider implements ServiceListener {
 
         @Override
         public void run(SlingHttpServletRequest request, PostResponse response,
-                SlingPostProcessor[] processors) throws IncorrectInputException, RetryableOperationException {
+                SlingPostProcessor[] processors) throws PreconditionViolatedPersistenceException, TemporaryPersistenceException {
             HtmlResponse apiResponse = new HtmlResponseProxy(response);
             delegatee.run(request, apiResponse, processors);
         }

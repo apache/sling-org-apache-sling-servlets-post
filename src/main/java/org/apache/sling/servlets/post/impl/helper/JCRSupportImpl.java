@@ -52,8 +52,8 @@ import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.servlets.post.Modification;
 import org.apache.sling.servlets.post.SlingPostConstants;
 import org.apache.sling.servlets.post.VersioningConfiguration;
-import org.apache.sling.servlets.post.exceptions.IncorrectInputException;
-import org.apache.sling.servlets.post.exceptions.RetryableOperationException;
+import org.apache.sling.servlets.post.exceptions.PreconditionViolatedPersistenceException;
+import org.apache.sling.servlets.post.exceptions.TemporaryPersistenceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,8 +72,8 @@ public class JCRSupportImpl {
      * @param item node to order
      * @param changes The list of modifications
      * @throws RepositoryException if an error occurs
-     * @throws IncorrectInputException 
-     * @throws RetryableOperationException 
+     * @throws PreconditionViolatedPersistenceException 
+     * @throws TemporaryPersistenceException 
      */
     public void orderNode(final SlingHttpServletRequest request,
             final Resource resource,
@@ -164,9 +164,9 @@ public class JCRSupportImpl {
                     "provided node ordering command is invalid: " + command);
             }
         } catch (final VersionException|ConstraintViolationException|ItemNotFoundException e) {
-            throw new IncorrectInputException("Unable to order resource", e, resource.getPath(), null);
+            throw new PreconditionViolatedPersistenceException("Unable to order resource", e, resource.getPath(), null);
         } catch (final UnsupportedRepositoryOperationException|LockException e) { 
-            throw new RetryableOperationException("Unable to order resource", e, resource.getPath(), null);
+            throw new TemporaryPersistenceException("Unable to order resource", e, resource.getPath(), null);
         } catch ( final RepositoryException re) {
             throw new PersistenceException("Unable to order resource", re, resource.getPath(), null);
         }
@@ -195,9 +195,9 @@ public class JCRSupportImpl {
                     return true;
                 }
             } catch (final AccessDeniedException e) {
-                throw new IncorrectInputException(e.getMessage(), e, rsrc.getPath(), null);
+                throw new PreconditionViolatedPersistenceException(e.getMessage(), e, rsrc.getPath(), null);
             } catch (final UnsupportedRepositoryOperationException|InvalidItemStateException|LockException e) { 
-                throw new RetryableOperationException(e.getMessage(), e, rsrc.getPath(), null);
+                throw new TemporaryPersistenceException(e.getMessage(), e, rsrc.getPath(), null);
             } catch ( final RepositoryException re) {
                 throw new PersistenceException(re.getMessage(), re, rsrc.getPath(), null);
             }
@@ -234,9 +234,9 @@ public class JCRSupportImpl {
                         }
                     }
                 } catch (final AccessDeniedException e) {
-                    throw new IncorrectInputException(e.getMessage(),e);
+                    throw new PreconditionViolatedPersistenceException(e.getMessage(),e);
                 } catch (final UnsupportedRepositoryOperationException e) { 
-                    throw new RetryableOperationException(e.getMessage(),e);
+                    throw new TemporaryPersistenceException(e.getMessage(),e);
                 } catch (final RepositoryException re) {
                     throw new PersistenceException(re.getMessage(), re);
                 }
@@ -332,7 +332,7 @@ public class JCRSupportImpl {
             final Property prop = ((Node)node).getProperty(name);
             return prop.getDefinition().isMandatory();
         } catch (final PathNotFoundException e) {
-            throw new IncorrectInputException(e.getMessage(),e);
+            throw new PreconditionViolatedPersistenceException(e.getMessage(),e);
         } catch ( final RepositoryException re) {
             throw new PersistenceException(re.getMessage(), re);
         }
@@ -344,7 +344,7 @@ public class JCRSupportImpl {
             final Property prop = ((Node)node).getProperty(name);
             return prop.getDefinition().isMultiple();
         } catch (final PathNotFoundException e) {
-            throw new IncorrectInputException(e.getMessage(),e);
+            throw new PreconditionViolatedPersistenceException(e.getMessage(),e);
         } catch ( final RepositoryException re) {
             throw new PersistenceException(re.getMessage(), re);
         }
@@ -357,9 +357,9 @@ public class JCRSupportImpl {
                 return ((Node)node).getProperty(name).getType();
             }
         } catch (final NoSuchNodeTypeException|ConstraintViolationException|PathNotFoundException e) {
-            throw new IncorrectInputException(e.getMessage(),e);
+            throw new PreconditionViolatedPersistenceException(e.getMessage(),e);
         } catch (final VersionException|LockException e) { 
-            throw new RetryableOperationException(e.getMessage(),e);
+            throw new TemporaryPersistenceException(e.getMessage(),e);
         } catch (final RepositoryException re) {
             throw new PersistenceException(re.getMessage(), re);
         }
@@ -402,9 +402,9 @@ public class JCRSupportImpl {
             }
             return null;
         } catch (final NoSuchNodeTypeException|ConstraintViolationException e) {
-            throw new IncorrectInputException(e.getMessage(),e);
+            throw new PreconditionViolatedPersistenceException(e.getMessage(),e);
         } catch (final VersionException|LockException e) { 
-            throw new RetryableOperationException(e.getMessage(),e);
+            throw new TemporaryPersistenceException(e.getMessage(),e);
         } catch (final RepositoryException re) {
             throw new PersistenceException(re.getMessage(), re);
         }
@@ -427,9 +427,9 @@ public class JCRSupportImpl {
                 ((Node)n).setProperty(name, values[0], type);
             }
         } catch (final ValueFormatException|ConstraintViolationException e) {
-            throw new IncorrectInputException(e.getMessage(),e);
+            throw new PreconditionViolatedPersistenceException(e.getMessage(),e);
         } catch (final VersionException|LockException e) { 
-            throw new RetryableOperationException(e.getMessage(),e);
+            throw new TemporaryPersistenceException(e.getMessage(),e);
         } catch (final RepositoryException re) {
             throw new PersistenceException(re.getMessage(), re);
         }
@@ -448,9 +448,9 @@ public class JCRSupportImpl {
         try {
             ((Node)node).setPrimaryType(type);
         } catch (final NoSuchNodeTypeException|ConstraintViolationException e) {
-            throw new IncorrectInputException(e.getMessage(),e);
+            throw new PreconditionViolatedPersistenceException(e.getMessage(),e);
         } catch (final VersionException|LockException e) { 
-            throw new RetryableOperationException(e.getMessage(),e);
+            throw new TemporaryPersistenceException(e.getMessage(),e);
         } catch (final RepositoryException re) {
             throw new PersistenceException(re.getMessage(), re);
         }
@@ -465,9 +465,9 @@ public class JCRSupportImpl {
             final String targetPath = (targetParentPath.equals("/") ? "" : targetParentPath) + '/' + name;
             session.move(source.getPath(), targetPath);
         } catch (final PathNotFoundException|ConstraintViolationException|ItemExistsException e) {
-            throw new IncorrectInputException(e.getMessage(),e);
+            throw new PreconditionViolatedPersistenceException(e.getMessage(),e);
         } catch (final VersionException|LockException e) { 
-            throw new RetryableOperationException(e.getMessage(),e);
+            throw new TemporaryPersistenceException(e.getMessage(),e);
         } catch (final RepositoryException re) {
             throw new PersistenceException(re.getMessage(), re);
         }
@@ -485,8 +485,8 @@ public class JCRSupportImpl {
      *            <code>src</code> item.
      * @throws PersistenceException May be thrown in case of any problem copying
      *             the content.
-     * @throws IncorrectInputException 
-     * @throws RetryableOperationException
+     * @throws PreconditionViolatedPersistenceException 
+     * @throws TemporaryPersistenceException
      * @see #copy(Node, Node, String)
      * @see #copy(Property, Node, String)
      */
@@ -501,9 +501,9 @@ public class JCRSupportImpl {
             }
             return result.getPath();
         } catch (final NoSuchNodeTypeException|ConstraintViolationException e) {
-            throw new IncorrectInputException(e.getMessage(),e);
+            throw new PreconditionViolatedPersistenceException(e.getMessage(),e);
         } catch (final VersionException|LockException e) { 
-            throw new RetryableOperationException(e.getMessage(),e);
+            throw new TemporaryPersistenceException(e.getMessage(),e);
         } catch (final RepositoryException re) {
             throw new PersistenceException(re.getMessage(), re);
         }

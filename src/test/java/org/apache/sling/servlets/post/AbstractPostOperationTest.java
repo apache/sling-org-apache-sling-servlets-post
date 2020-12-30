@@ -18,8 +18,8 @@ package org.apache.sling.servlets.post;
 
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.commons.testing.sling.MockResourceResolver;
-import org.apache.sling.servlets.post.exceptions.IncorrectInputException;
-import org.apache.sling.servlets.post.exceptions.RetryableOperationException;
+import org.apache.sling.servlets.post.exceptions.PreconditionViolatedPersistenceException;
+import org.apache.sling.servlets.post.exceptions.TemporaryPersistenceException;
 import org.apache.sling.servlets.post.impl.helper.MockSlingHttpServlet3Request;
 import org.junit.Test;
 
@@ -40,7 +40,7 @@ public class AbstractPostOperationTest {
 
         final PostOperation operation = new AbstractPostOperation() {
             @Override
-            protected void doRun(SlingHttpServletRequest request, PostResponse response, List<Modification> changes) throws RepositoryException, IncorrectInputException, RetryableOperationException {
+            protected void doRun(SlingHttpServletRequest request, PostResponse response, List<Modification> changes) throws RepositoryException, PreconditionViolatedPersistenceException, TemporaryPersistenceException {
                 changes.add(Modification.onChange(ModificationType.CREATE, "/content/test"));
                 changes.add(Modification.onChange(ModificationType.CREATE, "/content/test@Postfix"));
             }

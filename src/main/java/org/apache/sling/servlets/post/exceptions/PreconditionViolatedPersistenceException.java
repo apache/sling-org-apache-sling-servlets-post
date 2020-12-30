@@ -22,26 +22,27 @@ import org.apache.sling.api.resource.PersistenceException;
 
 
 /**
- * This exceptions indicates errors, which might be temporary and for which a retry
- * with the same parameters could work.
+ *  Indicates that the input does not meet necessary precondition.
+ *  In that case the client should redo the request with a changed input.
  *
  */
-public class RetryableOperationException extends PersistenceException {
+
+public class PreconditionViolatedPersistenceException extends PersistenceException {
 
 
-    private static final long serialVersionUID = 8922639484264855481L;
-
-    public RetryableOperationException(String message, Exception e) {
-        super(message, e);
-    }
+  private static final long serialVersionUID = 1L;
   
-    public RetryableOperationException(final String msg,
+  public PreconditionViolatedPersistenceException(String message, Exception e) {
+    super(message, e);
+  }
+  
+  public PreconditionViolatedPersistenceException(final String msg,
           final Throwable cause,
           final String resourcePath,
           final String propertyName) {
             super(msg,cause,resourcePath,propertyName);
             
             }
-
+  
 
 }
