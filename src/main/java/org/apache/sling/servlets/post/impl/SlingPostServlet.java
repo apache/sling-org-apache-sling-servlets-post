@@ -34,6 +34,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
+import org.apache.sling.api.request.MediaRangeList;
 import org.apache.sling.api.resource.ResourceNotFoundException;
 import org.apache.sling.api.resource.ResourceUtil;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
@@ -50,7 +51,6 @@ import org.apache.sling.servlets.post.VersioningConfiguration;
 import org.apache.sling.servlets.post.impl.helper.DateParser;
 import org.apache.sling.servlets.post.impl.helper.DefaultNodeNameGenerator;
 import org.apache.sling.servlets.post.impl.helper.JCRSupport;
-import org.apache.sling.servlets.post.impl.helper.MediaRangeList;
 import org.apache.sling.servlets.post.impl.operations.CheckinOperation;
 import org.apache.sling.servlets.post.impl.operations.CheckoutOperation;
 import org.apache.sling.servlets.post.impl.operations.CopyOperation;
