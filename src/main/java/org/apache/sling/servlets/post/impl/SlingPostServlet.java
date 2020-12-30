@@ -288,13 +288,13 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
     /**
      * Creates an instance of a PostResponse.
      * @param req The request being serviced
-     * @return a {@link org.apache.sling.servlets.post.impl.helper.JSONResponse} if any of these conditions are true:
+     * @return a {@link org.apache.sling.servlets.post.JSONResponse} if any of these conditions are true:
      * <ul>
      *   <li> the request has an <code>Accept</code> header of <code>application/json</code></li>
      *   <li>the request is a JSON POST request (see SLING-1172)</li>
      *   <li>the request has a request parameter <code>:accept=application/json</code></li>
      * </ul>
-     * or a {@link org.apache.sling.api.servlets.PostResponse} otherwise
+     * or a {@link org.apache.sling.servlets.post.PostResponse} otherwise
      */
     PostResponse createPostResponse(final SlingHttpServletRequest req) {
         for (final PostResponseCreator creator : cachedPostResponseCreators) {
