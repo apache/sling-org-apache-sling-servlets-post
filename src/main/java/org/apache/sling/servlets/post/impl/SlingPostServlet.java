@@ -418,7 +418,7 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
 
         log.debug(
             "getStatusMode: Parameter {} set to unknown value {}, assuming standard status code",
-            SlingPostConstants.RP_STATUS);
+            SlingPostConstants.RP_STATUS, statusParam);
         return true;
     }
 
