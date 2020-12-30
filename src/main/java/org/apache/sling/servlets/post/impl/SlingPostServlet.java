@@ -35,6 +35,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.resource.PersistenceException;
+import org.apache.sling.api.request.MediaRangeList;
 import org.apache.sling.api.resource.ResourceNotFoundException;
 import org.apache.sling.api.resource.ResourceUtil;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
@@ -53,7 +54,6 @@ import org.apache.sling.servlets.post.exceptions.RetryableOperationException;
 import org.apache.sling.servlets.post.impl.helper.DateParser;
 import org.apache.sling.servlets.post.impl.helper.DefaultNodeNameGenerator;
 import org.apache.sling.servlets.post.impl.helper.JCRSupport;
-import org.apache.sling.servlets.post.impl.helper.MediaRangeList;
 import org.apache.sling.servlets.post.impl.operations.CheckinOperation;
 import org.apache.sling.servlets.post.impl.operations.CheckoutOperation;
 import org.apache.sling.servlets.post.impl.operations.CopyOperation;
@@ -314,13 +314,13 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
     /**
      * Creates an instance of a PostResponse.
      * @param req The request being serviced
-     * @return a {@link org.apache.sling.servlets.post.impl.helper.JSONResponse} if any of these conditions are true:
+     * @return a {@link org.apache.sling.servlets.post.JSONResponse} if any of these conditions are true:
      * <ul>
      *   <li> the request has an <code>Accept</code> header of <code>application/json</code></li>
      *   <li>the request is a JSON POST request (see SLING-1172)</li>
      *   <li>the request has a request parameter <code>:accept=application/json</code></li>
      * </ul>
-     * or a {@link org.apache.sling.api.servlets.PostResponse} otherwise
+     * or a {@link org.apache.sling.servlets.post.PostResponse} otherwise
      */
     PostResponse createPostResponse(final SlingHttpServletRequest req) {
         for (final PostResponseCreator creator : cachedPostResponseCreators) {
@@ -444,7 +444,7 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
 
         log.debug(
             "getStatusMode: Parameter {} set to unknown value {}, assuming standard status code",
-            SlingPostConstants.RP_STATUS);
+            SlingPostConstants.RP_STATUS, statusParam);
         return true;
     }
 
