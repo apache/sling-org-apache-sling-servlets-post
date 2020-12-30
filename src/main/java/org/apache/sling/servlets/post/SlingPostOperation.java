@@ -71,8 +71,13 @@ public interface SlingPostOperation {
      * @param processors The {@link SlingPostProcessor} services to be called
      *            after applying the operation. This may be <code>null</code> if
      *            there are none.
-     * @throws TemporaryPersistenceException 
-     * @throws PreconditionViolatedPersistenceException 
+     * @throws TemporaryPersistenceException May be thrown if an error occurs during
+     *             the operation, for which it makes sense to retry it with the same
+     *             parameters
+     * @throws PreconditionViolatedPersistenceException May be thrown if an error occurrs
+     *             during the operation because preconditions are not fulfilled.
+     *             If the operation should be repeated with the same parameters, it
+     *             will fail again.
      * @throws org.apache.sling.api.resource.ResourceNotFoundException May be
      *             thrown if the operation requires an existing request
      *             resource. If this exception is thrown the Sling default POST
