@@ -323,20 +323,45 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
      * or a {@link org.apache.sling.servlets.post.PostResponse} otherwise
      */
     PostResponse createPostResponse(final SlingHttpServletRequest req) {
+        PostResponse response = null;
         for (final PostResponseCreator creator : cachedPostResponseCreators) {
-            final PostResponse response = creator.createPostResponse(req);
+            response = creator.createPostResponse(req);
             if (response != null) {
-                return response;
+                break;
             }
         }
 
-        // Fall through to default behavior
-        final MediaRangeList mediaRangeList = new MediaRangeList(req);
-        if (JSONResponse.RESPONSE_CONTENT_TYPE.equals(mediaRangeList.prefer("text/html", JSONResponse.RESPONSE_CONTENT_TYPE))) {
-            return new JSONResponse();
-        } else {
-            return new HtmlResponse();
+        if (response == null) {
+            // Fall through to default behavior
+            final MediaRangeList mediaRangeList = new MediaRangeList(req);
+            if (JSONResponse.RESPONSE_CONTENT_TYPE.equals(mediaRangeList.prefer("text/html", JSONResponse.RESPONSE_CONTENT_TYPE))) {
+                response = new JSONResponse();
+            } else {
+                response = new HtmlResponse();
+            }
         }
+
+        if (isSendError(req)) {
+            // SLING-10006 wrap the PostResponse to handle the errors differently
+            response = new ErrorHandlingPostResponseWrapper(response);
+        }
+        return response;
+    }
+
+    /**
+     * Checks whether the normal error handling using Sling's error handlers will be used instead
+     * of the error response based on a template.
+     * 
+     * @param request the request to check
+     * @return true or false
+     */
+    private boolean isSendError(SlingHttpServletRequest request){
+        boolean sendError = false;
+        String sendErrorParam = request.getParameter(SlingPostConstants.RP_SEND_ERROR);
+        if (sendErrorParam != null && "true".equalsIgnoreCase(sendErrorParam)) {
+            sendError = true;
+        }
+        return sendError;
     }
 
     private PostOperation getSlingPostOperation(
