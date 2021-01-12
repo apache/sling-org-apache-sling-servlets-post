@@ -20,19 +20,29 @@ package org.apache.sling.servlets.post.impl.helper;
 
 import java.util.List;
 
+import javax.jcr.AccessDeniedException;
+import javax.jcr.InvalidItemStateException;
 import javax.jcr.Item;
+import javax.jcr.ItemExistsException;
 import javax.jcr.ItemNotFoundException;
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
+import javax.jcr.PathNotFoundException;
 import javax.jcr.Property;
 import javax.jcr.PropertyIterator;
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
+import javax.jcr.UnsupportedRepositoryOperationException;
 import javax.jcr.Value;
+import javax.jcr.ValueFormatException;
+import javax.jcr.lock.LockException;
+import javax.jcr.nodetype.ConstraintViolationException;
+import javax.jcr.nodetype.NoSuchNodeTypeException;
 import javax.jcr.nodetype.NodeType;
 import javax.jcr.nodetype.NodeTypeManager;
 import javax.jcr.nodetype.PropertyDefinition;
+import javax.jcr.version.VersionException;
 
 import org.apache.jackrabbit.JcrConstants;
 import org.apache.sling.api.SlingHttpServletRequest;
@@ -42,6 +52,8 @@ import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.servlets.post.Modification;
 import org.apache.sling.servlets.post.SlingPostConstants;
 import org.apache.sling.servlets.post.VersioningConfiguration;
+import org.apache.sling.servlets.post.exceptions.PreconditionViolatedPersistenceException;
+import org.apache.sling.servlets.post.exceptions.TemporaryPersistenceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,6 +72,8 @@ public class JCRSupportImpl {
      * @param item node to order
      * @param changes The list of modifications
      * @throws RepositoryException if an error occurs
+     * @throws PreconditionViolatedPersistenceException 
+     * @throws TemporaryPersistenceException 
      */
     public void orderNode(final SlingHttpServletRequest request,
             final Resource resource,
@@ -149,6 +163,10 @@ public class JCRSupportImpl {
                 throw new IllegalArgumentException(
                     "provided node ordering command is invalid: " + command);
             }
+        } catch (final VersionException|ConstraintViolationException|ItemNotFoundException e) {
+            throw new PreconditionViolatedPersistenceException("Unable to order resource", e, resource.getPath(), null);
+        } catch (final UnsupportedRepositoryOperationException|LockException e) { 
+            throw new TemporaryPersistenceException("Unable to order resource", e, resource.getPath(), null);
         } catch ( final RepositoryException re) {
             throw new PersistenceException("Unable to order resource", re, resource.getPath(), null);
         }
@@ -176,6 +194,10 @@ public class JCRSupportImpl {
                     node.getSession().getWorkspace().getVersionManager().checkin(node.getPath());
                     return true;
                 }
+            } catch (final AccessDeniedException e) {
+                throw new PreconditionViolatedPersistenceException(e.getMessage(), e, rsrc.getPath(), null);
+            } catch (final UnsupportedRepositoryOperationException|InvalidItemStateException|LockException e) { 
+                throw new TemporaryPersistenceException(e.getMessage(), e, rsrc.getPath(), null);
             } catch ( final RepositoryException re) {
                 throw new PersistenceException(re.getMessage(), re, rsrc.getPath(), null);
             }
@@ -211,7 +233,11 @@ public class JCRSupportImpl {
                             changes.add(Modification.onCheckout(versionableNode.getPath()));
                         }
                     }
-                } catch ( final RepositoryException re) {
+                } catch (final AccessDeniedException e) {
+                    throw new PreconditionViolatedPersistenceException(e.getMessage(),e);
+                } catch (final UnsupportedRepositoryOperationException e) { 
+                    throw new TemporaryPersistenceException(e.getMessage(),e);
+                } catch (final RepositoryException re) {
                     throw new PersistenceException(re.getMessage(), re);
                 }
             }
@@ -305,6 +331,8 @@ public class JCRSupportImpl {
         try {
             final Property prop = ((Node)node).getProperty(name);
             return prop.getDefinition().isMandatory();
+        } catch (final PathNotFoundException e) {
+            throw new PreconditionViolatedPersistenceException(e.getMessage(),e);
         } catch ( final RepositoryException re) {
             throw new PersistenceException(re.getMessage(), re);
         }
@@ -315,6 +343,8 @@ public class JCRSupportImpl {
         try {
             final Property prop = ((Node)node).getProperty(name);
             return prop.getDefinition().isMultiple();
+        } catch (final PathNotFoundException e) {
+            throw new PreconditionViolatedPersistenceException(e.getMessage(),e);
         } catch ( final RepositoryException re) {
             throw new PersistenceException(re.getMessage(), re);
         }
@@ -326,7 +356,11 @@ public class JCRSupportImpl {
             if ( ((Node)node).hasProperty(name) ) {
                 return ((Node)node).getProperty(name).getType();
             }
-        } catch ( final RepositoryException re) {
+        } catch (final NoSuchNodeTypeException|ConstraintViolationException|PathNotFoundException e) {
+            throw new PreconditionViolatedPersistenceException(e.getMessage(),e);
+        } catch (final VersionException|LockException e) { 
+            throw new TemporaryPersistenceException(e.getMessage(),e);
+        } catch (final RepositoryException re) {
             throw new PersistenceException(re.getMessage(), re);
         }
         return null;
@@ -367,7 +401,11 @@ public class JCRSupportImpl {
                 }
             }
             return null;
-        } catch ( final RepositoryException re) {
+        } catch (final NoSuchNodeTypeException|ConstraintViolationException e) {
+            throw new PreconditionViolatedPersistenceException(e.getMessage(),e);
+        } catch (final VersionException|LockException e) { 
+            throw new TemporaryPersistenceException(e.getMessage(),e);
+        } catch (final RepositoryException re) {
             throw new PersistenceException(re.getMessage(), re);
         }
     }
@@ -388,7 +426,11 @@ public class JCRSupportImpl {
             } else if (values.length >= 1) {
                 ((Node)n).setProperty(name, values[0], type);
             }
-        } catch ( final RepositoryException re) {
+        } catch (final ValueFormatException|ConstraintViolationException e) {
+            throw new PreconditionViolatedPersistenceException(e.getMessage(),e);
+        } catch (final VersionException|LockException e) { 
+            throw new TemporaryPersistenceException(e.getMessage(),e);
+        } catch (final RepositoryException re) {
             throw new PersistenceException(re.getMessage(), re);
         }
     }
@@ -405,7 +447,11 @@ public class JCRSupportImpl {
     throws PersistenceException {
         try {
             ((Node)node).setPrimaryType(type);
-        } catch ( final RepositoryException re) {
+        } catch (final NoSuchNodeTypeException|ConstraintViolationException e) {
+            throw new PreconditionViolatedPersistenceException(e.getMessage(),e);
+        } catch (final VersionException|LockException e) { 
+            throw new TemporaryPersistenceException(e.getMessage(),e);
+        } catch (final RepositoryException re) {
             throw new PersistenceException(re.getMessage(), re);
         }
     }
@@ -418,7 +464,11 @@ public class JCRSupportImpl {
             final String targetParentPath = ((Node)dstParent).getPath();
             final String targetPath = (targetParentPath.equals("/") ? "" : targetParentPath) + '/' + name;
             session.move(source.getPath(), targetPath);
-        } catch ( final RepositoryException re) {
+        } catch (final PathNotFoundException|ConstraintViolationException|ItemExistsException e) {
+            throw new PreconditionViolatedPersistenceException(e.getMessage(),e);
+        } catch (final VersionException|LockException e) { 
+            throw new TemporaryPersistenceException(e.getMessage(),e);
+        } catch (final RepositoryException re) {
             throw new PersistenceException(re.getMessage(), re);
         }
     }
@@ -435,6 +485,8 @@ public class JCRSupportImpl {
      *            <code>src</code> item.
      * @throws PersistenceException May be thrown in case of any problem copying
      *             the content.
+     * @throws PreconditionViolatedPersistenceException 
+     * @throws TemporaryPersistenceException
      * @see #copy(Node, Node, String)
      * @see #copy(Property, Node, String)
      */
@@ -448,7 +500,11 @@ public class JCRSupportImpl {
                 result = copy((Property) src, (Node)dstParent, name);
             }
             return result.getPath();
-        } catch ( final RepositoryException re) {
+        } catch (final NoSuchNodeTypeException|ConstraintViolationException e) {
+            throw new PreconditionViolatedPersistenceException(e.getMessage(),e);
+        } catch (final VersionException|LockException e) { 
+            throw new TemporaryPersistenceException(e.getMessage(),e);
+        } catch (final RepositoryException re) {
             throw new PersistenceException(re.getMessage(), re);
         }
     }

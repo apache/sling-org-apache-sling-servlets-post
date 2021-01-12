@@ -40,6 +40,8 @@ import org.apache.sling.servlets.post.PostResponse;
 import org.apache.sling.servlets.post.SlingPostConstants;
 import org.apache.sling.servlets.post.SlingPostProcessor;
 import org.apache.sling.servlets.post.VersioningConfiguration;
+import org.apache.sling.servlets.post.exceptions.PreconditionViolatedPersistenceException;
+import org.apache.sling.servlets.post.exceptions.TemporaryPersistenceException;
 import org.apache.sling.servlets.post.impl.helper.JCRSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,7 +83,7 @@ public abstract class AbstractPostOperation implements PostOperation {
     @Override
     public void run(final SlingHttpServletRequest request,
                     final PostResponse response,
-                    final SlingPostProcessor[] processors) {
+                    final SlingPostProcessor[] processors) throws PreconditionViolatedPersistenceException, TemporaryPersistenceException {
         final VersioningConfiguration versionableConfiguration = getVersioningConfiguration(request);
 
         try {

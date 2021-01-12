@@ -34,6 +34,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
+import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.request.header.MediaRangeList;
 import org.apache.sling.api.resource.ResourceNotFoundException;
 import org.apache.sling.api.resource.ResourceUtil;
@@ -48,6 +49,8 @@ import org.apache.sling.servlets.post.PostResponseCreator;
 import org.apache.sling.servlets.post.SlingPostConstants;
 import org.apache.sling.servlets.post.SlingPostProcessor;
 import org.apache.sling.servlets.post.VersioningConfiguration;
+import org.apache.sling.servlets.post.exceptions.PreconditionViolatedPersistenceException;
+import org.apache.sling.servlets.post.exceptions.TemporaryPersistenceException;
 import org.apache.sling.servlets.post.impl.helper.DateParser;
 import org.apache.sling.servlets.post.impl.helper.DefaultNodeNameGenerator;
 import org.apache.sling.servlets.post.impl.helper.JCRSupport;
@@ -151,6 +154,11 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
                             "content to the repository. By default this is \"j_.*\" thus ignoring all "+
                             "request parameters starting with j_ such as j_username.")
         String servlet_post_ignorePattern() default "j_.*";
+        
+        @AttributeDefinition(name="Backwards compatible statuscode",
+                description="In backwards compatibility mode exceptions will always create a statuscode "
+                    + "500 (see SLING-9896)")
+        boolean legacy_statuscode_on_persistence_exception() default false;
     }
 
     /**
@@ -194,6 +202,8 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
     private VersioningConfiguration baseVersioningConfiguration;
 
     private ImportOperation importOperation;
+    
+    private boolean backwardsCompatibleStatuscode;
 
     public SlingPostServlet() {
         // the following operations require JCR:
@@ -234,10 +244,26 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
             } catch (ResourceNotFoundException rnfe) {
                 htmlResponse.setStatus(HttpServletResponse.SC_NOT_FOUND,
                     rnfe.getMessage());
+            } catch (final PreconditionViolatedPersistenceException e) {
+                log.warn("Exception while handling POST {} with {}",
+                        new Object[] {request.getResource().getPath(),operation.getClass().getName()},e);
+                if (backwardsCompatibleStatuscode) {
+                    htmlResponse.setError(e);
+                } else {
+                    htmlResponse.setStatus(422, "invalid payload");
+                }
+            } catch (final PersistenceException e) {
+                // also catches the  RetryableOperationException, as the handling is the same
+                log.warn("Exception while handling POST {} with {}",
+                        new Object[] {request.getResource().getPath(),operation.getClass().getName()},e);
+                if (backwardsCompatibleStatuscode) {
+                    htmlResponse.setError(e);
+                } else {
+                    htmlResponse.setStatus(HttpServletResponse.SC_CONFLICT, "repository state conflicting with request");
+                }
             } catch (final Exception exception) {
-                log.warn("Exception while handling POST "
-                    + request.getResource().getPath() + " with "
-                    + operation.getClass().getName(), exception);
+                log.warn("Exception while handling POST {} with {}",
+                        new Object[] {request.getResource().getPath(),operation.getClass().getName()},exception);
                 htmlResponse.setError(exception);
             }
 
@@ -507,6 +533,7 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
             this.importOperation.setDefaultNodeNameGenerator(nodeNameGenerator);
             this.importOperation.setIgnoredParameterNamePattern(paramMatchPattern);
         }
+        this.backwardsCompatibleStatuscode = configuration.legacy_statuscode_on_persistence_exception();
     }
 
     @Override
