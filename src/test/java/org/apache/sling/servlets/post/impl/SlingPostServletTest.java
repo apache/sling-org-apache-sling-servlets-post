@@ -24,12 +24,12 @@ import java.net.URLEncoder;
 import java.util.StringTokenizer;
 
 import org.apache.sling.api.SlingHttpServletRequest;
-import org.apache.sling.api.request.header.MediaRangeList;
 import org.apache.sling.commons.testing.sling.MockSlingHttpServletRequest;
 import org.apache.sling.servlets.post.HtmlResponse;
 import org.apache.sling.servlets.post.JSONResponse;
 import org.apache.sling.servlets.post.PostResponse;
 import org.apache.sling.servlets.post.SlingPostConstants;
+import org.apache.sling.servlets.post.impl.helper.MediaRangeList;
 import org.apache.sling.servlets.post.impl.helper.MockSlingHttpServlet3Request;
 import org.apache.sling.servlets.post.impl.helper.MockSlingHttpServlet3Response;
 
