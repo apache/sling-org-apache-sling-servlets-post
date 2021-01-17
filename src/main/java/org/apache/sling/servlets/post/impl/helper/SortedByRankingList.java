@@ -16,6 +16,7 @@
  */
 package org.apache.sling.servlets.post.impl.helper;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -24,7 +25,9 @@ import java.util.List;
  * Auxiliary generic class with stores a list of T objects.
  * The objects are stored in the descending order of their ranking
  */
-public class SortedByRankingList<T> {
+public class SortedByRankingList<T> implements Serializable {
+
+    private static final long serialVersionUID = 2373151118637943986L;
 
     private final List<ElementHolder<T>> sortedList = new ArrayList<>();
 
@@ -91,7 +94,7 @@ public class SortedByRankingList<T> {
      * Element holder which stores a given element T and its ranking <code>ranking</code>
      * @param <T> element to be held
      */
-    private static class ElementHolder<T> {
+    private static class ElementHolder<T> implements Serializable {
         T elementHeld;
         int ranking;
 
