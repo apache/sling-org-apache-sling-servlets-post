@@ -22,8 +22,6 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -50,10 +48,10 @@ import org.apache.sling.servlets.post.SlingPostConstants;
 import org.apache.sling.servlets.post.SlingPostProcessor;
 import org.apache.sling.servlets.post.VersioningConfiguration;
 import org.apache.sling.servlets.post.exceptions.PreconditionViolatedPersistenceException;
-import org.apache.sling.servlets.post.exceptions.TemporaryPersistenceException;
 import org.apache.sling.servlets.post.impl.helper.DateParser;
 import org.apache.sling.servlets.post.impl.helper.DefaultNodeNameGenerator;
 import org.apache.sling.servlets.post.impl.helper.JCRSupport;
+import org.apache.sling.servlets.post.impl.helper.SortedByRankingList;
 import org.apache.sling.servlets.post.impl.operations.CheckinOperation;
 import org.apache.sling.servlets.post.impl.operations.CheckoutOperation;
 import org.apache.sling.servlets.post.impl.operations.CopyOperation;
@@ -154,7 +152,7 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
                             "content to the repository. By default this is \"j_.*\" thus ignoring all "+
                             "request parameters starting with j_ such as j_username.")
         String servlet_post_ignorePattern() default "j_.*";
-        
+
         @AttributeDefinition(name="Backwards compatible statuscode",
                 description="In backwards compatibility mode exceptions will always create a statuscode "
                     + "500 (see SLING-9896)")
@@ -179,22 +177,22 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
     private ServiceRegistration<PostOperation>[] internalOperations;
 
     /** Map of post operations. */
-    private final Map<String, PostOperation> postOperations = new HashMap<>();
+    private final Map<String, SortedByRankingList<PostOperation>> postOperations = new HashMap<>();
 
     /** Sorted list of post processor holders. */
-    private final List<PostProcessorHolder> postProcessors = new ArrayList<>();
+    private final SortedByRankingList<SlingPostProcessor> postProcessors = new SortedByRankingList<>();
 
     /** Cached list of post processors, used during request processing. */
     private SlingPostProcessor[] cachedPostProcessors = new SlingPostProcessor[0];
 
     /** Sorted list of node name generator holders. */
-    private final List<NodeNameGeneratorHolder> nodeNameGenerators = new ArrayList<>();
+    private final SortedByRankingList<NodeNameGenerator> nodeNameGenerators = new SortedByRankingList<>();
 
     /** Cached list of node name generators used during request processing. */
     private NodeNameGenerator[] cachedNodeNameGenerators = new NodeNameGenerator[0];
 
     /** Sorted list of post response creator holders. */
-    private final List<PostResponseCreatorHolder> postResponseCreators = new ArrayList<>();
+    private final SortedByRankingList<PostResponseCreator> postResponseCreators = new SortedByRankingList<>();
 
     /** Cached array of post response creators used during request processing. */
     private PostResponseCreator[] cachedPostResponseCreators = new PostResponseCreator[0];
@@ -202,7 +200,7 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
     private VersioningConfiguration baseVersioningConfiguration;
 
     private ImportOperation importOperation;
-    
+
     private boolean backwardsCompatibleStatuscode;
 
     public SlingPostServlet() {
@@ -351,7 +349,7 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
     /**
      * Checks whether the normal error handling using Sling's error handlers will be used instead
      * of the error response based on a template.
-     * 
+     *
      * @param request the request to check
      * @return true or false
      */
@@ -364,7 +362,8 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
         return sendError;
     }
 
-    private PostOperation getSlingPostOperation(
+    // visible for testing
+    PostOperation getSlingPostOperation(
             final SlingHttpServletRequest request) {
         if (streamedUploadOperation.isRequestStreamed(request)) {
             return streamedUploadOperation;
@@ -377,7 +376,8 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
 
         // named operation, retrieve from map
         synchronized ( this.postOperations ) {
-            return postOperations.get(operation);
+            final SortedByRankingList<PostOperation> list = postOperations.get(operation);
+            return list != null && list.size() > 0 ? list.get(0) : null;
         }
     }
 
@@ -591,7 +591,12 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
         final String operationName = (String) properties.get(PostOperation.PROP_OPERATION_NAME);
         if ( operationName != null && operation != null ) {
             synchronized (this.postOperations) {
-                this.postOperations.put(operationName, operation);
+                SortedByRankingList<PostOperation> postOperationsList = this.postOperations.get(operationName);
+                if (postOperationsList == null) {
+                    postOperationsList = new SortedByRankingList<>();
+                    this.postOperations.put(operationName, postOperationsList);
+                }
+                postOperationsList.add(operation, getRanking(properties));
             }
         }
     }
@@ -603,7 +608,10 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
         final String operationName = (String) properties.get(PostOperation.PROP_OPERATION_NAME);
         if ( operationName != null ) {
             synchronized (this.postOperations) {
-                this.postOperations.remove(operationName);
+                SortedByRankingList<PostOperation> postOperationsList = this.postOperations.get(operationName);
+                if (postOperationsList != null) {
+                    postOperationsList.remove(operation);
+                }
             }
         }
     }
@@ -620,21 +628,8 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
             cardinality = ReferenceCardinality.MULTIPLE,
             policy = ReferencePolicy.DYNAMIC)
     protected void bindPostProcessor(final SlingPostProcessor processor, final Map<String, Object> properties) {
-        final PostProcessorHolder pph = new PostProcessorHolder();
-        pph.processor = processor;
-        pph.ranking = getRanking(properties);
-
         synchronized ( this.postProcessors ) {
-            int index = 0;
-            while ( index < this.postProcessors.size() &&
-                    pph.ranking < this.postProcessors.get(index).ranking ) {
-                index++;
-            }
-            if ( index == this.postProcessors.size() ) {
-                this.postProcessors.add(pph);
-            } else {
-                this.postProcessors.add(index, pph);
-            }
+            this.postProcessors.add(processor, getRanking(properties));
             this.updatePostProcessorCache();
         }
     }
@@ -644,13 +639,7 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
      */
     protected void unbindPostProcessor(final SlingPostProcessor processor, final Map<String, Object> properties) {
         synchronized ( this.postProcessors ) {
-            final Iterator<PostProcessorHolder> i = this.postProcessors.iterator();
-            while ( i.hasNext() ) {
-                final PostProcessorHolder current = i.next();
-                if ( current.processor == processor ) {
-                    i.remove();
-                }
-            }
+            this.postProcessors.remove(processor);
             this.updatePostProcessorCache();
         }
     }
@@ -661,10 +650,9 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
      */
     private void updatePostProcessorCache() {
         final SlingPostProcessor[] localCache = new SlingPostProcessor[this.postProcessors.size()];
-        int index = 0;
-        for(final PostProcessorHolder current : this.postProcessors) {
-            localCache[index] = current.processor;
-            index++;
+
+        for(int index = 0; index < this.postProcessors.size(); index++) {
+            localCache[index] = this.postProcessors.get(index);
         }
         this.cachedPostProcessors = localCache;
     }
@@ -676,21 +664,8 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
             cardinality = ReferenceCardinality.MULTIPLE,
             policy = ReferencePolicy.DYNAMIC)
     protected void bindNodeNameGenerator(final NodeNameGenerator generator, final Map<String, Object> properties) {
-        final NodeNameGeneratorHolder nngh = new NodeNameGeneratorHolder();
-        nngh.generator = generator;
-        nngh.ranking = getRanking(properties);
-
         synchronized ( this.nodeNameGenerators ) {
-            int index = 0;
-            while ( index < this.nodeNameGenerators.size() &&
-                    nngh.ranking < this.nodeNameGenerators.get(index).ranking ) {
-                index++;
-            }
-            if ( index == this.nodeNameGenerators.size() ) {
-                this.nodeNameGenerators.add(nngh);
-            } else {
-                this.nodeNameGenerators.add(index, nngh);
-            }
+            this.nodeNameGenerators.add(generator, getRanking(properties));
             this.updateNodeNameGeneratorCache();
         }
     }
@@ -700,13 +675,7 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
      */
     protected void unbindNodeNameGenerator(final NodeNameGenerator generator, final Map<String, Object> properties) {
         synchronized ( this.nodeNameGenerators ) {
-            final Iterator<NodeNameGeneratorHolder> i = this.nodeNameGenerators.iterator();
-            while ( i.hasNext() ) {
-                final NodeNameGeneratorHolder current = i.next();
-                if ( current.generator == generator ) {
-                    i.remove();
-                }
-            }
+            this.nodeNameGenerators.remove(generator);
             this.updateNodeNameGeneratorCache();
         }
     }
@@ -717,10 +686,9 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
      */
     private void updateNodeNameGeneratorCache() {
         final NodeNameGenerator[] localCache = new NodeNameGenerator[this.nodeNameGenerators.size()];
-        int index = 0;
-        for(final NodeNameGeneratorHolder current : this.nodeNameGenerators) {
-            localCache[index] = current.generator;
-            index++;
+
+        for(int index = 0; index < this.nodeNameGenerators.size(); index++) {
+            localCache[index] = this.nodeNameGenerators.get(index);
         }
         this.cachedNodeNameGenerators = localCache;
         this.modifyOperation.setExtraNodeNameGenerators(this.cachedNodeNameGenerators);
@@ -736,21 +704,8 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
             cardinality = ReferenceCardinality.MULTIPLE,
             policy = ReferencePolicy.DYNAMIC)
     protected void bindPostResponseCreator(final PostResponseCreator creator, final Map<String, Object> properties) {
-        final PostResponseCreatorHolder nngh = new PostResponseCreatorHolder();
-        nngh.creator = creator;
-        nngh.ranking = getRanking(properties);
-
         synchronized ( this.postResponseCreators ) {
-            int index = 0;
-            while ( index < this.postResponseCreators.size() &&
-                    nngh.ranking < this.postResponseCreators.get(index).ranking ) {
-                index++;
-            }
-            if ( index == this.postResponseCreators.size() ) {
-                this.postResponseCreators.add(nngh);
-            } else {
-                this.postResponseCreators.add(index, nngh);
-            }
+            this.postResponseCreators.add(creator, getRanking(properties));
             this.updatePostResponseCreatorCache();
         }
     }
@@ -760,13 +715,7 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
      */
     protected void unbindPostResponseCreator(final PostResponseCreator creator, final Map<String, Object> properties) {
         synchronized ( this.postResponseCreators ) {
-            final Iterator<PostResponseCreatorHolder> i = this.postResponseCreators.iterator();
-            while ( i.hasNext() ) {
-                final PostResponseCreatorHolder current = i.next();
-                if ( current.creator == creator ) {
-                    i.remove();
-                }
-            }
+            this.postResponseCreators.remove(creator);
             this.updatePostResponseCreatorCache();
         }
     }
@@ -777,10 +726,9 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
      */
     private void updatePostResponseCreatorCache() {
         final PostResponseCreator[] localCache = new PostResponseCreator[this.postResponseCreators.size()];
-        int index = 0;
-        for(final PostResponseCreatorHolder current : this.postResponseCreators) {
-            localCache[index] = current.creator;
-            index++;
+
+        for(int index = 0; index < this.postResponseCreators.size(); index++) {
+            localCache[index] = this.postResponseCreators.get(index);
         }
         this.cachedPostResponseCreators = localCache;
     }
@@ -825,20 +773,5 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
             cfg.setAutoCheckin(Boolean.parseBoolean(paramValue));
         }
         return cfg;
-    }
-
-    private static final class PostProcessorHolder {
-        public SlingPostProcessor processor;
-        public int ranking;
-    }
-
-    private static final class NodeNameGeneratorHolder {
-        public NodeNameGenerator generator;
-        public int ranking;
-    }
-
-    private static final class PostResponseCreatorHolder {
-        public PostResponseCreator creator;
-        public int ranking;
     }
 }
