@@ -16,9 +16,33 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.sling.servlets.post.exceptions;
 
-@Version("2.4.0")
-package org.apache.sling.servlets.post;
+import org.apache.sling.api.resource.PersistenceException;
 
-import org.osgi.annotation.versioning.Version;
 
+/**
+ *  Indicates that the input does not meet necessary precondition.
+ *  In that case the client should redo the request with a changed input.
+ *
+ */
+
+public class PreconditionViolatedPersistenceException extends PersistenceException {
+
+
+  private static final long serialVersionUID = 1L;
+  
+  public PreconditionViolatedPersistenceException(String message, Exception e) {
+    super(message, e);
+  }
+  
+  public PreconditionViolatedPersistenceException(final String msg,
+          final Throwable cause,
+          final String resourcePath,
+          final String propertyName) {
+            super(msg,cause,resourcePath,propertyName);
+            
+            }
+  
+
+}

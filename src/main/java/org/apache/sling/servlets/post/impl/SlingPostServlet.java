@@ -34,6 +34,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
+import org.apache.sling.api.resource.PersistenceException;
+import org.apache.sling.api.request.header.MediaRangeList;
 import org.apache.sling.api.resource.ResourceNotFoundException;
 import org.apache.sling.api.resource.ResourceUtil;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
@@ -47,10 +49,11 @@ import org.apache.sling.servlets.post.PostResponseCreator;
 import org.apache.sling.servlets.post.SlingPostConstants;
 import org.apache.sling.servlets.post.SlingPostProcessor;
 import org.apache.sling.servlets.post.VersioningConfiguration;
+import org.apache.sling.servlets.post.exceptions.PreconditionViolatedPersistenceException;
+import org.apache.sling.servlets.post.exceptions.TemporaryPersistenceException;
 import org.apache.sling.servlets.post.impl.helper.DateParser;
 import org.apache.sling.servlets.post.impl.helper.DefaultNodeNameGenerator;
 import org.apache.sling.servlets.post.impl.helper.JCRSupport;
-import org.apache.sling.servlets.post.impl.helper.MediaRangeList;
 import org.apache.sling.servlets.post.impl.operations.CheckinOperation;
 import org.apache.sling.servlets.post.impl.operations.CheckoutOperation;
 import org.apache.sling.servlets.post.impl.operations.CopyOperation;
@@ -151,6 +154,11 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
                             "content to the repository. By default this is \"j_.*\" thus ignoring all "+
                             "request parameters starting with j_ such as j_username.")
         String servlet_post_ignorePattern() default "j_.*";
+        
+        @AttributeDefinition(name="Backwards compatible statuscode",
+                description="In backwards compatibility mode exceptions will always create a statuscode "
+                    + "500 (see SLING-9896)")
+        boolean legacy_statuscode_on_persistence_exception() default false;
     }
 
     /**
@@ -194,6 +202,8 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
     private VersioningConfiguration baseVersioningConfiguration;
 
     private ImportOperation importOperation;
+    
+    private boolean backwardsCompatibleStatuscode;
 
     public SlingPostServlet() {
         // the following operations require JCR:
@@ -234,10 +244,26 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
             } catch (ResourceNotFoundException rnfe) {
                 htmlResponse.setStatus(HttpServletResponse.SC_NOT_FOUND,
                     rnfe.getMessage());
+            } catch (final PreconditionViolatedPersistenceException e) {
+                log.warn("Exception while handling POST {} with {}",
+                        new Object[] {request.getResource().getPath(),operation.getClass().getName()},e);
+                if (backwardsCompatibleStatuscode) {
+                    htmlResponse.setError(e);
+                } else {
+                    htmlResponse.setStatus(422, "invalid payload");
+                }
+            } catch (final PersistenceException e) {
+                // also catches the  RetryableOperationException, as the handling is the same
+                log.warn("Exception while handling POST {} with {}",
+                        new Object[] {request.getResource().getPath(),operation.getClass().getName()},e);
+                if (backwardsCompatibleStatuscode) {
+                    htmlResponse.setError(e);
+                } else {
+                    htmlResponse.setStatus(HttpServletResponse.SC_CONFLICT, "repository state conflicting with request");
+                }
             } catch (final Exception exception) {
-                log.warn("Exception while handling POST "
-                    + request.getResource().getPath() + " with "
-                    + operation.getClass().getName(), exception);
+                log.warn("Exception while handling POST {} with {}",
+                        new Object[] {request.getResource().getPath(),operation.getClass().getName()},exception);
                 htmlResponse.setError(exception);
             }
 
@@ -288,29 +314,54 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
     /**
      * Creates an instance of a PostResponse.
      * @param req The request being serviced
-     * @return a {@link org.apache.sling.servlets.post.impl.helper.JSONResponse} if any of these conditions are true:
+     * @return a {@link org.apache.sling.servlets.post.JSONResponse} if any of these conditions are true:
      * <ul>
      *   <li> the request has an <code>Accept</code> header of <code>application/json</code></li>
      *   <li>the request is a JSON POST request (see SLING-1172)</li>
      *   <li>the request has a request parameter <code>:accept=application/json</code></li>
      * </ul>
-     * or a {@link org.apache.sling.api.servlets.PostResponse} otherwise
+     * or a {@link org.apache.sling.servlets.post.PostResponse} otherwise
      */
     PostResponse createPostResponse(final SlingHttpServletRequest req) {
+        PostResponse response = null;
         for (final PostResponseCreator creator : cachedPostResponseCreators) {
-            final PostResponse response = creator.createPostResponse(req);
+            response = creator.createPostResponse(req);
             if (response != null) {
-                return response;
+                break;
             }
         }
 
-        // Fall through to default behavior
-        final MediaRangeList mediaRangeList = new MediaRangeList(req);
-        if (JSONResponse.RESPONSE_CONTENT_TYPE.equals(mediaRangeList.prefer("text/html", JSONResponse.RESPONSE_CONTENT_TYPE))) {
-            return new JSONResponse();
-        } else {
-            return new HtmlResponse();
+        if (response == null) {
+            // Fall through to default behavior
+            final MediaRangeList mediaRangeList = new MediaRangeList(req);
+            if (JSONResponse.RESPONSE_CONTENT_TYPE.equals(mediaRangeList.prefer("text/html", JSONResponse.RESPONSE_CONTENT_TYPE))) {
+                response = new JSONResponse();
+            } else {
+                response = new HtmlResponse();
+            }
         }
+
+        if (isSendError(req)) {
+            // SLING-10006 wrap the PostResponse to handle the errors differently
+            response = new ErrorHandlingPostResponseWrapper(response);
+        }
+        return response;
+    }
+
+    /**
+     * Checks whether the normal error handling using Sling's error handlers will be used instead
+     * of the error response based on a template.
+     * 
+     * @param request the request to check
+     * @return true or false
+     */
+    private boolean isSendError(SlingHttpServletRequest request){
+        boolean sendError = false;
+        String sendErrorParam = request.getParameter(SlingPostConstants.RP_SEND_ERROR);
+        if (sendErrorParam != null && "true".equalsIgnoreCase(sendErrorParam)) {
+            sendError = true;
+        }
+        return sendError;
     }
 
     private PostOperation getSlingPostOperation(
@@ -418,7 +469,7 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
 
         log.debug(
             "getStatusMode: Parameter {} set to unknown value {}, assuming standard status code",
-            SlingPostConstants.RP_STATUS);
+            SlingPostConstants.RP_STATUS, statusParam);
         return true;
     }
 
@@ -507,6 +558,7 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
             this.importOperation.setDefaultNodeNameGenerator(nodeNameGenerator);
             this.importOperation.setIgnoredParameterNamePattern(paramMatchPattern);
         }
+        this.backwardsCompatibleStatuscode = configuration.legacy_statuscode_on_persistence_exception();
     }
 
     @Override
