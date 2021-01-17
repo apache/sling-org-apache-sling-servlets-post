@@ -95,7 +95,8 @@ public class SortedByRankingList<T> implements Serializable {
      * @param <T> element to be held
      */
     private static class ElementHolder<T> implements Serializable {
-        T elementHeld;
+        // one of the used T is PostOperation which are not marked as serializable
+        transient T elementHeld;
         int ranking;
 
         public ElementHolder(final T elementHeld, final int ranking) {

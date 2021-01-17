@@ -18,11 +18,14 @@
  */
 package org.apache.sling.servlets.post.impl;
 
-import static junit.framework.TestCase.assertNull;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertFalse;
+import static junit.framework.TestCase.assertNull;
 import static junit.framework.TestCase.assertTrue;
 import static junit.framework.TestCase.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -37,6 +40,7 @@ import org.apache.sling.servlets.post.HtmlResponse;
 import org.apache.sling.servlets.post.JSONResponse;
 import org.apache.sling.servlets.post.PostOperation;
 import org.apache.sling.servlets.post.PostResponse;
+import org.apache.sling.servlets.post.PostResponseCreator;
 import org.apache.sling.servlets.post.SlingPostConstants;
 import org.apache.sling.servlets.post.impl.helper.MockSlingHttpServlet3Request;
 import org.apache.sling.servlets.post.impl.helper.MockSlingHttpServlet3Response;
@@ -211,6 +215,33 @@ public class SlingPostServletTest {
         properties.put(PostOperation.PROP_OPERATION_NAME, operationName);
 
         servlet.unbindPostOperation(operation, properties);
+    }
+
+    @Test
+    public void testPostResponseCreatorBinding() {
+        PostResponseCreator postResponseCreator = mock(PostResponseCreator.class);
+
+        Map<String, Object> properties = new HashMap<>();
+        properties.put(Constants.SERVICE_RANKING, 10);
+        servlet.bindPostResponseCreator(postResponseCreator, properties);
+
+        SlingHttpServletRequest request = mock(SlingHttpServletRequest.class);
+        servlet.createPostResponse(request);
+        verify(postResponseCreator, times(1)).createPostResponse(request);
+    }
+
+    @Test
+    public void testPostResponseCreatorBindingAndUnbinding() {
+        PostResponseCreator postResponseCreator = mock(PostResponseCreator.class);
+
+        Map<String, Object> properties = new HashMap<>();
+        properties.put(Constants.SERVICE_RANKING, 10);
+        servlet.bindPostResponseCreator(postResponseCreator, properties);
+        servlet.unbindPostResponseCreator(postResponseCreator, properties);
+
+        SlingHttpServletRequest request = mock(SlingHttpServletRequest.class);
+        servlet.createPostResponse(request);
+        verify(postResponseCreator, times(0)).createPostResponse(request);
     }
 
     @Test
