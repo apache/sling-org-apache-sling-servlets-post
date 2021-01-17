@@ -16,6 +16,7 @@
  */
 package org.apache.sling.servlets.post.impl.helper;
 
+import static junit.framework.TestCase.fail;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
@@ -49,6 +50,20 @@ public class SortedByRankingListTest {
         assertEquals(ELEMENT_RANKING3, handler.get(0));
         assertEquals(ELEMENT_RANKING2, handler.get(1));
         assertEquals(ELEMENT_RANKING1, handler.get(2));
+    }
+
+    @Test
+    public void testListWithElementsAreCorrectlySortedAddInOrder() {
+        SortedByRankingList<String> handler = new SortedByRankingList<>();
+
+        handler.add(ELEMENT_RANKING1, 3);
+        handler.add(ELEMENT_RANKING2, 2);
+        handler.add(ELEMENT_RANKING3, 1);
+
+        assertEquals(3, handler.size());
+        assertEquals(ELEMENT_RANKING1, handler.get(0));
+        assertEquals(ELEMENT_RANKING2, handler.get(1));
+        assertEquals(ELEMENT_RANKING3, handler.get(2));
     }
 
     @Test
@@ -105,5 +120,18 @@ public class SortedByRankingListTest {
         handler.remove(ELEMENT_RANKING3);
 
         assertEquals(0, handler.size());
+    }
+
+    @Test
+    public void testExceptionIsThrownIfGetIsOutOfBounds() {
+        SortedByRankingList<String> handler = new SortedByRankingList<>();
+        handler.add(ELEMENT_RANKING1, 1);
+
+        try {
+            handler.get(1);
+            fail();
+        } catch (IndexOutOfBoundsException e) {
+            //ok
+        }
     }
 }
