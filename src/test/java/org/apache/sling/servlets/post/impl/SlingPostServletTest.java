@@ -62,25 +62,25 @@ public class SlingPostServletTest {
         // 1. null parameter, expect true
         req.addParameter(SlingPostConstants.RP_STATUS, null);
         assertTrue("Standard status expected for null param",
-                servlet.isSetStatus(req));
+            servlet.isSetStatus(req));
 
         // 2. "standard" parameter, expect true
         req.addParameter(SlingPostConstants.RP_STATUS, SlingPostConstants.STATUS_VALUE_STANDARD);
         assertTrue("Standard status expected for '"
-                        + SlingPostConstants.STATUS_VALUE_STANDARD + "' param",
-                servlet.isSetStatus(req));
+            + SlingPostConstants.STATUS_VALUE_STANDARD + "' param",
+            servlet.isSetStatus(req));
 
         // 3. "browser" parameter, expect false
         req.addParameter(SlingPostConstants.RP_STATUS, SlingPostConstants.STATUS_VALUE_BROWSER);
         assertFalse("Browser status expected for '"
-                        + SlingPostConstants.STATUS_VALUE_BROWSER + "' param",
-                servlet.isSetStatus(req));
+            + SlingPostConstants.STATUS_VALUE_BROWSER + "' param",
+            servlet.isSetStatus(req));
 
         // 4. any parameter, expect true
         String param = "knocking on heaven's door";
         req.addParameter(SlingPostConstants.RP_STATUS, param);
         assertTrue("Standard status expected for '" + param + "' param",
-                servlet.isSetStatus(req));
+            servlet.isSetStatus(req));
     }
 
     @Test
