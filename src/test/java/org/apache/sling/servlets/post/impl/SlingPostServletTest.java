@@ -18,9 +18,15 @@
  */
 package org.apache.sling.servlets.post.impl;
 
-import java.io.IOException;
+import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertFalse;
+import static junit.framework.TestCase.assertTrue;
+import static junit.framework.TestCase.fail;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 import org.apache.sling.api.SlingHttpServletRequest;
@@ -32,46 +38,47 @@ import org.apache.sling.servlets.post.PostResponse;
 import org.apache.sling.servlets.post.SlingPostConstants;
 import org.apache.sling.servlets.post.impl.helper.MockSlingHttpServlet3Request;
 import org.apache.sling.servlets.post.impl.helper.MockSlingHttpServlet3Response;
+import org.junit.Before;
+import org.junit.Test;
 
-import junit.framework.TestCase;
-
-public class SlingPostServletTest extends TestCase {
+public class SlingPostServletTest{
     
     private SlingPostServlet servlet;
     
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+    public void setUp() {
         servlet = new SlingPostServlet();
     }
 
+    @Test
     public void testIsSetStatus() {
-        StatusParamSlingHttpServletRequest req = new StatusParamSlingHttpServletRequest();
+        ParametrisedSlingHttpServletRequest req = new ParametrisedSlingHttpServletRequest();
 
         // 1. null parameter, expect true
-        req.setStatusParam(null);
+        req.addParameter(SlingPostConstants.RP_STATUS, null);
         assertTrue("Standard status expected for null param",
             servlet.isSetStatus(req));
 
         // 2. "standard" parameter, expect true
-        req.setStatusParam(SlingPostConstants.STATUS_VALUE_STANDARD);
+        req.addParameter(SlingPostConstants.RP_STATUS, SlingPostConstants.STATUS_VALUE_STANDARD);
         assertTrue("Standard status expected for '"
             + SlingPostConstants.STATUS_VALUE_STANDARD + "' param",
             servlet.isSetStatus(req));
 
         // 3. "browser" parameter, expect false
-        req.setStatusParam(SlingPostConstants.STATUS_VALUE_BROWSER);
+        req.addParameter(SlingPostConstants.RP_STATUS, SlingPostConstants.STATUS_VALUE_BROWSER);
         assertFalse("Browser status expected for '"
             + SlingPostConstants.STATUS_VALUE_BROWSER + "' param",
             servlet.isSetStatus(req));
 
         // 4. any parameter, expect true
         String param = "knocking on heaven's door";
-        req.setStatusParam(param);
+        req.addParameter(SlingPostConstants.RP_STATUS, param);
         assertTrue("Standard status expected for '" + param + "' param",
             servlet.isSetStatus(req));
     }
 
+    @Test
     public void testGetJsonResponse() {
         MockSlingHttpServletRequest req = new MockSlingHttpServlet3Request(null, null, null, null, null) {
             @Override
@@ -88,6 +95,7 @@ public class SlingPostServletTest extends TestCase {
         assertTrue(result instanceof JSONResponse);
     }
 
+    @Test
     public void testGetHtmlResponse() {
         MockSlingHttpServletRequest req = new MockSlingHttpServlet3Request(null, null, null, null, null);
         PostResponse result = servlet.createPostResponse(req);
@@ -98,6 +106,7 @@ public class SlingPostServletTest extends TestCase {
     /**
      * SLING-10006 - verify we get the error handling wrapped PostResponse
      */
+    @Test
     public void testGetJsonResponseWithSendError() {
     	SendErrorParamSlingHttpServletRequest req = new SendErrorParamSlingHttpServletRequest() {
             @Override
@@ -120,6 +129,7 @@ public class SlingPostServletTest extends TestCase {
     /**
      * SLING-10006 - verify we get the error handling wrapped PostResponse
      */
+    @Test
     public void testGetHtmlResponseWithSendError() {
     	SendErrorParamSlingHttpServletRequest req = new SendErrorParamSlingHttpServletRequest();
         req.setSendError("true");
@@ -130,6 +140,7 @@ public class SlingPostServletTest extends TestCase {
         assertTrue(result instanceof HtmlResponse);
     }
 
+    @Test
     public void testRedirection() throws Exception {
         String utf8Path = "\u0414\u0440\u0443\u0433\u0430";
         String encodedUtf8 = "%D0%94%D1%80%D1%83%D0%B3%D0%B0";
@@ -145,7 +156,7 @@ public class SlingPostServletTest extends TestCase {
         testRedirection("/", "/fred/abc", "file://c:\\Users\\workspace\\test.java", null);
     }
 
-    private void testRedirection(String requestPath, String resourcePath, String redirect, String expected) 
+    private void testRedirection(String requestPath, String resourcePath, String redirect, String expected)
             throws Exception {
         RedirectServletResponse resp = new RedirectServletResponse();
         SlingHttpServletRequest request = new RedirectServletRequest(redirect, requestPath);
@@ -204,32 +215,34 @@ public class SlingPostServletTest extends TestCase {
         }
 
         @Override
-        public void sendRedirect(String s) throws IOException {
+        public void sendRedirect(String s) {
         	redirectLocation = s;
         }
     }
 
-    private static class StatusParamSlingHttpServletRequest extends
+    private static class ParametrisedSlingHttpServletRequest extends
             MockSlingHttpServlet3Request {
+
+        Map<String, String> parameters = new HashMap<>();
 
         private String statusParam;
 
-        public StatusParamSlingHttpServletRequest() {
+        public ParametrisedSlingHttpServletRequest() {
             // nothing to setup, we don't care
             super(null, null, null, null, null);
         }
 
         @Override
         public String getParameter(String name) {
-            if (SlingPostConstants.RP_STATUS.equals(name)) {
-                return statusParam;
+            if (parameters.containsKey(name)) {
+                return parameters.get(name);
             }
 
             return super.getParameter(name);
         }
 
-        void setStatusParam(String statusParam) {
-            this.statusParam = statusParam;
+        void addParameter(String parameter, String value) {
+            parameters.put(parameter, value);
         }
 
         public <AdapterType> AdapterType adaptTo(Class<AdapterType> type) {
