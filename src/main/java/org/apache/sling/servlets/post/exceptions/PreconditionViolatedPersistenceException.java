@@ -43,6 +43,10 @@ public class PreconditionViolatedPersistenceException extends PersistenceExcepti
             super(msg,cause,resourcePath,propertyName);
             
             }
+
+public PreconditionViolatedPersistenceException(String msg) {
+    super(msg);
+}
   
 
 }
