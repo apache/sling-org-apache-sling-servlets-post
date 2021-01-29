@@ -83,7 +83,7 @@ public abstract class AbstractPostOperation implements PostOperation {
     @Override
     public void run(final SlingHttpServletRequest request,
                     final PostResponse response,
-                    final SlingPostProcessor[] processors) throws PreconditionViolatedPersistenceException, TemporaryPersistenceException {
+                    final SlingPostProcessor[] processors) throws PreconditionViolatedPersistenceException, TemporaryPersistenceException, PersistenceException {
         final VersioningConfiguration versionableConfiguration = getVersioningConfiguration(request);
 
         try {
@@ -105,10 +105,16 @@ public abstract class AbstractPostOperation implements PostOperation {
             doRun(request, response, changes);
 
             // invoke processors
-            if (processors != null) {
-                for (SlingPostProcessor processor : processors) {
-                    processor.process(request, changes);
+            try {
+                if (processors != null) {
+                    for (SlingPostProcessor processor : processors) {
+                        processor.process(request, changes);
+                    }
                 }
+            } catch (PreconditionViolatedPersistenceException|TemporaryPersistenceException e) {
+                throw e;
+            } catch (Exception e) {
+                throw new PersistenceException("Exception during response processing",e);
             }
 
             // check modifications for remaining postfix and store the base path
@@ -178,11 +184,6 @@ public abstract class AbstractPostOperation implements PostOperation {
                     }
                 }
             }
-
-        } catch (Exception e) {
-
-            log.error("Exception during response processing.", e);
-            response.setError(e);
 
         } finally {
             if (isResourceResolverCommitRequired(request)) {
