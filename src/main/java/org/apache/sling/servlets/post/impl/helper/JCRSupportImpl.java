@@ -212,8 +212,8 @@ public class JCRSupportImpl {
         try {
             node = node.getParent();
             return findVersionableAncestor(node);
-        } catch (ItemNotFoundException e) {
-            // top-level
+        } catch (ItemNotFoundException | AccessDeniedException e ) {
+            // top-level or parent not accessible, stop looking for a versionable ancestor
             return null;
         }
     }
