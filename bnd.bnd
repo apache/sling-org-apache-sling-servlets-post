@@ -10,8 +10,6 @@ Sling-Namespaces: sling=http://sling.apache.org/jcr/sling/1.0
 
 Sling-Nodetypes: SLING-INF/nodetypes/chunk.cnd
 
--exportcontents: ${packages;VERSIONED}
-
 -includeresource:\
   @jackrabbit-jcr-commons-*.jar!/org/apache/jackrabbit/util/ISO8601.class,\
   @jackrabbit-jcr-commons-*.jar!/org/apache/jackrabbit/util/Text.class,\
