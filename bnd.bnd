@@ -1,7 +1,8 @@
-Import-Package: javax.jcr;resolution:=optional,\
-  javax.jcr.nodetype;resolution:=optional,\
-  javax.jcr.version;resolution:=optional,\
-  org.apache.sling.jcr.contentloader;resolution:=optional,\
+Import-Package: javax.jcr;resolution:=dynamic,\
+  javax.jcr.nodetype;resolution:=dynamic,\
+  javax.jcr.lock;resolution:=dynamic,\
+  javax.jcr.version;resolution:=dynamic,\
+  org.apache.sling.jcr.contentloader;resolution:=dynamic,\
   *
 
 Sling-Bundle-Resources: /system/sling.js
