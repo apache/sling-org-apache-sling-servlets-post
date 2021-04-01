@@ -83,7 +83,7 @@ public abstract class AbstractPostOperation implements PostOperation {
     @Override
     public void run(final SlingHttpServletRequest request,
                     final PostResponse response,
-                    final SlingPostProcessor[] processors) throws PreconditionViolatedPersistenceException, TemporaryPersistenceException {
+                    final SlingPostProcessor[] processors) throws PreconditionViolatedPersistenceException, TemporaryPersistenceException, PersistenceException {
         final VersioningConfiguration versionableConfiguration = getVersioningConfiguration(request);
 
         try {
@@ -105,10 +105,16 @@ public abstract class AbstractPostOperation implements PostOperation {
             doRun(request, response, changes);
 
             // invoke processors
-            if (processors != null) {
-                for (SlingPostProcessor processor : processors) {
-                    processor.process(request, changes);
+            try {
+                if (processors != null) {
+                    for (SlingPostProcessor processor : processors) {
+                        processor.process(request, changes);
+                    }
                 }
+            } catch (PreconditionViolatedPersistenceException|TemporaryPersistenceException e) {
+                throw e;
+            } catch (Exception e) {
+                throw new PersistenceException("Exception during response processing",e);
             }
 
             // check modifications for remaining postfix and store the base path
@@ -129,10 +135,8 @@ public abstract class AbstractPostOperation implements PostOperation {
             if (modificationSourcesContainingPostfix.size() > 0) {
                 for (final Map.Entry<String, String> sourceToCheck : modificationSourcesContainingPostfix.entrySet()) {
                     if (allModificationSources.contains(sourceToCheck.getKey())) {
-                        response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                                "Postfix-containing path " + sourceToCheck.getValue() +
+                        throw new PersistenceException("Postfix-containing path " + sourceToCheck.getValue() +
                                 " contained in the modification list. Check configuration.");
-                        return;
                     }
                 }
             }
@@ -178,11 +182,6 @@ public abstract class AbstractPostOperation implements PostOperation {
                     }
                 }
             }
-
-        } catch (Exception e) {
-
-            log.error("Exception during response processing.", e);
-            response.setError(e);
 
         } finally {
             if (isResourceResolverCommitRequired(request)) {

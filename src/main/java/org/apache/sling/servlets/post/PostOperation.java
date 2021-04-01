@@ -19,6 +19,7 @@
 package org.apache.sling.servlets.post;
 
 import org.apache.sling.api.SlingHttpServletRequest;
+import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.servlets.post.exceptions.PreconditionViolatedPersistenceException;
 import org.apache.sling.servlets.post.exceptions.TemporaryPersistenceException;
 
@@ -74,6 +75,7 @@ public interface PostOperation {
      * @param processors The {@link SlingPostProcessor} services to be called
      *            after applying the operation. This may be <code>null</code> if
      *            there are none.
+     * @throws PersistenceException 
      * @throws org.apache.sling.api.resource.ResourceNotFoundException May be
      *             thrown if the operation requires an existing request
      *             resource. If this exception is thrown the Sling POST servlet
@@ -83,5 +85,5 @@ public interface PostOperation {
      *             occurrs running the operation.
      */
     void run(SlingHttpServletRequest request, PostResponse response,
-            SlingPostProcessor[] processors) throws PreconditionViolatedPersistenceException, TemporaryPersistenceException;
+            SlingPostProcessor[] processors) throws PreconditionViolatedPersistenceException, TemporaryPersistenceException, PersistenceException;
 }

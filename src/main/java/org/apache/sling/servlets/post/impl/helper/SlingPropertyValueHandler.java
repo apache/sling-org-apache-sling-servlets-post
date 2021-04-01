@@ -32,6 +32,7 @@ import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.servlets.post.Modification;
 import org.apache.sling.servlets.post.SlingPostConstants;
+import org.apache.sling.servlets.post.exceptions.PreconditionViolatedPersistenceException;
 
 /**
  * Sets a property on the given resource, in some cases with a specific type and
@@ -111,7 +112,7 @@ public class SlingPropertyValueHandler {
         mod.node = jcrSupport.getNode(parent);
         mod.valueMap = parent.adaptTo(ModifiableValueMap.class);
         if ( mod.valueMap == null ) {
-            throw new PersistenceException("Resource at '" + parent.getPath() + "' is not modifiable.");
+            throw new PreconditionViolatedPersistenceException("Resource at '" + parent.getPath() + "' is not modifiable.");
         }
 
         final String name = prop.getName();

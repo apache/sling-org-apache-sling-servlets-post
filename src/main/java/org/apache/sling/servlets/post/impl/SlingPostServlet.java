@@ -245,8 +245,8 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
                 htmlResponse.setStatus(HttpServletResponse.SC_NOT_FOUND,
                     rnfe.getMessage());
             } catch (final PreconditionViolatedPersistenceException e) {
-                log.warn("Exception while handling POST {} with {}",
-                        new Object[] {request.getResource().getPath(),operation.getClass().getName()},e);
+                log.warn("Exception while handling POST on path [{}] with operation [{}]",
+                        request.getResource().getPath(),operation.getClass().getName(),e);
                 if (backwardsCompatibleStatuscode) {
                     htmlResponse.setError(e);
                 } else {
@@ -254,17 +254,17 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
                 }
             } catch (final PersistenceException e) {
                 // also catches the  RetryableOperationException, as the handling is the same
-                log.warn("Exception while handling POST {} with {}",
-                        new Object[] {request.getResource().getPath(),operation.getClass().getName()},e);
+                log.warn("Exception while handling POST on path [{}] with operation [{}]",
+                        request.getResource().getPath(),operation.getClass().getName(),e);
                 if (backwardsCompatibleStatuscode) {
                     htmlResponse.setError(e);
                 } else {
                     htmlResponse.setStatus(HttpServletResponse.SC_CONFLICT, "repository state conflicting with request");
                 }
-            } catch (final Exception exception) {
-                log.warn("Exception while handling POST {} with {}",
-                        new Object[] {request.getResource().getPath(),operation.getClass().getName()},exception);
-                htmlResponse.setError(exception);
+            } catch (final Exception e) {
+                log.warn("Exception while handling POST on path [{}] with operation [{}]",
+                        request.getResource().getPath(),operation.getClass().getName(),e);
+                htmlResponse.setError(e);
             }
 
         }
