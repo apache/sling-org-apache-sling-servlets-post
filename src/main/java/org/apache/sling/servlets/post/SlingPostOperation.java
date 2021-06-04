@@ -33,7 +33,7 @@ import org.apache.sling.servlets.post.exceptions.TemporaryPersistenceException;
  * {@link #PROP_OPERATION_NAME} registration property giving the name(s) of the
  * operations supported by the service. The names will be used to find the
  * actual operation from the {@link SlingPostConstants#RP_OPERATION
- * <code>:operation</code>} request parameter.
+ * :operation} request parameter.
  * <p>
  * The Sling default POST servlet defines the <code>copy</code>,
  * <code>move</code> and <code>delete</code> operation names. These names should

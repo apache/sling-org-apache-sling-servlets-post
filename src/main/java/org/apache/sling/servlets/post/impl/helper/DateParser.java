@@ -63,7 +63,6 @@ public class DateParser {
     /**
      * Parses the given source string and returns the respective calendar
      * instance. If no format matches returns <code>null</code>.
-     * <p/>
      *
      * @param source date time source string
      * @return calendar representation of the source or <code>null</code>
@@ -90,7 +89,6 @@ public class DateParser {
      * Parses the given source strings and returns the respective calendar
      * instances. If no format matches for any of the sources
      * returns <code>null</code>.
-     * <p/>
      *
      * @param sources date time source strings
      * @return calendar representations of the source or <code>null</code>

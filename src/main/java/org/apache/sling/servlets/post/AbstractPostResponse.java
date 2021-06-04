@@ -82,41 +82,35 @@ public abstract class AbstractPostResponse implements PostResponse {
     // ---------- Settings for the response ------------------------------------
 
     /**
-     * Returns the referer as from the 'referer' request header.
+     * {@inheritDoc}
      */
     public String getReferer() {
         return getProperty(PN_REFERER, String.class);
     }
 
     /**
-     * Sets the referer property
+     * {@inheritDoc}
      */
     public void setReferer(String referer) {
         setProperty(PN_REFERER, referer);
     }
 
     /**
-     * Returns the absolute path of the item upon which the request operated.
-     * <p>
-     * If the {@link #setPath(String)} method has not been called yet, this
-     * method returns <code>null</code>.
+     * {@inheritDoc}
      */
     public String getPath() {
         return getProperty(PN_PATH, String.class);
     }
 
     /**
-     * Sets the absolute path of the item upon which the request operated.
+     * {@inheritDoc}
      */
     public void setPath(String path) {
         setProperty(PN_PATH, path);
     }
 
     /**
-     * Returns <code>true</code> if this was a create request.
-     * <p>
-     * Before calling the {@link #setCreateRequest(boolean)} method, this method
-     * always returns <code>false</code>.
+     * {@inheritDoc}
      */
     public boolean isCreateRequest() {
         final Boolean isCreateRequest = getProperty(PN_IS_CREATED,
@@ -127,17 +121,14 @@ public abstract class AbstractPostResponse implements PostResponse {
     }
 
     /**
-     * Sets whether the request was a create request or not.
+     * {@inheritDoc}
      */
     public void setCreateRequest(boolean isCreateRequest) {
         setProperty(PN_IS_CREATED, isCreateRequest);
     }
 
     /**
-     * Returns the location of the modification. this is the externalized form
-     * of the current path.
-     *
-     * @return the location of the modification.
+     * {@inheritDoc}
      */
     public String getLocation() {
         return getProperty(PN_LOCATION, String.class);
@@ -340,6 +331,11 @@ public abstract class AbstractPostResponse implements PostResponse {
      * Returns the generic response property with the given name and type or
      * <code>null</code> if no such property exists or the property is not of
      * the requested type.
+     * @param name the name of the requetested property
+     * @param type the type of the parameter which should be returned
+     * @param <Type> the return type
+     * @return the property as the requested type or null if not available at all or not
+     *            in the requested type
      */
     @SuppressWarnings("unchecked")
     protected <Type> Type getProperty(String name, Class<Type> type) {
@@ -354,11 +350,17 @@ public abstract class AbstractPostResponse implements PostResponse {
     /**
      * Returns the generic response property with the given name and type or
      * <code>null</code> if no such property exists.
+     * @param name the name of the response property
+     * @return the requested property (might be null)
      */
     protected Object getProperty(String name) {
         return properties.get(name);
     }
     
+    /**
+     * determines if the referer has a proper referer including protocol
+     * @return true if HTTP or HTTPS protocol information is available in the referer
+     */
     protected boolean isSafeReferer(){
         String referer = getReferer();
         if (referer.startsWith("http://") || referer.startsWith("https://")) {

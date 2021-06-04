@@ -53,37 +53,38 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Handles file uploads.
- * <p/>
+ * <p>
  *
  * Simple example:
- * <xmp>
+ * 
+ * {@code
  *   <form action="/home/admin" method="POST" enctype="multipart/form-data">
  *     <input type="file" name="./portrait" />
  *   </form>
- * </xmp>
+ * }
  *
  * this will create a nt:file node below "/home/admin" if the node type of
  * "admin" is (derived from) nt:folder, a nt:resource node otherwise.
- * <p/>
+ * <p>
  *
  * Filename example:
- * <xmp>
+ * {@code
  *   <form action="/home/admin" method="POST" enctype="multipart/form-data">
  *     <input type="file" name="./*" />
  *   </form>
- * </xmp>
+ * }
  *
  * same as above, but uses the filename of the uploaded file as name for the
  * new node.
- * <p/>
+ * <p>
  *
  * Type hint example:
- * <xmp>
+ * {@code
  *   <form action="/home/admin" method="POST" enctype="multipart/form-data">
  *     <input type="file" name="./portrait" />
  *     <input type="hidden" name="./portrait@TypeHint" value="my:file" />
  *   </form>
- * </xmp>
+ * }
  *
  * this will create a new node with the type my:file below admin. if the hinted
  * type extends from nt:file an intermediate file node is created otherwise
@@ -417,6 +418,8 @@ public class SlingFileUploadHandler {
 
     /**
      * Delete all chunks saved within a resource. If no chunks exist, it is no-op.
+     * @param rsrc the resource
+     * @throws PersistenceException in case of problems
      */
     public void deleteChunks(final Resource rsrc) throws PersistenceException {
         final Resource chunkParent = getChunkParent(rsrc);
@@ -511,6 +514,7 @@ public class SlingFileUploadHandler {
      *
      * @param parent the parent node
      * @param prop the assembled property info
+     * @param changes the changes
      * @throws PersistenceException if an error occurs
      */
     public void setFile(final Resource parent, final RequestProperty prop, final List<Modification> changes)

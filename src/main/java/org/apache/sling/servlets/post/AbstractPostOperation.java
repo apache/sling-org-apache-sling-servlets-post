@@ -214,8 +214,9 @@ public abstract class AbstractPostOperation implements PostOperation {
      *            representing the operations done.
      * @throws RepositoryException Maybe thrown if any error occurrs while
      *             accessing the repository.
-     * @throws TemporaryPersistenceException 
-     * @throws PreconditionViolatedPersistenceException 
+     * @throws TemporaryPersistenceException if a retry could help
+     * @throws PreconditionViolatedPersistenceException if a retry doesn't make sense
+     *             and some preconditions should be changed.
      */
     protected abstract void doRun(SlingHttpServletRequest request,
             PostResponse response,
@@ -255,7 +256,7 @@ public abstract class AbstractPostOperation implements PostOperation {
      * @param session The JCR session
      * @param request The http request
      * @return {@code true} if a save is required.
-     * @throws RepositoryException
+     * @throws RepositoryException a repository exception
      */
     protected boolean isSessionSaveRequired(Session session, SlingHttpServletRequest request)
             throws RepositoryException {
@@ -268,7 +269,7 @@ public abstract class AbstractPostOperation implements PostOperation {
      * @param path The path
      * @param session The JCR session
      * @return The path without the workspace
-     * @throws RepositoryException
+     * @throws RepositoryException a repository exception
      */
     protected String removeAndValidateWorkspace(String path, Session session) throws RepositoryException {
         final int wsSepPos = path.indexOf(":/");
@@ -363,11 +364,11 @@ public abstract class AbstractPostOperation implements PostOperation {
 
     /**
      * Returns true if any of the request parameters starts with
-     * {@link SlingPostConstants#ITEM_PREFIX_RELATIVE_CURRENT <code>./</code>}.
+     * {@link SlingPostConstants#ITEM_PREFIX_RELATIVE_CURRENT ./}.
      * In this case only parameters starting with either of the prefixes
-     * {@link SlingPostConstants#ITEM_PREFIX_RELATIVE_CURRENT <code>./</code>},
-     * {@link SlingPostConstants#ITEM_PREFIX_RELATIVE_PARENT <code>../</code>}
-     * and {@link SlingPostConstants#ITEM_PREFIX_ABSOLUTE <code>/</code>} are
+     * {@link SlingPostConstants#ITEM_PREFIX_RELATIVE_CURRENT ./},
+     * {@link SlingPostConstants#ITEM_PREFIX_RELATIVE_PARENT ../}
+     * and {@link SlingPostConstants#ITEM_PREFIX_ABSOLUTE /} are
      * considered as providing content to be stored. Otherwise all parameters
      * not starting with the command prefix <code>:</code> are considered as
      * parameters to be stored.
@@ -392,9 +393,9 @@ public abstract class AbstractPostOperation implements PostOperation {
     /**
      * Returns <code>true</code> if the <code>name</code> starts with either
      * of the prefixes
-     * {@link SlingPostConstants#ITEM_PREFIX_RELATIVE_CURRENT <code>./</code>},
-     * {@link SlingPostConstants#ITEM_PREFIX_RELATIVE_PARENT <code>../</code>}
-     * and {@link SlingPostConstants#ITEM_PREFIX_ABSOLUTE <code>/</code>}.
+     * {@link SlingPostConstants#ITEM_PREFIX_RELATIVE_CURRENT ./},
+     * {@link SlingPostConstants#ITEM_PREFIX_RELATIVE_PARENT ../}
+     * and {@link SlingPostConstants#ITEM_PREFIX_ABSOLUTE /}.
      *
      * @param name The name
      * @return {@code true} if the name has a prefix

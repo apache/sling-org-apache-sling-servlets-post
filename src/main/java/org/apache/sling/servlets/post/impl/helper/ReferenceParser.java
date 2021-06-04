@@ -31,12 +31,12 @@ public class ReferenceParser {
     /**
      * Parses the given source string and returns the correct Value object.
      * If no node matches returns <code>null</code>.
-     * <p/>
      *
+     * @param session the session
      * @param value a path or UUID
      * @param weak true to create a WeakReference value
      * @return the value or <code>null</code>
-     * @throws RepositoryException
+     * @throws RepositoryException in case of problems
      */
     public static Value parse(Session session, String value, boolean weak) throws RepositoryException {
         Node n = parse(session, value);
@@ -50,13 +50,12 @@ public class ReferenceParser {
      * Parses the given source strings and returns the respective reference value
      * instances. If no node matches for any of the sources
      * returns <code>null</code>.
-     * <p/>
      *
+     * @param session the session
      * @param values path or UUID strings
-     * @param factory the value factory
      * @param weak true to create a WeakReference value
      * @return the values or <code>null</code>
-     * @throws RepositoryException
+     * @throws RepositoryException in case of problems
      */
     public static Value[] parse(Session session, String[] values, boolean weak) throws RepositoryException {
         Value ret[] = new Value[values.length];

@@ -43,10 +43,10 @@ public abstract class AbstractSlingPostOperation extends AbstractPostOperation
 
     /**
      *
-     * @param request
-     * @param response
-     * @param changes
-     * @throws RepositoryException
+     * @param request the request
+     * @param response the response
+     * @param changes all changes
+     * @throws RepositoryException in case of problems
      */
     protected abstract void doRun(SlingHttpServletRequest request,
             HtmlResponse response, List<Modification> changes)

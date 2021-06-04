@@ -36,16 +36,19 @@ public interface PostResponse {
 
     /**
      * Sets the referer property
+     * @param referer the referer
      */
     public void setReferer(String referer);
 
     /**
      * Returns the referer previously set by {@link #setReferer(String)}
+     * @return the referer
      */
     public String getReferer();
 
     /**
      * Sets the absolute path of the item upon which the request operated.
+     * @param path the path
      */
     public void setPath(String path);
 
@@ -54,11 +57,13 @@ public interface PostResponse {
      * <p>
      * If the {@link #setPath(String)} method has not been called yet, this
      * method returns <code>null</code>.
+     * @return the path (might be null)
      */
     public String getPath();
 
     /**
      * Sets whether the request was a create request or not.
+     * @param isCreateRequest true if the request was a create request
      */
     public void setCreateRequest(boolean isCreateRequest);
 
@@ -67,6 +72,7 @@ public interface PostResponse {
      * <p>
      * Before calling the {@link #setCreateRequest(boolean)} method, this method
      * always returns <code>false</code>.
+     * @return if this was a create request
      */
     public boolean isCreateRequest();
 
@@ -74,7 +80,7 @@ public interface PostResponse {
      * Sets the location of this modification. This is the externalized form of
      * the {@link #getPath() current path}.
      *
-     * @param location
+     * @param location the location
      */
     public void setLocation(String location);
 
@@ -83,12 +89,14 @@ public interface PostResponse {
      * <p>
      * If the {@link #setLocation(String)} method has not been called yet, this
      * method returns <code>null</code>.
+     * @return the location
      */
     public String getLocation();
 
     /**
      * Sets the parent location of the modification. This is the externalized
      * form of the parent node of the {@link #getPath() current path}.
+     * @param parentLocation the parent location of the modification
      */
     public void setParentLocation(String parentLocation);
 
@@ -97,6 +105,7 @@ public interface PostResponse {
      * <p>
      * If the {@link #setParentLocation(String)} method has not been called yet,
      * this method returns <code>null</code>.
+     * @return the parent location
      */
     public String getParentLocation();
 
@@ -122,17 +131,20 @@ public interface PostResponse {
      * an error, the response is assumed to be unsuccessful and 500 is returned.
      * If there is no error, the response is assumed to be successful and 200 is
      * returned.
+     * @return the status code
      */
     public int getStatusCode();
 
     /**
      * Returns the status message or <code>null</code> if no has been set with
      * the {@link #setStatus(int, String)} method.
+     * @return the status message (might be null)
      */
     public String getStatusMessage();
 
     /**
      * Sets the recorded error causing the operation to fail.
+     * @param error the throwable
      */
     public void setError(Throwable error);
 
@@ -146,6 +158,7 @@ public interface PostResponse {
     /**
      * Returns <code>true</code> if no {@link #getError() error} is set and if
      * the {@link #getStatusCode() status code} is one of the 2xx codes.
+     * @return true if the status code is 2xx
      */
     public boolean isSuccessful();
 
