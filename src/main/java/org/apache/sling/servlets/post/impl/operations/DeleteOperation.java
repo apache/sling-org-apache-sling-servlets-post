@@ -106,6 +106,8 @@ public class DeleteOperation extends AbstractPostOperation {
     /**
      * Return true if request is to delete chunks. To return true, request will
      * should parameter ":applyToChunks" and it should be true.
+     * @param request the request
+     * @return is the request is to delete chunks
      */
     protected boolean isDeleteChunkRequest(SlingHttpServletRequest request) {
 

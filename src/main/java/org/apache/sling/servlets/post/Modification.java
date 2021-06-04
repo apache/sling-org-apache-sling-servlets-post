@@ -49,6 +49,7 @@ public class Modification {
      * Records a 'modified' change
      *
      * @param path path of the item that was modified
+     * @return the modification
      */
     public static Modification onModified(String path) {
         return onChange(ModificationType.MODIFY, path);
@@ -58,6 +59,7 @@ public class Modification {
      * Records a 'created' change
      *
      * @param path path of the item that was created
+     * @return the modification
      */
     public static Modification onCreated(String path) {
         return onChange(ModificationType.CREATE, path);
@@ -67,6 +69,7 @@ public class Modification {
      * Records a 'deleted' change
      *
      * @param path path of the item that was deleted
+     * @return the modification
      */
     public static Modification onDeleted(String path) {
         return onChange(ModificationType.DELETE, path);
@@ -80,6 +83,7 @@ public class Modification {
      *
      * @param srcPath source path of the node that was moved
      * @param dstPath destination path of the node that was moved.
+     * @return the modification
      */
     public static Modification onMoved(String srcPath, String dstPath) {
         return onChange(ModificationType.MOVE, srcPath, dstPath);
@@ -93,6 +97,7 @@ public class Modification {
      *
      * @param srcPath source path of the node that was copied
      * @param dstPath destination path of the node that was copied.
+     * @return the modification
      */
     public static Modification onCopied(String srcPath, String dstPath) {
         return onChange(ModificationType.COPY, srcPath, dstPath);
@@ -104,6 +109,7 @@ public class Modification {
      * @param orderedPath Path of the node that was reordered
      * @param beforeSibling Name of the sibling node before which the source node has
      *            been inserted.
+     * @return the modification
      */
     public static Modification onOrder(String orderedPath, String beforeSibling) {
         return onChange(ModificationType.ORDER, orderedPath, beforeSibling);

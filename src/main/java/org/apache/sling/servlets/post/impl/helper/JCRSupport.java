@@ -151,8 +151,15 @@ public class JCRSupport {
     /**
      * Stores property value(s) as reference(s). Will parse the reference(s) from the string
      * value(s) in the {@link RequestProperty}.
-     *
+     * 
+     * @param resource resource
+     * @param node the node
+     * @param name the name
+     * @param values the value
+     * @param type the type
+     * @param multiValued if multiValued
      * @return true only if parsing was successful and the property was actually changed
+     * @throws PersistenceException if the operation cannot be executed
      */
     public Modification storeAsReference(
             final Resource resource,

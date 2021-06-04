@@ -31,6 +31,7 @@ public class Chunk {
 
     /**
      * Return offset of the chunk.
+     * @return the offset
      */
     public long getOffset() {
         return offset;
@@ -38,6 +39,7 @@ public class Chunk {
 
     /**
      * Set offset value.
+     * @param offset the offset
      */
     public void setOffsetValue(long offset) {
         this.offset = offset;
@@ -45,6 +47,7 @@ public class Chunk {
 
     /**
      * Return length of the file parameter.
+     * @return the length
      */
     public long getLength() {
         return length;
@@ -52,6 +55,7 @@ public class Chunk {
 
     /**
      * Set length of file parameter.
+     * @param length the length
      */
     public void setLength(long length) {
         this.length = length;
@@ -61,6 +65,7 @@ public class Chunk {
      * Return true if request contains last chunk as a result upload should be
      * finished. It is useful in scenarios where file streaming where file size
      * is not known in advance.
+     * @return if the chunk is completed
      */
     public boolean isCompleted() {
         return completed;
@@ -68,6 +73,7 @@ public class Chunk {
 
     /**
      * Set complete flag
+     * @param complete the complete flag
      */
     public void setCompleted(boolean complete) {
         this.completed = complete;

@@ -221,7 +221,8 @@ public class RequestProperty {
     }
 
     /**
-     * Returns <code>true</code> if the repository item described by this is
+     * Determine the deletion status of this item
+     * @return <code>true</code> if the repository item described by this is
      * to be deleted before setting new content to it.
      */
     public boolean isDelete() {
@@ -251,7 +252,8 @@ public class RequestProperty {
     }
 
     /**
-     * Returns <code>true</code> if the content of this property is to be set
+     * If this is a target of a move operation
+     * @return <code>true</code> if the content of this property is to be set
      * by moving content from another repository item.
      *
      * @see #getRepositorySource()
@@ -261,7 +263,8 @@ public class RequestProperty {
     }
 
     /**
-     * Returns <code>true</code> if the content of this property is to be set
+     * if this is the source of a copy action
+     * @return <code>true</code> if the content of this property is to be set
      * by copying content from another repository item.
      *
      * @see #getRepositorySource()
@@ -271,7 +274,8 @@ public class RequestProperty {
     }
 
     /**
-     * Returns the absolute path of the repository item from which the content
+     * get the source of a copy or move operation
+     * @return the absolute path of the repository item from which the content
      * for this property is to be copied or moved.
      *
      * @see #hasRepositoryCopySource()
@@ -295,7 +299,8 @@ public class RequestProperty {
     }
 
     /**
-     * Returns whether this property is to be handled as a multi-value property
+     * determines if this property is handled as multi-value property
+     * @return whether this property is to be handled as a multi-value property
      * seen as set.
      */
     public boolean isPatch() {
@@ -303,7 +308,8 @@ public class RequestProperty {
     }
 
     /**
-     *  Return true if request is chunk upload.
+     *  it this is a chunk upload?
+     *  @return true if request is chunk upload.
      */
     public boolean isChunkUpload() {
         return chunk != null;

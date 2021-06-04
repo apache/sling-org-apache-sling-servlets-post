@@ -140,19 +140,21 @@ abstract class AbstractCopyMoveOperation extends AbstractPostOperation {
 
     /**
      * Returns a short name to be used in log and status messages.
+     * @return the name of the operation
      */
     protected abstract String getOperationName();
 
     /**
      * Actually executes the operation.
      *
-     * @param response The <code>HtmlResponse</code> used to record success of
-     *            the operation.
+     * @param changes the changes to execute
      * @param source The source item to act upon.
      * @param destParent The absolute path of the parent of the target item.
      * @param destName The name of the target item inside the
      *            <code>destParent</code>. If <code>null</code> the name of
      *            the <code>source</code> is used as the target item name.
+     * @param versioningConfiguration the configuration for versioning
+     * @return the resource which results of this operation
      * @throws PersistenceException May be thrown if an error occurs executing
      *             the operation.
      */

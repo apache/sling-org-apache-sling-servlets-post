@@ -69,11 +69,9 @@ public class JCRSupportImpl {
      * nodes | N | at a specific position, N being an integer &lt;/xmp&gt;
      *
      * @param request The http request
-     * @param item node to order
-     * @param changes The list of modifications
-     * @throws RepositoryException if an error occurs
-     * @throws PreconditionViolatedPersistenceException 
-     * @throws TemporaryPersistenceException 
+     * @param resource the resource to order
+     * @param changes the list of modifications
+     * @throws PersistenceException in case the operation is not successful 
      */
     public void orderNode(final SlingHttpServletRequest request,
             final Resource resource,
@@ -371,10 +369,7 @@ public class JCRSupportImpl {
     }
 
     /**
-     * Stores property value(s) as reference(s). Will parse the reference(s) from the string
-     * value(s) in the {@link RequestProperty}.
-     *
-     * @return A modification only if parsing was successful and the property was actually changed
+     * {@inheritDoc}
      */
     public Modification storeAsReference(
             final Object n,
@@ -483,10 +478,10 @@ public class JCRSupportImpl {
      * @param name The name of the newly created item. If this is
      *            <code>null</code> the new item gets the same name as the
      *            <code>src</code> item.
+     * @return the name of the newly created object
      * @throws PersistenceException May be thrown in case of any problem copying
      *             the content.
-     * @throws PreconditionViolatedPersistenceException 
-     * @throws TemporaryPersistenceException
+     * @throws PersistenceException in case something fails
      * @see #copy(Node, Node, String)
      * @see #copy(Property, Node, String)
      */
@@ -565,8 +560,14 @@ public class JCRSupportImpl {
         return dst;
     }
 
-    /** @return true if src is an ancestor node of dest, or if
-     *  both are the same node */
+    /** 
+     * determines if the 2 nodes are in ancestor relationship or identical
+     * @param src one node
+     * @param dest the other node
+     * @return true if src is an ancestor node of dest, or if
+     *      both are the same node 
+     * @throws RepositoryException if something goes wrong
+     **/
     public static boolean isAncestorOrSameNode(Node src, Node dest) throws RepositoryException {
         if(src.getPath().equals("/")) {
             return true;

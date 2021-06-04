@@ -130,6 +130,11 @@ abstract class AbstractCreateOperation extends AbstractPostOperation {
     /**
      * Create resource(s) according to current request
      *
+     * @param resolver the resourceResolver to use
+     * @param reqProperties required properties
+     * @param response the response
+     * @param changes the changes to apply
+     * @param versioningConfiguration versioning configuration
      * @throws PersistenceException if a resource error occurs
      */
     protected void processCreate(final ResourceResolver resolver,
@@ -216,6 +221,9 @@ abstract class AbstractCreateOperation extends AbstractPostOperation {
     /**
      * Collects the properties that form the content to be written back to the
      * resource tree.
+     * @param request the request
+     * @param response the response
+     * @return the collected properties
      */
     protected Map<String, RequestProperty> collectContent(
             final SlingHttpServletRequest request,
@@ -512,7 +520,11 @@ abstract class AbstractCreateOperation extends AbstractPostOperation {
      * Deep gets or creates a resource, parent-padding with default resources. If
      * the path is empty, the given parent resource is returned.
      *
+     * @param resolver the resource resolver to use
      * @param path path to resources that needs to be deep-created
+     * @param reqProperties the properties to add
+     * @param changes the changes to apply
+     * @param versioningConfiguration the versioning configuration
      * @return Resource at path
      * @throws PersistenceException if an error occurs
      * @throws IllegalArgumentException if the path is relative and parent is

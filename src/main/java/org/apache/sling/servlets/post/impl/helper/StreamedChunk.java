@@ -141,7 +141,7 @@ public class StreamedChunk {
      * @param fileResource the file request.
      * @param changes changes that were made.
      * @return the jcr:content sub node.
-     * @throws PersistenceException
+     * @throws PersistenceException in case of persistence issues
      */
     public Resource store(Resource fileResource, List<Modification> changes) throws PersistenceException {
         Resource result = fileResource.getChild(JcrConstants.JCR_CONTENT);

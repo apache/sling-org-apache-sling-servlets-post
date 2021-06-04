@@ -33,7 +33,7 @@ import org.apache.sling.servlets.post.exceptions.TemporaryPersistenceException;
  * {@link #PROP_OPERATION_NAME} registration property giving the name(s) of the
  * operations supported by the service. The names will be used to find the
  * actual operation from the {@link SlingPostConstants#RP_OPERATION
- * <code>:operation</code>} request parameter.
+ * :operation} request parameter.
  * <p>
  * The Sling POST servlet itself provides various operations (see the
  * <code>OPERATION_</code> constants in the {@link SlingPostConstants}
@@ -45,7 +45,7 @@ import org.apache.sling.servlets.post.exceptions.TemporaryPersistenceException;
  * interface as well as operation postprocessing.
  * <p>
  * Implementors of this interface are advised to extend the
- * {@link AbstractPostOperation} class to benefit from various precossings
+ * {@link AbstractPostOperation} class to benefit from various processings
  * implemented by that abstract class.
  */
 public interface PostOperation {
@@ -75,14 +75,18 @@ public interface PostOperation {
      * @param processors The {@link SlingPostProcessor} services to be called
      *            after applying the operation. This may be <code>null</code> if
      *            there are none.
-     * @throws PersistenceException 
+     * @throws PersistenceException when the commit fails 
      * @throws org.apache.sling.api.resource.ResourceNotFoundException May be
      *             thrown if the operation requires an existing request
      *             resource. If this exception is thrown the Sling POST servlet
      *             sends back a <code>404/NOT FOUND</code> response to the
      *             client.
      * @throws org.apache.sling.api.SlingException May be thrown if an error
-     *             occurrs running the operation.
+     *             Occurs running the operation.
+     * @throws PreconditionViolatedPersistenceException when a necessary precondition failed,
+     *             and a retry without further changes doesn't make sense.
+     * @throws TemporaryPersistenceException when a commit failed, but a retry could make
+     *             the operation work successfully.
      */
     void run(SlingHttpServletRequest request, PostResponse response,
             SlingPostProcessor[] processors) throws PreconditionViolatedPersistenceException, TemporaryPersistenceException, PersistenceException;

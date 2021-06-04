@@ -73,6 +73,9 @@ public class SlingPropertyValueHandler {
 
     /**
      * Constructs a property value handler
+     * @param dateParser the dateParser
+     * @param jcrSupport the jcrSupport
+     * @param changes the changes 
      */
     public SlingPropertyValueHandler(final DateParser dateParser,
             final JCRSupport jcrSupport,
@@ -94,12 +97,12 @@ public class SlingPropertyValueHandler {
      * the field name but no value.
      *
      * html example for testing:
-     * <xmp>
+     * {@code
      *   <input type="hidden" name="created"/>
      *   <input type="hidden" name="lastModified"/>
      *   <input type="hidden" name="createdBy" />
      *   <input type="hidden" name="lastModifiedBy"/>
-     * </xmp>
+     * }
      *
      * @param parent the parent node
      * @param prop the request property
