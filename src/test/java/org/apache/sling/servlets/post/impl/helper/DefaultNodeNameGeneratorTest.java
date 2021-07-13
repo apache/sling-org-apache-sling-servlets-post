@@ -19,6 +19,7 @@ package org.apache.sling.servlets.post.impl.helper;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -52,86 +53,69 @@ public class DefaultNodeNameGeneratorTest {
         return nodeNameGenerator.getNodeName(request, basePath, requirePrefix, defaultNodeNameGenerator);
     }
 
+    protected void assertDefaultName(Map<String, Object> parameterMap) {
+        assertDefaultName(parameterMap, false);
+    }
+    protected void assertDefaultName(Map<String, Object> parameterMap, boolean requirePrefix) {
+        String nodeName = nodeName(parameterMap, requirePrefix);
+        assertTrue(nodeName.matches("\\d+_\\d+"));
+    }
+
+    protected void assertExpectedName(Map<String, Object> parameterMap, String expectedName) {
+        assertExpectedName(parameterMap, expectedName, false);
+    }
+    protected void assertExpectedName(Map<String, Object> parameterMap, String expectedName, boolean requirePrefix) {
+        String nodeName = nodeName(parameterMap, requirePrefix);
+        assertEquals(expectedName, nodeName);
+    }
+
     @Test
     public void testNameDefault() {
-        Map<String, Object> map = new HashMap<>();
-        map.put("message", "Hello");
-        String nodeName = nodeName(map);
-        assertTrue(nodeName.matches("\\d+_\\d+"));
+        assertDefaultName(Collections.singletonMap("message", "Hello"));
     }
 
     @Test
     public void testNameHint() {
-        Map<String, Object> map = new HashMap<>();
-        map.put(":nameHint", "Hello");
-        String nodeName = nodeName(map);
-        assertEquals("hello", nodeName);
+        assertExpectedName(Collections.singletonMap(":nameHint", "Hello"), "hello");
     }
 
     @Test
     public void testNameHintEmpty() {
-        Map<String, Object> map = new HashMap<>();
-        map.put(":nameHint", "");
-        String nodeName = nodeName(map);
-        // empty name should be skipped and fallback to the default
-        assertTrue(nodeName.matches("\\d+_\\d+"));
+        assertDefaultName(Collections.singletonMap(":nameHint", ""));
     }
 
     @Test
     public void testName() {
-        Map<String, Object> map = new HashMap<>();
-        map.put(":name", "Hello");
-        String nodeName = nodeName(map);
-        assertEquals("Hello", nodeName);
+        assertExpectedName(Collections.singletonMap(":name", "Hello"), "Hello");
     }
 
     @Test
     public void testNameEmpty() {
-        Map<String, Object> map = new HashMap<>();
-        map.put(":name", "");
-        String nodeName = nodeName(map);
-        // empty name should be skipped and fallback to the default
-        assertTrue(nodeName.matches("\\d+_\\d+"));
+        assertDefaultName(Collections.singletonMap(":name", ""));
     }
 
     @Test
     public void testNameHintTrimmed() {
-        Map<String, Object> map = new HashMap<>();
-        map.put(":nameHint", "HelloWorldTooLong");
-        String nodeName = nodeName(map);
-        assertEquals("helloworld", nodeName);
+        assertExpectedName(Collections.singletonMap(":nameHint", "HelloWorldTooLong"), "helloworld");
     }
 
     @Test
     public void testNameFromTitle() {
-        Map<String, Object> map = new HashMap<>();
-        map.put("title", "Hello");
-        String nodeName = nodeName(map);
-        assertEquals("hello", nodeName);
+        assertExpectedName(Collections.singletonMap("title", "Hello"), "hello");
     }
 
     @Test
     public void testNameFromTitleEmpty() {
-        Map<String, Object> map = new HashMap<>();
-        map.put("title", "");
-        String nodeName = nodeName(map);
-        // empty name should be skipped and fallback to the default
-        assertTrue(nodeName.matches("\\d+_\\d+"));
+        assertDefaultName(Collections.singletonMap("title", ""));
     }
 
     @Test
     public void testNameFromTitleWithPrefix() {
         // 1. should not find any param and fallback to the default
-        Map<String, Object> map = new HashMap<>();
-        map.put("title", "Hello");
-        String nodeName = nodeName(map, true);
-        assertTrue(nodeName.matches("\\d+_\\d+"));
+        assertDefaultName(Collections.singletonMap("title", "Hello"), true);
 
         // 2. should find a param and use it
-        map.clear();
-        map.put("./title", "Hello");
-        nodeName = nodeName(map, true);
-        assertEquals("hello", nodeName);
+        assertExpectedName(Collections.singletonMap("./title", "Hello"), "hello", true);
     }
 
     @Test
@@ -139,16 +123,12 @@ public class DefaultNodeNameGeneratorTest {
         Map<String, Object> map = new HashMap<>();
         map.put("sling:message", "Hello");
         map.put("sling:subject", "World");
-        String nodeName = nodeName(map);
-        assertEquals("world", nodeName);
+        assertExpectedName(map, "world");
     }
 
     @Test
     public void testNameHintFilter() {
-        Map<String, Object> map = new HashMap<>();
-        map.put(":nameHint", "H$lloW#rld");
-        String nodeName = nodeName(map);
-        assertEquals("h_llow_rld", nodeName);
+        assertExpectedName(Collections.singletonMap(":nameHint", "H$lloW#rld"), "h_llow_rld");
     }
 
     /**
@@ -159,17 +139,12 @@ public class DefaultNodeNameGeneratorTest {
         Map<String, Object> map = new HashMap<>();
         map.put(":nameHint@ValueFrom", "message");
         map.put("message", "Hello");
-        String nodeName = nodeName(map);
-        assertEquals("hello", nodeName);
+        assertExpectedName(map, "hello");
     }
 
     @Test
     public void testNameHintValueFromEmpty() {
-        Map<String, Object> map = new HashMap<>();
-        map.put(":nameHint@ValueFrom", "");
-        String nodeName = nodeName(map);
-        // empty name should be skipped and fallback to the default
-        assertTrue(nodeName.matches("\\d+_\\d+"));
+        assertDefaultName(Collections.singletonMap(":nameHint@ValueFrom", ""));
     }
 
     @Test
@@ -177,9 +152,7 @@ public class DefaultNodeNameGeneratorTest {
         Map<String, Object> map = new HashMap<>();
         map.put(":nameHint@ValueFrom", "message");
         map.put("message", "");
-        String nodeName = nodeName(map);
-        // empty name should be skipped and fallback to the default
-        assertTrue(nodeName.matches("\\d+_\\d+"));
+        assertDefaultName(map);
     }
 
     /**
@@ -190,8 +163,7 @@ public class DefaultNodeNameGeneratorTest {
         Map<String, Object> map = new HashMap<>();
         map.put(":name@ValueFrom", "message");
         map.put("message", "Hello");
-        String nodeName = nodeName(map);
-        assertEquals("Hello", nodeName);
+        assertExpectedName(map, "Hello");
     }
 
     @Test
@@ -199,17 +171,12 @@ public class DefaultNodeNameGeneratorTest {
         Map<String, Object> map = new HashMap<>();
         map.put("sling:message", "Hello");
         map.put("sling:subject@ValueFrom", "sling:message");
-        String nodeName = nodeName(map);
-        assertEquals("hello", nodeName);
+        assertExpectedName(map, "hello");
     }
 
     @Test
     public void testNameFromSubjectValueFromEmpty() {
-        Map<String, Object> map = new HashMap<>();
-        map.put("sling:subject@ValueFrom", "");
-        String nodeName = nodeName(map);
-        // empty name should be skipped and fallback to the default
-        assertTrue(nodeName.matches("\\d+_\\d+"));
+        assertDefaultName(Collections.singletonMap("sling:subject@ValueFrom", ""));
     }
 
     @Test
@@ -217,9 +184,7 @@ public class DefaultNodeNameGeneratorTest {
         Map<String, Object> map = new HashMap<>();
         map.put("sling:message", "");
         map.put("sling:subject@ValueFrom", "sling:message");
-        String nodeName = nodeName(map);
-        // empty name should be skipped and fallback to the default
-        assertTrue(nodeName.matches("\\d+_\\d+"));
+        assertDefaultName(map);
     }
 
 }
