@@ -69,11 +69,29 @@ public class DefaultNodeNameGeneratorTest {
     }
 
     @Test
+    public void testNameHintEmpty() {
+        Map<String, Object> map = new HashMap<>();
+        map.put(":nameHint", "");
+        String nodeName = nodeName(map);
+        // empty name should be skipped and fallback to the default
+        assertTrue(nodeName.matches("\\d+_\\d+"));
+    }
+
+    @Test
     public void testName() {
         Map<String, Object> map = new HashMap<>();
         map.put(":name", "Hello");
         String nodeName = nodeName(map);
         assertEquals("Hello", nodeName);
+    }
+
+    @Test
+    public void testNameEmpty() {
+        Map<String, Object> map = new HashMap<>();
+        map.put(":name", "");
+        String nodeName = nodeName(map);
+        // empty name should be skipped and fallback to the default
+        assertTrue(nodeName.matches("\\d+_\\d+"));
     }
 
     @Test
@@ -90,6 +108,15 @@ public class DefaultNodeNameGeneratorTest {
         map.put("title", "Hello");
         String nodeName = nodeName(map);
         assertEquals("hello", nodeName);
+    }
+
+    @Test
+    public void testNameFromTitleEmpty() {
+        Map<String, Object> map = new HashMap<>();
+        map.put("title", "");
+        String nodeName = nodeName(map);
+        // empty name should be skipped and fallback to the default
+        assertTrue(nodeName.matches("\\d+_\\d+"));
     }
 
     @Test
@@ -136,6 +163,25 @@ public class DefaultNodeNameGeneratorTest {
         assertEquals("hello", nodeName);
     }
 
+    @Test
+    public void testNameHintValueFromEmpty() {
+        Map<String, Object> map = new HashMap<>();
+        map.put(":nameHint@ValueFrom", "");
+        String nodeName = nodeName(map);
+        // empty name should be skipped and fallback to the default
+        assertTrue(nodeName.matches("\\d+_\\d+"));
+    }
+
+    @Test
+    public void testNameHintValueFromEmptyRef() {
+        Map<String, Object> map = new HashMap<>();
+        map.put(":nameHint@ValueFrom", "message");
+        map.put("message", "");
+        String nodeName = nodeName(map);
+        // empty name should be skipped and fallback to the default
+        assertTrue(nodeName.matches("\\d+_\\d+"));
+    }
+
     /**
      * SLING-10610
      */
@@ -155,6 +201,25 @@ public class DefaultNodeNameGeneratorTest {
         map.put("sling:subject@ValueFrom", "sling:message");
         String nodeName = nodeName(map);
         assertEquals("hello", nodeName);
+    }
+
+    @Test
+    public void testNameFromSubjectValueFromEmpty() {
+        Map<String, Object> map = new HashMap<>();
+        map.put("sling:subject@ValueFrom", "");
+        String nodeName = nodeName(map);
+        // empty name should be skipped and fallback to the default
+        assertTrue(nodeName.matches("\\d+_\\d+"));
+    }
+
+    @Test
+    public void testNameFromSubjectValueFromEmptyRef() {
+        Map<String, Object> map = new HashMap<>();
+        map.put("sling:message", "");
+        map.put("sling:subject@ValueFrom", "sling:message");
+        String nodeName = nodeName(map);
+        // empty name should be skipped and fallback to the default
+        assertTrue(nodeName.matches("\\d+_\\d+"));
     }
 
 }
