@@ -54,6 +54,67 @@ public class DefaultNodeNameGenerator implements NodeNameGenerator {
     }
 
     /**
+     * Determine the value to use for the specified parameter. This also
+     * considers the parameter with a {@link SlingPostConstants#VALUE_FROM_SUFFIX}
+     *
+     * @param parameters the map of request parameters
+     * @param paramName the parameter to get the value for
+     * @return the value to use for the parameter or null if it could not be determined
+     */
+    protected String getValueToUse(RequestParameterMap parameters, String paramName) {
+        String valueToUse = null;
+        RequestParameter[] pp = parameters.getValues(paramName);
+        if (pp != null) {
+            for (RequestParameter specialParam : pp) {
+                if (specialParam != null && !specialParam.getString().isEmpty()) {
+                    valueToUse = specialParam.getString();
+                }
+
+                if (valueToUse != null) {
+                    if (valueToUse.isEmpty()) {
+                        // empty value is not usable
+                        valueToUse = null;
+                    } else {
+                        // found value, so stop looping
+                        break;
+                    }
+                }
+            }
+        } else {
+            // check for a paramName@ValueFrom param
+            // SLING-130: VALUE_FROM_SUFFIX means take the value of this
+            // property from a different field
+            pp = parameters.getValues(String.format("%s%s", paramName, SlingPostConstants.VALUE_FROM_SUFFIX));
+            if (pp != null) {
+                for (RequestParameter specialParam : pp) {
+                    if (specialParam != null && !specialParam.getString().isEmpty()) {
+                        // retrieve the reference parameter value
+                        RequestParameter[] refParams = parameters.getValues(specialParam.getString());
+                        // @ValueFrom params must have exactly one value, else ignored
+                        if (refParams != null && refParams.length == 1) {
+                            specialParam = refParams[0];
+                            if (specialParam != null && !specialParam.getString().isEmpty()) {
+                                valueToUse = specialParam.getString();
+                            }
+                        }
+                    }
+
+                    if (valueToUse != null) {
+                        if (valueToUse.isEmpty()) {
+                            // empty value is not usable
+                            valueToUse = null;
+                        } else {
+                            // found value, so stop looping
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        return valueToUse;
+    }
+
+    /**
      * Get a "nice" node name, if possible, based on given request
      *
      * @param request the request
@@ -73,39 +134,22 @@ public class DefaultNodeNameGenerator implements NodeNameGenerator {
         // our parameterNames, in order, and has a value
         if (parameters!=null) {
             // we first check for the special sling parameters
-            RequestParameter specialParam = parameters.getValue(SlingPostConstants.RP_NODE_NAME);
-            if ( specialParam != null ) {
-                if ( specialParam.getString() != null && specialParam.getString().length() > 0 ) {
-                    valueToUse = specialParam.getString();
-                    doFilter = false;
-                }
+            valueToUse = getValueToUse(parameters, SlingPostConstants.RP_NODE_NAME);
+            if (valueToUse != null) {
+                doFilter = false;
             }
             if ( valueToUse == null ) {
-                specialParam = parameters.getValue(SlingPostConstants.RP_NODE_NAME_HINT);
-                if ( specialParam != null ) {
-                    if ( specialParam.getString() != null && specialParam.getString().length() > 0 ) {
-                        valueToUse = specialParam.getString();
-                    }
-                }
+                valueToUse = getValueToUse(parameters, SlingPostConstants.RP_NODE_NAME_HINT);
             }
 
             if (valueToUse == null) {
                 for (String param : parameterNames) {
-                    if (valueToUse != null) {
-                        break;
-                    }
                     if (requirePrefix) {
                         param = SlingPostConstants.ITEM_PREFIX_RELATIVE_CURRENT.concat(param);
                     }
-                    final RequestParameter[] pp = parameters.get(param);
-                    if (pp != null) {
-                        for (RequestParameter p : pp) {
-                            valueToUse = p.getString();
-                            if (valueToUse != null && valueToUse.length() > 0) {
-                                break;
-                            }
-                            valueToUse = null;
-                        }
+                    valueToUse = getValueToUse(parameters, param);
+                    if (valueToUse != null) {
+                        break;
                     }
                 }
             }
