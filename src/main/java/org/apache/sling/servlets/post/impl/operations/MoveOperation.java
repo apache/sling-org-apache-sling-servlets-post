@@ -54,14 +54,14 @@ public class MoveOperation extends AbstractCopyMoveOperation {
         }
 
         // ensure we have an item underlying the request's resource
-        final Object item = this.jcrSsupport.getItem(source);
-        final Object target = this.jcrSsupport.getNode(destParentRsrc);
+        final Object item = this.jcrSupport.getItem(source);
+        final Object target = this.jcrSupport.getNode(destParentRsrc);
 
         if (item == null || target == null ) {
             move(source, destParentRsrc);
         } else {
-            this.jcrSsupport.checkoutIfNecessary(source.getParent(), changes, versioningConfiguration);
-            this.jcrSsupport.move(item, target, destName);
+            this.jcrSupport.checkoutIfNecessary(source.getParent(), changes, versioningConfiguration);
+            this.jcrSupport.move(item, target, destName);
         }
         final Resource result = destParentRsrc.getChild(destName);
         if ( result != null ) {

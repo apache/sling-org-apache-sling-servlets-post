@@ -168,12 +168,12 @@ abstract class AbstractCreateOperation extends AbstractPostOperation {
             final Resource rsrc = resolver.getResource(path);
             final ModifiableValueMap mvm = rsrc.adaptTo(ModifiableValueMap.class);
             if ( mvm != null ) {
-                final Object node = this.jcrSsupport.getNode(rsrc);
-                final boolean wasVersionable = (node == null ? false : this.jcrSsupport.isVersionable(rsrc));
+                final Object node = this.jcrSupport.getNode(rsrc);
+                final boolean wasVersionable = (node == null ? false : this.jcrSupport.isVersionable(rsrc));
 
                 if ( node != null ) {
-                    this.jcrSsupport.checkoutIfNecessary(rsrc, changes, versioningConfiguration);
-                    this.jcrSsupport.setPrimaryNodeType(node, nodeType);
+                    this.jcrSupport.checkoutIfNecessary(rsrc, changes, versioningConfiguration);
+                    this.jcrSupport.setPrimaryNodeType(node, nodeType);
                 } else {
                     mvm.put(JcrConstants.JCR_PRIMARYTYPE, nodeType);
                 }
@@ -183,7 +183,7 @@ abstract class AbstractCreateOperation extends AbstractPostOperation {
                     // the mix:versionable mixin does an implicit checkout
                     if (!wasVersionable &&
                             versioningConfiguration.isCheckinOnNewVersionableNode() &&
-                            this.jcrSsupport.isVersionable(rsrc)) {
+                            this.jcrSupport.isVersionable(rsrc)) {
                         changes.add(Modification.onCheckout(path));
                     }
                 }
@@ -203,7 +203,7 @@ abstract class AbstractCreateOperation extends AbstractPostOperation {
             final Resource rsrc = resolver.getResource(path);
             final ModifiableValueMap mvm = rsrc.adaptTo(ModifiableValueMap.class);
             if ( mvm != null ) {
-                this.jcrSsupport.checkoutIfNecessary(rsrc, changes, versioningConfiguration);
+                this.jcrSupport.checkoutIfNecessary(rsrc, changes, versioningConfiguration);
                 mvm.put(JcrConstants.JCR_MIXINTYPES, mixins);
 
                 for(final String mixin : mixins) {
@@ -593,7 +593,7 @@ abstract class AbstractCreateOperation extends AbstractPostOperation {
                 // check for node type
                 final String nodeType = getPrimaryType(reqProperties, tmpPath);
 
-                this.jcrSsupport.checkoutIfNecessary(resource, changes, versioningConfiguration);
+                this.jcrSupport.checkoutIfNecessary(resource, changes, versioningConfiguration);
 
                 try {
                     final Map<String, Object> props = new HashMap<>();

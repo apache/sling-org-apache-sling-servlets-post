@@ -236,28 +236,28 @@ public interface SlingPostConstants {
 
     /**
      * Possible value of the {@link #RP_ORDER} parameter indicating that the
-     * node by moved to the first position amongst its sibblings (value is
+     * node by moved to the first position amongst its siblings (value is
      * "first").
      */
     public static final String ORDER_FIRST = "first";
 
     /**
      * Possible value of the {@link #RP_ORDER} parameter indicating that the
-     * node by moved immediately before the sibbling whose name is contained in
+     * node by moved immediately before the sibling whose name is contained in
      * the {@link #RP_ORDER} parameter (value is "before ").
      */
     public static final String ORDER_BEFORE = "before ";
 
     /**
      * Possible value of the {@link #RP_ORDER} parameter indicating that the
-     * node by moved immediately after the sibbling whose name is contained in
+     * node by moved immediately after the sibling whose name is contained in
      * the {@link #RP_ORDER} parameter (value is "after ").
      */
     public static final String ORDER_AFTER = "after ";
 
     /**
      * Possible value of the {@link #RP_ORDER} parameter indicating that the
-     * node by moved to the last position amongst its sibblings (value is
+     * node by moved to the last position amongst its siblings (value is
      * "last").
      */
     public static final String ORDER_LAST = "last";

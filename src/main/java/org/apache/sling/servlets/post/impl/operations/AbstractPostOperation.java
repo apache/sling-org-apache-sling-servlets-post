@@ -26,8 +26,6 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
@@ -64,7 +62,7 @@ public abstract class AbstractPostOperation implements PostOperation {
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
     /** The JCR support provides additional functionality if the resources a backed up by JCR. */
-    protected final JCRSupport jcrSsupport = JCRSupport.INSTANCE;
+    protected final JCRSupport jcrSupport = JCRSupport.INSTANCE;
 
     /**
      * Prepares and finalizes the actual operation. Preparation encompasses
@@ -177,7 +175,7 @@ public abstract class AbstractPostOperation implements PostOperation {
             if (!isSkipCheckin(request)) {
                 // now do the checkins
                 for(String checkinPath : nodesToCheckin) {
-                    if (this.jcrSsupport.checkin(request.getResourceResolver().getResource(checkinPath))) {
+                    if (this.jcrSupport.checkin(request.getResourceResolver().getResource(checkinPath))) {
                         response.onChange("checkin", checkinPath);
                     }
                 }
@@ -311,6 +309,102 @@ public abstract class AbstractPostOperation implements PostOperation {
      */
     protected String getResourcePath(SlingHttpServletRequest request) {
         return request.getResource().getPath();
+    }
+
+
+    /**
+     * Orders the given node according to the specified command. The following
+     * syntax is supported: &lt;xmp&gt; | first | before all child nodes | before A |
+     * before child node A | after A | after child node A | last | after all
+     * nodes | N | at a specific position, N being an integer &lt;/xmp&gt;
+     *
+     * @param request The http request
+     * @param resource the resource to order
+     * @param changes the list of modifications
+     * @throws PersistenceException in case the operation is not successful 
+     */
+    protected void orderNode(final SlingHttpServletRequest request,
+            final Resource resource,
+            final List<Modification> changes) throws PersistenceException {
+
+        final String command = request.getParameter(SlingPostConstants.RP_ORDER);
+        if (command == null || command.length() == 0) {
+            // nothing to do
+            return;
+        }
+
+        final Resource parent = resource.getParent();
+
+        String next = null;
+        if (command.equals(SlingPostConstants.ORDER_FIRST)) {
+
+            next = parent.listChildren().next().getName();
+
+        } else if (command.equals(SlingPostConstants.ORDER_LAST)) {
+
+            next = "";
+
+        } else if (command.startsWith(SlingPostConstants.ORDER_BEFORE)) {
+
+            next = command.substring(SlingPostConstants.ORDER_BEFORE.length());
+
+        } else if (command.startsWith(SlingPostConstants.ORDER_AFTER)) {
+
+            String name = command.substring(SlingPostConstants.ORDER_AFTER.length());
+            Iterator<Resource> iter = parent.listChildren();
+            while (iter.hasNext()) {
+                Resource r = iter.next();
+                if (r.getName().equals(name)) {
+                    if (iter.hasNext()) {
+                        next = iter.next().getName();
+                    } else {
+                        next = "";
+                    }
+                }
+            }
+
+        } else {
+            // check for integer
+            try {
+                // 01234
+                // abcde move a -> 2 (above 3)
+                // bcade move a -> 1 (above 1)
+                // bacde
+                int newPos = Integer.parseInt(command);
+                next = "";
+                Iterator<Resource> iter = parent.listChildren();
+                while (iter.hasNext() && newPos >= 0) {
+                    Resource r = iter.next();
+                    if (r.getName().equals(resource.getName())) {
+                        // if old node is found before index, need to
+                        // inc index
+                        newPos++;
+                    }
+                    if (newPos == 0) {
+                        next = r.getName();
+                        break;
+                    }
+                    newPos--;
+                }
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException(
+                    "provided node ordering command is invalid: " + command);
+            }
+        }
+
+        if (next != null) {
+            if (next.equals("")) {
+                next = null;
+            }
+            resource.getResourceResolver().orderBefore(parent, resource.getName(), next);
+            changes.add(Modification.onOrder(resource.getPath(), next));
+            if (log.isDebugEnabled()) {
+                log.debug("Resource {} ordered '{}'", resource.getPath(), command);
+            }
+        } else {
+            throw new IllegalArgumentException(
+                "provided node ordering command is invalid: " + command);
+        }
     }
 
     private static class ApplyToIterator implements Iterator<Resource> {

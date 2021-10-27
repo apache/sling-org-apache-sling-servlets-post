@@ -45,130 +45,15 @@ import javax.jcr.nodetype.PropertyDefinition;
 import javax.jcr.version.VersionException;
 
 import org.apache.jackrabbit.JcrConstants;
-import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.servlets.post.Modification;
-import org.apache.sling.servlets.post.SlingPostConstants;
 import org.apache.sling.servlets.post.VersioningConfiguration;
 import org.apache.sling.servlets.post.exceptions.PreconditionViolatedPersistenceException;
 import org.apache.sling.servlets.post.exceptions.TemporaryPersistenceException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class JCRSupportImpl {
-
-    /** Logger. */
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
-
-    /**
-     * Orders the given node according to the specified command. The following
-     * syntax is supported: &lt;xmp&gt; | first | before all child nodes | before A |
-     * before child node A | after A | after child node A | last | after all
-     * nodes | N | at a specific position, N being an integer &lt;/xmp&gt;
-     *
-     * @param request The http request
-     * @param resource the resource to order
-     * @param changes the list of modifications
-     * @throws PersistenceException in case the operation is not successful 
-     */
-    public void orderNode(final SlingHttpServletRequest request,
-            final Resource resource,
-            final List<Modification> changes) throws PersistenceException {
-
-        final String command = request.getParameter(SlingPostConstants.RP_ORDER);
-        if (command == null || command.length() == 0) {
-            // nothing to do
-            return;
-        }
-
-        final Node node = resource.adaptTo(Node.class);
-        if (node == null) {
-            return;
-        }
-
-        try {
-            final Node parent = node.getParent();
-
-            String next = null;
-            if (command.equals(SlingPostConstants.ORDER_FIRST)) {
-
-                next = parent.getNodes().nextNode().getName();
-
-            } else if (command.equals(SlingPostConstants.ORDER_LAST)) {
-
-                next = "";
-
-            } else if (command.startsWith(SlingPostConstants.ORDER_BEFORE)) {
-
-                next = command.substring(SlingPostConstants.ORDER_BEFORE.length());
-
-            } else if (command.startsWith(SlingPostConstants.ORDER_AFTER)) {
-
-                String name = command.substring(SlingPostConstants.ORDER_AFTER.length());
-                NodeIterator iter = parent.getNodes();
-                while (iter.hasNext()) {
-                    Node n = iter.nextNode();
-                    if (n.getName().equals(name)) {
-                        if (iter.hasNext()) {
-                            next = iter.nextNode().getName();
-                        } else {
-                            next = "";
-                        }
-                    }
-                }
-
-            } else {
-                // check for integer
-                try {
-                    // 01234
-                    // abcde move a -> 2 (above 3)
-                    // bcade move a -> 1 (above 1)
-                    // bacde
-                    int newPos = Integer.parseInt(command);
-                    next = "";
-                    NodeIterator iter = parent.getNodes();
-                    while (iter.hasNext() && newPos >= 0) {
-                        Node n = iter.nextNode();
-                        if (n.getName().equals(node.getName())) {
-                            // if old node is found before index, need to
-                            // inc index
-                            newPos++;
-                        }
-                        if (newPos == 0) {
-                            next = n.getName();
-                            break;
-                        }
-                        newPos--;
-                    }
-                } catch (NumberFormatException e) {
-                    throw new IllegalArgumentException(
-                        "provided node ordering command is invalid: " + command);
-                }
-            }
-
-            if (next != null) {
-                if (next.equals("")) {
-                    next = null;
-                }
-                parent.orderBefore(node.getName(), next);
-                changes.add(Modification.onOrder(node.getPath(), next));
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Node {} moved '{}'", node.getPath(), command);
-                }
-            } else {
-                throw new IllegalArgumentException(
-                    "provided node ordering command is invalid: " + command);
-            }
-        } catch (final VersionException|ConstraintViolationException|ItemNotFoundException e) {
-            throw new PreconditionViolatedPersistenceException("Unable to order resource", e, resource.getPath(), null);
-        } catch (final UnsupportedRepositoryOperationException|LockException e) { 
-            throw new TemporaryPersistenceException("Unable to order resource", e, resource.getPath(), null);
-        } catch ( final RepositoryException re) {
-            throw new PersistenceException("Unable to order resource", re, resource.getPath(), null);
-        }
-    }
 
     private boolean isVersionable(final Node node) throws RepositoryException {
         return node.isNodeType(JcrConstants.MIX_VERSIONABLE);
