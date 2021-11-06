@@ -135,7 +135,7 @@ abstract class AbstractCopyMoveOperation extends AbstractPostOperation {
             return;
         }
         // finally apply the ordering parameter
-        this.prderResource(request, destResource, changes);
+        this.orderResource(request, destResource, changes);
     }
 
     /**

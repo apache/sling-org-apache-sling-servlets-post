@@ -323,7 +323,7 @@ public abstract class AbstractPostOperation implements PostOperation {
      * @param changes the list of modifications
      * @throws PersistenceException in case the operation is not successful
      */
-    protected void prderResource(final SlingHttpServletRequest request,
+    protected void orderResource(final SlingHttpServletRequest request,
             final Resource resource,
             final List<Modification> changes) throws PersistenceException {
 

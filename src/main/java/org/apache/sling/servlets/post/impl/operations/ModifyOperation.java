@@ -94,7 +94,7 @@ public class ModifyOperation extends AbstractCreateOperation {
 
         // order content
         final Resource newResource = request.getResourceResolver().getResource(response.getPath());
-        this.prderResource(request, newResource, changes);
+        this.orderResource(request, newResource, changes);
     }
 
     @Override
