@@ -61,7 +61,7 @@ public abstract class AbstractPostOperation implements PostOperation {
      */
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
-    /** The JCR support provides additional functionality if the resources a backed up by JCR. */
+    /** The JCR support provides additional functionality if the resources are backed by JCR. */
     protected final JCRSupport jcrSupport = JCRSupport.INSTANCE;
 
     /**
@@ -313,7 +313,7 @@ public abstract class AbstractPostOperation implements PostOperation {
 
 
     /**
-     * Orders the given node according to the specified command. The following
+     * Orders the given resource according to the specified command. The following
      * syntax is supported: &lt;xmp&gt; | first | before all child nodes | before A |
      * before child node A | after A | after child node A | last | after all
      * nodes | N | at a specific position, N being an integer &lt;/xmp&gt;
@@ -321,9 +321,9 @@ public abstract class AbstractPostOperation implements PostOperation {
      * @param request The http request
      * @param resource the resource to order
      * @param changes the list of modifications
-     * @throws PersistenceException in case the operation is not successful 
+     * @throws PersistenceException in case the operation is not successful
      */
-    protected void orderNode(final SlingHttpServletRequest request,
+    protected void prderResource(final SlingHttpServletRequest request,
             final Resource resource,
             final List<Modification> changes) throws PersistenceException {
 
@@ -376,7 +376,7 @@ public abstract class AbstractPostOperation implements PostOperation {
                 while (iter.hasNext() && newPos >= 0) {
                     Resource r = iter.next();
                     if (r.getName().equals(resource.getName())) {
-                        // if old node is found before index, need to
+                        // if old resource is found before index, need to
                         // inc index
                         newPos++;
                     }
@@ -403,7 +403,7 @@ public abstract class AbstractPostOperation implements PostOperation {
             }
         } else {
             throw new IllegalArgumentException(
-                "provided node ordering command is invalid: " + command);
+                "provided resource ordering command is invalid: " + command);
         }
     }
 
