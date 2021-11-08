@@ -45,15 +45,15 @@ public class CopyOperation extends AbstractCopyMoveOperation {
     throws PersistenceException {
         final Resource parentRsrc = source.getResourceResolver().getResource(destParent);
         // check if the item is backed by JCR
-        final Object item = this.jcrSsupport.getItem(source);
-        final Object parentItem = this.jcrSsupport.getNode(parentRsrc);
+        final Object item = this.jcrSupport.getItem(source);
+        final Object parentItem = this.jcrSupport.getNode(parentRsrc);
         if ( item == null || parentItem == null ) {
             // no JCR, copy via resources
             final Resource result = copy(source, parentRsrc);
             changes.add(Modification.onCopied(source.getPath(), result.getPath()));
             return result;
         } else {
-            final String dest = this.jcrSsupport.copy(item, parentItem, destName);
+            final String dest = this.jcrSupport.copy(item, parentItem, destName);
             changes.add(Modification.onCopied(source.getPath(), dest));
             log.debug("copy {} to {}", source, dest);
             return source.getResourceResolver().getResource(dest);

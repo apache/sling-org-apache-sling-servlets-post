@@ -94,7 +94,7 @@ public class ModifyOperation extends AbstractCreateOperation {
 
         // order content
         final Resource newResource = request.getResourceResolver().getResource(response.getPath());
-        this.jcrSsupport.orderNode(request, newResource, changes);
+        this.orderResource(request, newResource, changes);
     }
 
     @Override
@@ -237,39 +237,39 @@ public class ModifyOperation extends AbstractCreateOperation {
             // first, otherwise ensure the parent location
             if (resolver.getResource(propPath) != null) {
                 final Resource parent = resolver.getResource(propPath).getParent();
-                this.jcrSsupport.checkoutIfNecessary(parent, changes, versioningConfiguration);
+                this.jcrSupport.checkoutIfNecessary(parent, changes, versioningConfiguration);
 
                 resolver.delete(resolver.getResource(propPath));
                 changes.add(Modification.onDeleted(propPath));
             } else {
                 Resource parent = deepGetOrCreateResource(resolver, property.getParentPath(),
                     reqProperties, changes, versioningConfiguration);
-                this.jcrSsupport.checkoutIfNecessary(parent, changes, versioningConfiguration);
+                this.jcrSupport.checkoutIfNecessary(parent, changes, versioningConfiguration);
             }
 
             // move through the session and record operation
             // check if the item is backed by JCR
             Resource sourceRsrc = resolver.getResource(source);
-            final Object sourceItem = this.jcrSsupport.getItem(sourceRsrc);
-            final Object destItem = this.jcrSsupport.getItem(resolver.getResource(property.getParentPath()));
+            final Object sourceItem = this.jcrSupport.getItem(sourceRsrc);
+            final Object destItem = this.jcrSupport.getItem(resolver.getResource(property.getParentPath()));
             if ( sourceItem != null && destItem != null ) {
-                if ( this.jcrSsupport.isNode(sourceRsrc) ) {
+                if ( this.jcrSupport.isNode(sourceRsrc) ) {
                     if ( isMove ) {
-                        this.jcrSsupport.checkoutIfNecessary(sourceRsrc.getParent(), changes, versioningConfiguration);
-                        this.jcrSsupport.move(sourceItem, destItem, ResourceUtil.getName(propPath));
+                        this.jcrSupport.checkoutIfNecessary(sourceRsrc.getParent(), changes, versioningConfiguration);
+                        this.jcrSupport.move(sourceItem, destItem, ResourceUtil.getName(propPath));
                     } else {
-                        this.jcrSsupport.checkoutIfNecessary(resolver.getResource(property.getParentPath()), changes, versioningConfiguration);
-                        this.jcrSsupport.copy(sourceItem, destItem, property.getName());
+                        this.jcrSupport.checkoutIfNecessary(resolver.getResource(property.getParentPath()), changes, versioningConfiguration);
+                        this.jcrSupport.copy(sourceItem, destItem, property.getName());
                     }
                 } else {
                     // property: move manually
-                    this.jcrSsupport.checkoutIfNecessary(resolver.getResource(property.getParentPath()), changes, versioningConfiguration);
+                    this.jcrSupport.checkoutIfNecessary(resolver.getResource(property.getParentPath()), changes, versioningConfiguration);
                     // create destination property
-                    this.jcrSsupport.copy(sourceItem, destItem, ResourceUtil.getName(source));
+                    this.jcrSupport.copy(sourceItem, destItem, ResourceUtil.getName(source));
 
                     // remove source property (if not just copying)
                     if ( isMove ) {
-                        this.jcrSsupport.checkoutIfNecessary(sourceRsrc.getParent(), changes, versioningConfiguration);
+                        this.jcrSupport.checkoutIfNecessary(sourceRsrc.getParent(), changes, versioningConfiguration);
                         resolver.delete(sourceRsrc);
                     }
                 }
@@ -314,7 +314,7 @@ public class ModifyOperation extends AbstractCreateOperation {
                 if ( parent == null ) {
                     continue;
                 }
-                this.jcrSsupport.checkoutIfNecessary(parent, changes, versioningConfiguration);
+                this.jcrSupport.checkoutIfNecessary(parent, changes, versioningConfiguration);
 
                 final ValueMap vm = parent.adaptTo(ModifiableValueMap.class);
                 if ( vm == null ) {
@@ -351,14 +351,14 @@ public class ModifyOperation extends AbstractCreateOperation {
     throws PersistenceException {
 
         final SlingPropertyValueHandler propHandler = new SlingPropertyValueHandler(
-            dateParser, this.jcrSsupport, changes);
+            dateParser, this.jcrSupport, changes);
 
         for (final RequestProperty prop : reqProperties.values()) {
             if (prop.hasValues()) {
                 final Resource parent = deepGetOrCreateResource(resolver,
                     prop.getParentPath(), reqProperties, changes, versioningConfiguration);
 
-                this.jcrSsupport.checkoutIfNecessary(parent, changes, versioningConfiguration);
+                this.jcrSupport.checkoutIfNecessary(parent, changes, versioningConfiguration);
 
                 // skip jcr special properties
                 if (prop.getName().equals(JcrConstants.JCR_PRIMARYTYPE)

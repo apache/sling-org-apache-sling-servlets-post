@@ -77,7 +77,7 @@ abstract class AbstractCopyMoveOperation extends AbstractPostOperation {
                         + dest + ": destination exists");
                 return;
             } else {
-                this.jcrSsupport.checkoutIfNecessary(request.getResourceResolver().getResource(dstParent),
+                this.jcrSupport.checkoutIfNecessary(request.getResourceResolver().getResource(dstParent),
                         changes, versioningConfiguration);
             }
 
@@ -88,7 +88,7 @@ abstract class AbstractCopyMoveOperation extends AbstractPostOperation {
             if (!dstParent.equals("")) {
                 final Resource parentResource = request.getResourceResolver().getResource(dstParent);
                 if (parentResource != null ) {
-                    this.jcrSsupport.checkoutIfNecessary(parentResource, changes, versioningConfiguration);
+                    this.jcrSupport.checkoutIfNecessary(parentResource, changes, versioningConfiguration);
                 } else {
                     response.setStatus(HttpServletResponse.SC_PRECONDITION_FAILED,
                         "Cannot " + getOperationName() + " " + resource + " to "
@@ -135,7 +135,7 @@ abstract class AbstractCopyMoveOperation extends AbstractPostOperation {
             return;
         }
         // finally apply the ordering parameter
-        this.jcrSsupport.orderNode(request, destResource, changes);
+        this.orderResource(request, destResource, changes);
     }
 
     /**

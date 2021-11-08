@@ -49,14 +49,6 @@ public class JCRSupport {
         this.supportImpl = impl;
     }
 
-    public void orderNode(final SlingHttpServletRequest request,
-            final Resource resource,
-            final List<Modification> changes) throws PersistenceException {
-        if ( supportImpl != null ) {
-            ((JCRSupportImpl)supportImpl).orderNode(request, resource, changes);
-        }
-    }
-
     public boolean checkin(final Resource rsrc)
     throws PersistenceException {
         if ( rsrc != null && supportImpl != null ) {

@@ -94,7 +94,7 @@ public class DeleteOperation extends AbstractPostOperation {
         if (deleteChunks) {
             uploadHandler.deleteChunks(resource);
         } else {
-            this.jcrSsupport.checkoutIfNecessary(resource.getParent(), changes,
+            this.jcrSupport.checkoutIfNecessary(resource.getParent(), changes,
                 versioningConfiguration);
         }
 
