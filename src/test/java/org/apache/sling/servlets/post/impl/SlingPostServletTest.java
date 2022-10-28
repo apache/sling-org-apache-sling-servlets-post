@@ -25,15 +25,23 @@ import java.util.StringTokenizer;
 
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.request.header.MediaRangeList;
+import org.apache.sling.api.resource.Resource;
 import org.apache.sling.commons.testing.sling.MockSlingHttpServletRequest;
 import org.apache.sling.servlets.post.HtmlResponse;
 import org.apache.sling.servlets.post.JSONResponse;
+import org.apache.sling.servlets.post.PostOperation;
 import org.apache.sling.servlets.post.PostResponse;
 import org.apache.sling.servlets.post.SlingPostConstants;
 import org.apache.sling.servlets.post.impl.helper.MockSlingHttpServlet3Request;
 import org.apache.sling.servlets.post.impl.helper.MockSlingHttpServlet3Response;
+import org.apache.sling.servlets.post.impl.operations.DeleteOperation;
 
 import junit.framework.TestCase;
+
+import org.mockito.Mockito;
+import static org.mockito.Mockito.eq;
+import org.mockito.internal.util.reflection.Whitebox;
+import org.slf4j.Logger;
 
 public class SlingPostServletTest extends TestCase {
     
@@ -116,6 +124,29 @@ public class SlingPostServletTest extends TestCase {
        	result = ((ErrorHandlingPostResponseWrapper)result).getWrapped();
         assertTrue(result instanceof JSONResponse);
     }
+    
+    
+    public void testPersistenceExceptionLogging() {
+        Logger log = Mockito.mock(Logger.class);
+        SlingHttpServletRequest mockRequest = Mockito.mock(SlingHttpServletRequest.class);
+        Resource mockResource = Mockito.mock(Resource.class);
+        Mockito.when(mockResource.getPath()).thenReturn("/path");
+        Mockito.when(mockRequest.getResource()).thenReturn(mockResource);
+        Whitebox.setInternalState(servlet, "log", log);
+        PostOperation operation = new DeleteOperation();
+        Exception exception = new IOException("foo");
+        
+        Whitebox.setInternalState(servlet, "logStacktraceInExceptions", true);
+        String expected = "Exception while handling POST on path [{}] with operation [{}]";
+        servlet.logPersistenceException(mockRequest, operation, exception);
+        Mockito.verify(log).warn(eq(expected),eq("/path"),eq("org.apache.sling.servlets.post.impl.operations.DeleteOperation"),eq(exception));
+        
+        Whitebox.setInternalState(servlet, "logStacktraceInExceptions", false);
+        expected = "{} while handling POST on path [{}] with operation [{}]: {}";
+        servlet.logPersistenceException(mockRequest, operation, exception);
+        Mockito.verify(log).warn(eq(expected),eq("java.io.IOException"),eq("/path"),eq("org.apache.sling.servlets.post.impl.operations.DeleteOperation"),eq("foo"));  
+    }
+    
 
     /**
      * SLING-10006 - verify we get the error handling wrapped PostResponse
