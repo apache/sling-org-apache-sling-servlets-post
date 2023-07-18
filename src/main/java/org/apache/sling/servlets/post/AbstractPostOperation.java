@@ -16,6 +16,9 @@
  */
 package org.apache.sling.servlets.post;
 
+import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -26,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import javax.jcr.Item;
 import javax.jcr.ItemNotFoundException;
@@ -62,7 +66,7 @@ public abstract class AbstractPostOperation implements PostOperation {
     /**
      * default log
      */
-    protected final Logger log = LoggerFactory.getLogger(getClass());
+    protected final Logger log = LoggerFactory.getLogger(AbstractPostOperation.class);
 
     /**
      * Prepares and finalizes the actual operation. Preparation encompasses
@@ -108,11 +112,15 @@ public abstract class AbstractPostOperation implements PostOperation {
             // invoke processors
             if (processors != null) {
                 for (SlingPostProcessor processor : processors) {
+                    Instant start = Instant.now();
+                    log.debug("About to perform processor {}", processor.getClass().getName());
                     processor.process(request, changes);
+                    log.debug("Performed processor {} in {}", processor.getClass().getName(), Duration.between(start, Instant.now()).toMillis());
                 }
             }
 
             // check modifications for remaining postfix and store the base path
+            log.debug("Check modifications for remaining postfix and store the base path");
             final Map<String, String> modificationSourcesContainingPostfix = new HashMap<>();
             final Set<String> allModificationSources = new HashSet<>(changes.size());
             for (final Modification modification : changes) {
@@ -127,6 +135,7 @@ public abstract class AbstractPostOperation implements PostOperation {
             }
 
             // fail if any of the base paths (before the postfix) which had a postfix are contained in the modification set
+            log.debug("Fail if any of the base paths (before the postfix) which had a postfix are contained in the modification set");
             if (modificationSourcesContainingPostfix.size() > 0) {
                 for (final Map.Entry<String, String> sourceToCheck : modificationSourcesContainingPostfix.entrySet()) {
                     if (allModificationSources.contains(sourceToCheck.getKey())) {
@@ -167,6 +176,7 @@ public abstract class AbstractPostOperation implements PostOperation {
 
             if (isSessionSaveRequired(session, request)) {
                 request.getResourceResolver().commit();
+                log.debug("Saved the session");
             }
 
             if (!isSkipCheckin(request)) {
@@ -174,6 +184,7 @@ public abstract class AbstractPostOperation implements PostOperation {
                 for(String checkinPath : nodesToCheckin) {
                     if (checkin(request.getResourceResolver(), checkinPath)) {
                         response.onChange("checkin", checkinPath);
+                        log.debug("Checked in the node");
                     }
                 }
             }
