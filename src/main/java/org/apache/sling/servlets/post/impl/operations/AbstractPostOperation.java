@@ -16,6 +16,8 @@
  */
 package org.apache.sling.servlets.post.impl.operations;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -106,7 +108,10 @@ public abstract class AbstractPostOperation implements PostOperation {
             try {
                 if (processors != null) {
                     for (SlingPostProcessor processor : processors) {
+                        Instant start = Instant.now();
                         processor.process(request, changes);
+                        request.getRequestProgressTracker().log("Postprocessor %s took %d ms",processors.getClass().getName(), 
+                                Duration.between(start,Instant.now()).toMillis());
                     }
                 }
             } catch (PreconditionViolatedPersistenceException|TemporaryPersistenceException e) {
