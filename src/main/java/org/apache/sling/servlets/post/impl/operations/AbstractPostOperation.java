@@ -16,6 +16,8 @@
  */
 package org.apache.sling.servlets.post.impl.operations;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -59,7 +61,7 @@ public abstract class AbstractPostOperation implements PostOperation {
     /**
      * Default logger
      */
-    protected final Logger log = LoggerFactory.getLogger(getClass());
+    protected final Logger log = LoggerFactory.getLogger(AbstractPostOperation.class);
 
     /** The JCR support provides additional functionality if the resources are backed by JCR. */
     protected final JCRSupport jcrSupport = JCRSupport.INSTANCE;
@@ -106,7 +108,10 @@ public abstract class AbstractPostOperation implements PostOperation {
             try {
                 if (processors != null) {
                     for (SlingPostProcessor processor : processors) {
+                        Instant start = Instant.now();
+                        log.debug("About to perform processor {}", processor.getClass().getName());
                         processor.process(request, changes);
+                        log.debug("Performed processor {} in {}", processor.getClass().getName(), Duration.between(start, Instant.now()).toMillis());
                     }
                 }
             } catch (PreconditionViolatedPersistenceException|TemporaryPersistenceException e) {
@@ -128,6 +133,7 @@ public abstract class AbstractPostOperation implements PostOperation {
                     }
                 }
             }
+            log.debug("Check modifications for remaining postfix and store the base path");
 
             // fail if any of the base paths (before the postfix) which had a postfix are contained in the modification set
             if (modificationSourcesContainingPostfix.size() > 0) {
@@ -138,6 +144,7 @@ public abstract class AbstractPostOperation implements PostOperation {
                     }
                 }
             }
+            log.debug("Fail if any of the base paths (before the postfix) which had a postfix are contained in the modification set");
 
             final Set<String> nodesToCheckin = new LinkedHashSet<>();
 
@@ -170,6 +177,7 @@ public abstract class AbstractPostOperation implements PostOperation {
 
             if (isResourceResolverCommitRequired(request)) {
                 request.getResourceResolver().commit();
+                log.debug("Saved the session");
             }
 
             if (!isSkipCheckin(request)) {
@@ -177,6 +185,7 @@ public abstract class AbstractPostOperation implements PostOperation {
                 for(String checkinPath : nodesToCheckin) {
                     if (this.jcrSupport.checkin(request.getResourceResolver().getResource(checkinPath))) {
                         response.onChange("checkin", checkinPath);
+                        log.debug("Checked in the node");
                     }
                 }
             }

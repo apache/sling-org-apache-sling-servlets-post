@@ -18,6 +18,8 @@
  */
 package org.apache.sling.servlets.post.impl.operations;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
@@ -40,6 +42,8 @@ import org.apache.sling.servlets.post.impl.helper.DateParser;
 import org.apache.sling.servlets.post.impl.helper.RequestProperty;
 import org.apache.sling.servlets.post.impl.helper.SlingFileUploadHandler;
 import org.apache.sling.servlets.post.impl.helper.SlingPropertyValueHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The <code>ModifyOperation</code> class implements the default operation
@@ -47,6 +51,8 @@ import org.apache.sling.servlets.post.impl.helper.SlingPropertyValueHandler;
  * client. This operation is able to create and/or modify content.
  */
 public class ModifyOperation extends AbstractCreateOperation {
+
+    Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private DateParser dateParser;
 
@@ -70,31 +76,54 @@ public class ModifyOperation extends AbstractCreateOperation {
 
     @Override
     protected void doRun(final SlingHttpServletRequest request,
-                    final PostResponse response,
-                    final List<Modification> changes)
-    throws PersistenceException {
+            final PostResponse response,
+            final List<Modification> changes)
+            throws PersistenceException {
         final Map<String, RequestProperty> reqProperties = collectContent(request, response);
 
         final VersioningConfiguration versioningConfiguration = getVersioningConfiguration(request);
 
         // do not change order unless you have a very good reason.
+        Instant start = Instant.now();
 
         // ensure root of new content
         processCreate(request.getResourceResolver(), reqProperties, response, changes, versioningConfiguration);
+        logger.debug("Performed create at {} path took {} ms to operate", request.getRequestURI(),
+                Duration.between(start, Instant.now()).toMillis());
 
+        Instant individual = Instant.now();
         // write content from existing content (@Move/CopyFrom parameters)
         processMoves(request.getResourceResolver(), reqProperties, changes, versioningConfiguration);
+        logger.debug("Performed move at {} path took {} ms to operate", request.getRequestURI(),
+                Duration.between(individual, Instant.now()).toMillis());
+
+        individual = Instant.now();
         processCopies(request.getResourceResolver(), reqProperties, changes, versioningConfiguration);
+        logger.debug("Performed copy at {} path took {} ms to operate", request.getRequestURI(),
+                Duration.between(individual, Instant.now()).toMillis());
 
         // cleanup any old content (@Delete parameters)
+        individual = Instant.now();
         processDeletes(request.getResourceResolver(), reqProperties, changes, versioningConfiguration);
+        logger.debug("Performed delete at {} path took {} ms to operate", request.getRequestURI(),
+                Duration.between(individual, Instant.now()).toMillis());
 
         // write content from form
+        individual = Instant.now();
         writeContent(request.getResourceResolver(), reqProperties, changes, versioningConfiguration);
+        logger.debug("Performed write at {} path took {} ms to operate", request.getRequestURI(),
+                Duration.between(individual, Instant.now()).toMillis());
+
+
 
         // order content
+        individual = Instant.now();
         final Resource newResource = request.getResourceResolver().getResource(response.getPath());
         this.orderResource(request, newResource, changes);
+        logger.debug("Performed resource ordering at {} path took {} ms to operate", request.getRequestURI(),
+                Duration.between(individual, Instant.now()).toMillis());
+
+        logger.debug("Completed the request for {} completed in {} ms", request.getRequestURI(), Duration.between(start, Instant.now()).toMillis());
     }
 
     @Override
@@ -134,13 +163,13 @@ public class ModifyOperation extends AbstractCreateOperation {
             // check whether it is a create request (trailing /)
             if (suffix.endsWith(SlingPostConstants.DEFAULT_CREATE_SUFFIX)) {
                 suffix = suffix.substring(0, suffix.length()
-                    - SlingPostConstants.DEFAULT_CREATE_SUFFIX.length());
+                        - SlingPostConstants.DEFAULT_CREATE_SUFFIX.length());
                 doGenerateName = true;
 
                 // or with the star suffix /*
             } else if (suffix.endsWith(SlingPostConstants.STAR_CREATE_SUFFIX)) {
                 suffix = suffix.substring(0, suffix.length()
-                    - SlingPostConstants.STAR_CREATE_SUFFIX.length());
+                        - SlingPostConstants.STAR_CREATE_SUFFIX.length());
                 doGenerateName = true;
             }
 
@@ -165,6 +194,7 @@ public class ModifyOperation extends AbstractCreateOperation {
     /**
      * Moves all repository content listed as repository move source in the
      * request properties to the locations indicated by the resource properties.
+     * 
      * @param checkedOutNodes
      */
     private void processMoves(final ResourceResolver resolver,
@@ -175,7 +205,7 @@ public class ModifyOperation extends AbstractCreateOperation {
         for (RequestProperty property : reqProperties.values()) {
             if (property.hasRepositoryMoveSource()) {
                 processMovesCopiesInternal(property, true, resolver,
-                    reqProperties, changes, versioningConfiguration);
+                        reqProperties, changes, versioningConfiguration);
             }
         }
     }
@@ -183,6 +213,7 @@ public class ModifyOperation extends AbstractCreateOperation {
     /**
      * Copies all repository content listed as repository copy source in the
      * request properties to the locations indicated by the resource properties.
+     * 
      * @param checkedOutNodes
      */
     private void processCopies(final ResourceResolver resolver,
@@ -193,7 +224,7 @@ public class ModifyOperation extends AbstractCreateOperation {
         for (RequestProperty property : reqProperties.values()) {
             if (property.hasRepositoryCopySource()) {
                 processMovesCopiesInternal(property, false, resolver,
-                    reqProperties, changes, versioningConfiguration);
+                        reqProperties, changes, versioningConfiguration);
             }
         }
     }
@@ -201,27 +232,29 @@ public class ModifyOperation extends AbstractCreateOperation {
     /**
      * Internal implementation of the
      * {@link #processCopies(ResourceResolver, Map, HtmlResponse)} and
-     * {@link #processMoves(ResourceResolver, Map, HtmlResponse)} methods taking into
+     * {@link #processMoves(ResourceResolver, Map, HtmlResponse)} methods taking
+     * into
      * account whether the source is actually a property or a node.
      * <p>
      * Any intermediary nodes to the destination as indicated by the
      * <code>property</code> path are created using the
      * <code>reqProperties</code> as indications for required node types.
      *
-     * @param property The {@link RequestProperty} identifying the source
-     *            content of the operation.
-     * @param isMove <code>true</code> if the source item is to be moved.
-     *            Otherwise the source item is just copied.
-     * @param resolver The resource resolver to use to access the content
+     * @param property      The {@link RequestProperty} identifying the source
+     *                      content of the operation.
+     * @param isMove        <code>true</code> if the source item is to be moved.
+     *                      Otherwise the source item is just copied.
+     * @param resolver      The resource resolver to use to access the content
      * @param reqProperties All accepted request properties. This is used to
-     *            create intermediary nodes along the property path.
-     * @param response The <code>HtmlResponse</code> into which successful
-     *            copies and moves as well as intermediary node creations are
-     *            recorded.
+     *                      create intermediary nodes along the property path.
+     * @param response      The <code>HtmlResponse</code> into which successful
+     *                      copies and moves as well as intermediary node creations
+     *                      are
+     *                      recorded.
      * @throws PersistenceException May be thrown if an error occurs.
      */
     private void processMovesCopiesInternal(
-                    RequestProperty property,
+            RequestProperty property,
             boolean isMove, final ResourceResolver resolver,
             Map<String, RequestProperty> reqProperties, List<Modification> changes,
             VersioningConfiguration versioningConfiguration)
@@ -231,7 +264,7 @@ public class ModifyOperation extends AbstractCreateOperation {
         String source = property.getRepositorySource();
 
         // only continue here, if the source really exists
-        if (resolver.getResource(source) != null ) {
+        if (resolver.getResource(source) != null) {
 
             // if the destination item already exists, remove it
             // first, otherwise ensure the parent location
@@ -243,7 +276,7 @@ public class ModifyOperation extends AbstractCreateOperation {
                 changes.add(Modification.onDeleted(propPath));
             } else {
                 Resource parent = deepGetOrCreateResource(resolver, property.getParentPath(),
-                    reqProperties, changes, versioningConfiguration);
+                        reqProperties, changes, versioningConfiguration);
                 this.jcrSupport.checkoutIfNecessary(parent, changes, versioningConfiguration);
             }
 
@@ -252,23 +285,25 @@ public class ModifyOperation extends AbstractCreateOperation {
             Resource sourceRsrc = resolver.getResource(source);
             final Object sourceItem = this.jcrSupport.getItem(sourceRsrc);
             final Object destItem = this.jcrSupport.getItem(resolver.getResource(property.getParentPath()));
-            if ( sourceItem != null && destItem != null ) {
-                if ( this.jcrSupport.isNode(sourceRsrc) ) {
-                    if ( isMove ) {
+            if (sourceItem != null && destItem != null) {
+                if (this.jcrSupport.isNode(sourceRsrc)) {
+                    if (isMove) {
                         this.jcrSupport.checkoutIfNecessary(sourceRsrc.getParent(), changes, versioningConfiguration);
                         this.jcrSupport.move(sourceItem, destItem, ResourceUtil.getName(propPath));
                     } else {
-                        this.jcrSupport.checkoutIfNecessary(resolver.getResource(property.getParentPath()), changes, versioningConfiguration);
+                        this.jcrSupport.checkoutIfNecessary(resolver.getResource(property.getParentPath()), changes,
+                                versioningConfiguration);
                         this.jcrSupport.copy(sourceItem, destItem, property.getName());
                     }
                 } else {
                     // property: move manually
-                    this.jcrSupport.checkoutIfNecessary(resolver.getResource(property.getParentPath()), changes, versioningConfiguration);
+                    this.jcrSupport.checkoutIfNecessary(resolver.getResource(property.getParentPath()), changes,
+                            versioningConfiguration);
                     // create destination property
                     this.jcrSupport.copy(sourceItem, destItem, ResourceUtil.getName(source));
 
                     // remove source property (if not just copying)
-                    if ( isMove ) {
+                    if (isMove) {
                         this.jcrSupport.checkoutIfNecessary(sourceRsrc.getParent(), changes, versioningConfiguration);
                         resolver.delete(sourceRsrc);
                     }
@@ -292,43 +327,43 @@ public class ModifyOperation extends AbstractCreateOperation {
      * Removes all properties listed as {@link RequestProperty#isDelete()} from
      * the resource.
      *
-     * @param resolver The <code>ResourceResolver</code> used to access the
-     *            resources to delete the properties.
+     * @param resolver      The <code>ResourceResolver</code> used to access the
+     *                      resources to delete the properties.
      * @param reqProperties The map of request properties to check for
-     *            properties to be removed.
-     * @param response The <code>HtmlResponse</code> to be updated with
-     *            information on deleted properties.
+     *                      properties to be removed.
+     * @param response      The <code>HtmlResponse</code> to be updated with
+     *                      information on deleted properties.
      * @throws PersistenceException Is thrown if an error occurs checking or
-     *             removing properties.
+     *                              removing properties.
      */
     private void processDeletes(final ResourceResolver resolver,
             final Map<String, RequestProperty> reqProperties,
             final List<Modification> changes,
             final VersioningConfiguration versioningConfiguration)
-    throws PersistenceException {
+            throws PersistenceException {
 
         for (final RequestProperty property : reqProperties.values()) {
 
             if (property.isDelete()) {
                 final Resource parent = resolver.getResource(property.getParentPath());
-                if ( parent == null ) {
+                if (parent == null) {
                     continue;
                 }
                 this.jcrSupport.checkoutIfNecessary(parent, changes, versioningConfiguration);
 
                 final ValueMap vm = parent.adaptTo(ModifiableValueMap.class);
-                if ( vm == null ) {
+                if (vm == null) {
                     throw new PersistenceException("Resource '" + parent.getPath() + "' is not modifiable.");
                 }
-                if ( vm.containsKey(property.getName()) ) {
-                    if ( JcrConstants.JCR_MIXINTYPES.equals(property.getName()) ) {
+                if (vm.containsKey(property.getName())) {
+                    if (JcrConstants.JCR_MIXINTYPES.equals(property.getName())) {
                         vm.put(JcrConstants.JCR_MIXINTYPES, new String[0]);
                     } else {
                         vm.remove(property.getName());
                     }
                 } else {
                     final Resource childRsrc = resolver.getResource(parent.getPath() + '/' + property.getName());
-                    if ( childRsrc != null ) {
+                    if (childRsrc != null) {
                         resolver.delete(childRsrc);
                     }
                 }
@@ -348,21 +383,21 @@ public class ModifyOperation extends AbstractCreateOperation {
             final Map<String, RequestProperty> reqProperties,
             final List<Modification> changes,
             final VersioningConfiguration versioningConfiguration)
-    throws PersistenceException {
+            throws PersistenceException {
 
         final SlingPropertyValueHandler propHandler = new SlingPropertyValueHandler(
-            dateParser, this.jcrSupport, changes);
+                dateParser, this.jcrSupport, changes);
 
         for (final RequestProperty prop : reqProperties.values()) {
             if (prop.hasValues()) {
                 final Resource parent = deepGetOrCreateResource(resolver,
-                    prop.getParentPath(), reqProperties, changes, versioningConfiguration);
+                        prop.getParentPath(), reqProperties, changes, versioningConfiguration);
 
                 this.jcrSupport.checkoutIfNecessary(parent, changes, versioningConfiguration);
 
                 // skip jcr special properties
                 if (prop.getName().equals(JcrConstants.JCR_PRIMARYTYPE)
-                    || prop.getName().equals(JcrConstants.JCR_MIXINTYPES)) {
+                        || prop.getName().equals(JcrConstants.JCR_MIXINTYPES)) {
                     continue;
                 }
 
