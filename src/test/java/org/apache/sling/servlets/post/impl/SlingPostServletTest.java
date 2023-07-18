@@ -40,7 +40,6 @@ import junit.framework.TestCase;
 
 import org.mockito.Mockito;
 import static org.mockito.Mockito.eq;
-import org.mockito.internal.util.reflection.Whitebox;
 import org.slf4j.Logger;
 
 public class SlingPostServletTest extends TestCase {
@@ -132,16 +131,16 @@ public class SlingPostServletTest extends TestCase {
         Resource mockResource = Mockito.mock(Resource.class);
         Mockito.when(mockResource.getPath()).thenReturn("/path");
         Mockito.when(mockRequest.getResource()).thenReturn(mockResource);
-        Whitebox.setInternalState(servlet, "log", log);
+        servlet.setLog(log);
         PostOperation operation = new DeleteOperation();
         Exception exception = new IOException("foo");
         
-        Whitebox.setInternalState(servlet, "logStacktraceInExceptions", true);
+        servlet.setLogStacktraceInExceptions(true);
         String expected = "Exception while handling POST on path [{}] with operation [{}]";
         servlet.logPersistenceException(mockRequest, operation, exception);
         Mockito.verify(log).warn(eq(expected),eq("/path"),eq("org.apache.sling.servlets.post.impl.operations.DeleteOperation"),eq(exception));
         
-        Whitebox.setInternalState(servlet, "logStacktraceInExceptions", false);
+        servlet.setLogStacktraceInExceptions(false);
         expected = "{} while handling POST on path [{}] with operation [{}]: {}";
         servlet.logPersistenceException(mockRequest, operation, exception);
         Mockito.verify(log).warn(eq(expected),eq("java.io.IOException"),eq("/path"),eq("org.apache.sling.servlets.post.impl.operations.DeleteOperation"),eq("foo"));  
