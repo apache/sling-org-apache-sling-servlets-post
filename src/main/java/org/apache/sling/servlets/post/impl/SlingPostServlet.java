@@ -168,7 +168,7 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
     /**
      * default log
      */
-    private final Logger log = LoggerFactory.getLogger(getClass());
+    private Logger log = LoggerFactory.getLogger(getClass());
 
     private static final String PARAM_CHECKIN_ON_CREATE = ":checkinNewVersionableNodes";
 
@@ -858,5 +858,15 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
     private static final class PostResponseCreatorHolder {
         public PostResponseCreator creator;
         public int ranking;
+    }
+    
+    // for testing
+    protected void setLog(Logger log) {
+        this.log = log;
+    }
+    
+    // for testing
+    protected void setLogStacktraceInExceptions(boolean flag) {
+        this.logStacktraceInExceptions = flag;
     }
 }
