@@ -113,9 +113,9 @@ public abstract class AbstractPostOperation implements PostOperation {
             if (processors != null) {
                 for (SlingPostProcessor processor : processors) {
                     Instant start = Instant.now();
-                    log.debug("About to perform processor {}", processor.getClass().getName());
+                    request.getRequestProgressTracker().log("About to perform processor {}", processor.getClass().getName());
                     processor.process(request, changes);
-                    log.debug("Performed processor {} in {}", processor.getClass().getName(), Duration.between(start, Instant.now()).toMillis());
+                    request.getRequestProgressTracker().log("Performed processor {} in {}", processor.getClass().getName(), Duration.between(start, Instant.now()).toMillis());
                 }
             }
 
