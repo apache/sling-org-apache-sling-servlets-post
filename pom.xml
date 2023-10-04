@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.apache.sling</groupId>
         <artifactId>sling-bundle-parent</artifactId>
-        <version>46</version>
+        <version>52</version>
         <relativePath />
     </parent>
 
@@ -39,8 +39,8 @@
         <connection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-servlets-post.git</connection>
         <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-servlets-post.git</developerConnection>
         <url>https://gitbox.apache.org/repos/asf?p=sling-org-apache-sling-servlets-post.git</url>
-      <tag>HEAD</tag>
-  </scm>
+        <tag>HEAD</tag>
+    </scm>
 
     <properties>
         <site.jira.version.id>12314180</site.jira.version.id>
@@ -110,12 +110,12 @@
     <dependencies>
         <dependency>
             <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.annotation.versioning</artifactId>
+            <artifactId>org.osgi.framework</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.osgi</groupId>
-            <artifactId>osgi.core</artifactId>
+            <artifactId>org.osgi.annotation.versioning</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -131,14 +131,23 @@
          <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
+             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.json</groupId>
+            <artifactId>jakarta.json-api</artifactId>
+            <version>2.0.2</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>javax.jcr</groupId>
             <artifactId>jcr</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.sling</groupId>
@@ -204,6 +213,12 @@
             <groupId>org.apache.sling</groupId>
             <artifactId>org.apache.sling.servlet-helpers</artifactId>
             <version>1.4.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>jakarta.json</artifactId>
+            <version>2.0.1</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
