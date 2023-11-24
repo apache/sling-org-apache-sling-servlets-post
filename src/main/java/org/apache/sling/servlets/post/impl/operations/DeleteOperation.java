@@ -23,8 +23,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.request.RequestPathInfo;
+import org.apache.sling.api.resource.NonExistingResource;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
+import org.apache.sling.api.resource.ResourceNotFoundException;
 import org.apache.sling.servlets.post.Modification;
 import org.apache.sling.servlets.post.PostResponse;
 import org.apache.sling.servlets.post.SlingPostConstants;
@@ -69,6 +71,9 @@ public class DeleteOperation extends AbstractPostOperation {
         final Iterator<Resource> res = getApplyToResources(request);
         if (res == null) {
             final Resource resource = request.getResource();
+            if (resource instanceof NonExistingResource) {
+                throw new ResourceNotFoundException(String.format("Cannot delete NonExistingResource %s", resource.getPath()));
+            }
             deleteResource(resource, changes, versioningConfiguration,
                 deleteChunks);
         } else {

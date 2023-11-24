@@ -20,11 +20,18 @@ package org.apache.sling.servlets.post.impl;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URLEncoder;
+import java.util.List;
 import java.util.StringTokenizer;
 
 import org.apache.sling.api.SlingHttpServletRequest;
+import org.apache.sling.api.request.RequestPathInfo;
+import org.apache.sling.api.request.RequestProgressTracker;
 import org.apache.sling.api.request.header.MediaRangeList;
+import org.apache.sling.api.resource.NonExistingResource;
+import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.commons.testing.sling.MockSlingHttpServletRequest;
 import org.apache.sling.servlets.post.HtmlResponse;
 import org.apache.sling.servlets.post.JSONResponse;
@@ -32,6 +39,10 @@ import org.apache.sling.servlets.post.PostResponse;
 import org.apache.sling.servlets.post.SlingPostConstants;
 import org.apache.sling.servlets.post.impl.helper.MockSlingHttpServlet3Request;
 import org.apache.sling.servlets.post.impl.helper.MockSlingHttpServlet3Response;
+import org.apache.sling.servlets.post.impl.operations.DeleteOperation;
+import org.junit.Assert;
+import org.junit.Test;
+import org.mockito.Mockito;
 
 import junit.framework.TestCase;
 
@@ -70,6 +81,33 @@ public class SlingPostServletTest extends TestCase {
         req.setStatusParam(param);
         assertTrue("Standard status expected for '" + param + "' param",
             servlet.isSetStatus(req));
+    }
+
+    @Test
+    public void testDeletingNonExistingResource() throws Exception {
+
+        DeleteOperation deleteOperation = new DeleteOperation();
+
+        SlingHttpServletRequest request = Mockito.mock(SlingHttpServletRequest.class);
+        ResourceResolver resourceResolver = Mockito.mock(ResourceResolver.class);
+        RequestPathInfo requestPathInfo = Mockito.mock(RequestPathInfo.class);
+        RequestProgressTracker requestProgressTracker = Mockito.mock(RequestProgressTracker.class);
+        NonExistingResource resource = Mockito.mock(NonExistingResource.class, Mockito.RETURNS_DEEP_STUBS);
+        Mockito.when(request.getResourceResolver()).thenReturn(resourceResolver);
+
+        Mockito.when(request.getParameter(":operation")).thenReturn("delete");
+        Mockito.when(request.getRequestProgressTracker()).thenReturn(requestProgressTracker);
+        Mockito.when(request.getResource()).thenReturn(resource);
+        Mockito.when(resource.getPath()).thenReturn("/content/pat/123");
+        Mockito.when(request.getRequestPathInfo()).thenReturn(requestPathInfo);
+        Mockito.when(requestPathInfo.getSuffix()).thenReturn(null);
+        Mockito.doNothing().when(requestProgressTracker).log(Mockito.anyString(), Mockito.any());
+
+        Method doRun = deleteOperation.getClass().getDeclaredMethod("doRun", SlingHttpServletRequest.class, PostResponse.class, List.class);
+        doRun.setAccessible(true);
+        
+        Assert.assertThrows("", InvocationTargetException.class, () -> doRun.invoke(deleteOperation, request, null, null));
+            
     }
 
     public void testGetJsonResponse() {
