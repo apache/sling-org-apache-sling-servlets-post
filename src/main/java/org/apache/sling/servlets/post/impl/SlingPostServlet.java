@@ -159,12 +159,16 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
                 description="In backwards compatibility mode exceptions will always create a statuscode "
                     + "500 (see SLING-9896)")
         boolean legacy_statuscode_on_persistence_exception() default false;
+        
+        @AttributeDefinition(name="Log stacktraces on exceptions", 
+                description="Log the full stacktrace in case of an exception")
+        boolean logStacktraceInExceptions() default true;
     }
 
     /**
      * default log
      */
-    private final Logger log = LoggerFactory.getLogger(getClass());
+    private Logger log = LoggerFactory.getLogger(getClass());
 
     private static final String PARAM_CHECKIN_ON_CREATE = ":checkinNewVersionableNodes";
 
@@ -204,6 +208,8 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
     private ImportOperation importOperation;
     
     private boolean backwardsCompatibleStatuscode;
+    
+    private boolean logStacktraceInExceptions;
 
     public SlingPostServlet() {
         // the following operations require JCR:
@@ -245,8 +251,7 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
                 htmlResponse.setStatus(HttpServletResponse.SC_NOT_FOUND,
                     rnfe.getMessage());
             } catch (final PreconditionViolatedPersistenceException e) {
-                log.warn("Exception while handling POST on path [{}] with operation [{}]",
-                        request.getResource().getPath(),operation.getClass().getName(),e);
+                logPersistenceException(request, operation, e);
                 if (backwardsCompatibleStatuscode) {
                     htmlResponse.setError(e);
                 } else {
@@ -254,8 +259,7 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
                 }
             } catch (final PersistenceException e) {
                 // also catches the  RetryableOperationException, as the handling is the same
-                log.warn("Exception while handling POST on path [{}] with operation [{}]",
-                        request.getResource().getPath(),operation.getClass().getName(),e);
+                logPersistenceException(request, operation, e);
                 if (backwardsCompatibleStatuscode) {
                     htmlResponse.setError(e);
                 } else {
@@ -266,7 +270,6 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
                         request.getResource().getPath(),operation.getClass().getName(),e);
                 htmlResponse.setError(e);
             }
-
         }
 
         // check for redirect URL if processing succeeded
@@ -280,6 +283,20 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
         htmlResponse.send(response, isSetStatus(request));
     }
 
+    protected void logPersistenceException (SlingHttpServletRequest request, PostOperation operation, Exception e ) {
+        if (logStacktraceInExceptions) {
+            log.warn("Exception while handling POST on path [{}] with operation [{}]",
+                request.getResource().getPath(),operation.getClass().getName(),e);
+        } else {
+            log.warn("{} while handling POST on path [{}] with operation [{}]: {}",
+                    e.getClass().getName(), 
+                    request.getResource().getPath(),
+                    operation.getClass().getName(),
+                    e.getMessage());
+        }
+    }
+    
+    
     /**
      * Redirects the HttpServletResponse, if redirectURL is not empty
      * @param htmlResponse
@@ -559,6 +576,7 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
             this.importOperation.setIgnoredParameterNamePattern(paramMatchPattern);
         }
         this.backwardsCompatibleStatuscode = configuration.legacy_statuscode_on_persistence_exception();
+        this.logStacktraceInExceptions = configuration.logStacktraceInExceptions();
     }
 
     @Override
@@ -840,5 +858,15 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
     private static final class PostResponseCreatorHolder {
         public PostResponseCreator creator;
         public int ranking;
+    }
+    
+    // for testing
+    protected void setLog(Logger log) {
+        this.log = log;
+    }
+    
+    // for testing
+    protected void setLogStacktraceInExceptions(boolean flag) {
+        this.logStacktraceInExceptions = flag;
     }
 }
