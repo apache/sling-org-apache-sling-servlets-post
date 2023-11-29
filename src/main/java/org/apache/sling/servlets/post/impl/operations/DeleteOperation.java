@@ -18,6 +18,8 @@ package org.apache.sling.servlets.post.impl.operations;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.StreamSupport;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -77,12 +79,17 @@ public class DeleteOperation extends AbstractPostOperation {
             deleteResource(resource, changes, versioningConfiguration,
                 deleteChunks);
         } else {
-            while (res.hasNext()) {
-                final Resource resource = res.next();
-                deleteResource(resource, changes, versioningConfiguration,
-                    deleteChunks);
+            Iterable<Resource> iteratorRes = () -> res;
+            Optional<Resource> existing = StreamSupport.stream(iteratorRes.spliterator(), true).filter(r -> r instanceof NonExistingResource).findAny();
+            if (existing.isEmpty()) {
+                while (res.hasNext()) {
+                    final Resource resource = res.next();
+                    deleteResource(resource, changes, versioningConfiguration,
+                        deleteChunks);
+                }
+            } else {
+                throw new ResourceNotFoundException(String.format("Cannot delete NonExistingResource %s", existing.get().getPath()));
             }
-
         }
     }
 
