@@ -18,8 +18,6 @@ package org.apache.sling.servlets.post.impl.operations;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.StreamSupport;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -70,26 +68,19 @@ public class DeleteOperation extends AbstractPostOperation {
 
         final VersioningConfiguration versioningConfiguration = getVersioningConfiguration(request);
         final boolean deleteChunks = isDeleteChunkRequest(request);
-        final Iterator<Resource> res = getApplyToResources(request);
+        Iterator<Resource> res = getApplyToResources(request);
         if (res == null) {
+            // no :applyTo params, so just iterate over the current resource instead
             final Resource resource = request.getResource();
+            res = List.of(resource).iterator();
+        }
+        while (res.hasNext()) {
+            final Resource resource = res.next();
             if (resource instanceof NonExistingResource) {
                 throw new ResourceNotFoundException(String.format("Cannot delete NonExistingResource %s", resource.getPath()));
             }
             deleteResource(resource, changes, versioningConfiguration,
                 deleteChunks);
-        } else {
-            Iterable<Resource> iteratorRes = () -> res;
-            Optional<Resource> existing = StreamSupport.stream(iteratorRes.spliterator(), true).filter(r -> r instanceof NonExistingResource).findAny();
-            if (existing.isEmpty()) {
-                while (res.hasNext()) {
-                    final Resource resource = res.next();
-                    deleteResource(resource, changes, versioningConfiguration,
-                        deleteChunks);
-                }
-            } else {
-                throw new ResourceNotFoundException(String.format("Cannot delete NonExistingResource %s", existing.get().getPath()));
-            }
         }
     }
 
