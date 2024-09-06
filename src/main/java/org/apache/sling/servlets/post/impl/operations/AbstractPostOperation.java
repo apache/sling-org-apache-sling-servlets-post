@@ -106,6 +106,7 @@ public abstract class AbstractPostOperation implements PostOperation {
             try {
                 if (processors != null) {
                     for (SlingPostProcessor processor : processors) {
+                        request.getRequestProgressTracker().log("Calling Sling Post Processor {0}", processor.getClass().getName());
                         processor.process(request, changes);
                     }
                 }
