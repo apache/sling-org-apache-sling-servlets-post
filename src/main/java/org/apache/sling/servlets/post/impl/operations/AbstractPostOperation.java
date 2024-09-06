@@ -100,10 +100,10 @@ public abstract class AbstractPostOperation implements PostOperation {
 
             final List<Modification> changes = new ArrayList<>();
 
-            doRun(request, response, changes);
-
-            // invoke processors
             try {
+                doRun(request, response, changes);
+
+                // invoke processors
                 if (processors != null) {
                     for (SlingPostProcessor processor : processors) {
                         request.getRequestProgressTracker().log("Calling Sling Post Processor {0}", processor.getClass().getName());
