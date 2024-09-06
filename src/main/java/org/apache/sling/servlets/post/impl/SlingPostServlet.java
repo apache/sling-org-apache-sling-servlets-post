@@ -248,8 +248,13 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
             try {
                 operation.run(request, htmlResponse, processors);
             } catch (ResourceNotFoundException rnfe) {
-                htmlResponse.setStatus(HttpServletResponse.SC_NOT_FOUND,
+                if (operation instanceof DeleteOperation) {
+                    htmlResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST,
                     rnfe.getMessage());
+                } else {
+                    htmlResponse.setStatus(HttpServletResponse.SC_NOT_FOUND,
+                    rnfe.getMessage());
+                }
             } catch (final PreconditionViolatedPersistenceException e) {
                 logPersistenceException(request, operation, e);
                 if (backwardsCompatibleStatuscode) {

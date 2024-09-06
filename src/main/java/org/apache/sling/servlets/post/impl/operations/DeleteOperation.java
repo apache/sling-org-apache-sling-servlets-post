@@ -23,8 +23,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.request.RequestPathInfo;
+import org.apache.sling.api.resource.NonExistingResource;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
+import org.apache.sling.api.resource.ResourceNotFoundException;
 import org.apache.sling.servlets.post.Modification;
 import org.apache.sling.servlets.post.PostResponse;
 import org.apache.sling.servlets.post.SlingPostConstants;
@@ -66,18 +68,19 @@ public class DeleteOperation extends AbstractPostOperation {
 
         final VersioningConfiguration versioningConfiguration = getVersioningConfiguration(request);
         final boolean deleteChunks = isDeleteChunkRequest(request);
-        final Iterator<Resource> res = getApplyToResources(request);
+        Iterator<Resource> res = getApplyToResources(request);
         if (res == null) {
+            // no :applyTo params, so just iterate over the current resource instead
             final Resource resource = request.getResource();
+            res = List.of(resource).iterator();
+        }
+        while (res.hasNext()) {
+            final Resource resource = res.next();
+            if (resource instanceof NonExistingResource) {
+                throw new ResourceNotFoundException(String.format("Cannot delete NonExistingResource %s", resource.getPath()));
+            }
             deleteResource(resource, changes, versioningConfiguration,
                 deleteChunks);
-        } else {
-            while (res.hasNext()) {
-                final Resource resource = res.next();
-                deleteResource(resource, changes, versioningConfiguration,
-                    deleteChunks);
-            }
-
         }
     }
 
