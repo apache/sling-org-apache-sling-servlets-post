@@ -21,19 +21,19 @@ package org.apache.sling.servlets.post.impl.operations;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
 import org.apache.jackrabbit.JcrConstants;
 import org.apache.sling.api.SlingException;
-import org.apache.sling.api.SlingHttpServletRequest;
+import org.apache.sling.api.SlingJakartaHttpServletRequest;
 import org.apache.sling.api.resource.ModifiableValueMap;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceUtil;
 import org.apache.sling.api.resource.ValueMap;
+import org.apache.sling.servlets.post.JakartaPostResponse;
 import org.apache.sling.servlets.post.Modification;
-import org.apache.sling.servlets.post.PostResponse;
 import org.apache.sling.servlets.post.SlingPostConstants;
 import org.apache.sling.servlets.post.VersioningConfiguration;
 import org.apache.sling.servlets.post.impl.helper.DateParser;
@@ -69,8 +69,8 @@ public class ModifyOperation extends AbstractCreateOperation {
     }
 
     @Override
-    protected void doRun(final SlingHttpServletRequest request,
-                    final PostResponse response,
+    protected void doRun(final SlingJakartaHttpServletRequest request,
+                    final JakartaPostResponse response,
                     final List<Modification> changes)
     throws PersistenceException {
         final Map<String, RequestProperty> reqProperties = collectContent(request, response);
@@ -98,7 +98,7 @@ public class ModifyOperation extends AbstractCreateOperation {
     }
 
     @Override
-    protected String getResourcePath(SlingHttpServletRequest request) {
+    protected String getResourcePath(SlingJakartaHttpServletRequest request) {
 
         // calculate the paths
         StringBuilder rootPathBuf = new StringBuilder();

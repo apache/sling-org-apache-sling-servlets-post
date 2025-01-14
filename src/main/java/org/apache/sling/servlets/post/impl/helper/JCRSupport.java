@@ -20,7 +20,6 @@ package org.apache.sling.servlets.post.impl.helper;
 
 import java.util.List;
 
-import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
@@ -143,7 +142,7 @@ public class JCRSupport {
     /**
      * Stores property value(s) as reference(s). Will parse the reference(s) from the string
      * value(s) in the {@link RequestProperty}.
-     * 
+     *
      * @param resource resource
      * @param node the node
      * @param name the name

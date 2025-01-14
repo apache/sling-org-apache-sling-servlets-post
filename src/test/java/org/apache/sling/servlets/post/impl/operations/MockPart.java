@@ -19,7 +19,7 @@
 
 package org.apache.sling.servlets.post.impl.operations;
 
-import javax.servlet.http.Part;
+import jakarta.servlet.http.Part;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;

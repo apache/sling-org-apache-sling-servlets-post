@@ -24,13 +24,13 @@ import javax.jcr.RepositoryException;
 import javax.jcr.version.Version;
 import javax.jcr.version.VersionHistory;
 import javax.jcr.version.VersionManager;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
-import org.apache.sling.api.SlingHttpServletRequest;
+import org.apache.sling.api.SlingJakartaHttpServletRequest;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
+import org.apache.sling.servlets.post.JakartaPostResponse;
 import org.apache.sling.servlets.post.Modification;
-import org.apache.sling.servlets.post.PostResponse;
 import org.apache.sling.servlets.post.SlingPostConstants;
 
 /**
@@ -42,7 +42,7 @@ import org.apache.sling.servlets.post.SlingPostConstants;
 public class RestoreOperation extends AbstractPostOperation {
 
     @Override
-    protected void doRun(SlingHttpServletRequest request, PostResponse response, List<Modification> changes)
+    protected void doRun(SlingJakartaHttpServletRequest request, JakartaPostResponse response, List<Modification> changes)
             throws PersistenceException {
         try {
             final String version = request.getParameter(SlingPostConstants.RP_VERSION);

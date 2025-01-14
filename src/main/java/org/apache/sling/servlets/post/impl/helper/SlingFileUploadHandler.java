@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.JcrConstants;
@@ -56,7 +56,7 @@ import org.slf4j.LoggerFactory;
  * <p>
  *
  * Simple example:
- * 
+ *
  * {@code
  *   <form action="/home/admin" method="POST" enctype="multipart/form-data">
  *     <input type="file" name="./portrait" />

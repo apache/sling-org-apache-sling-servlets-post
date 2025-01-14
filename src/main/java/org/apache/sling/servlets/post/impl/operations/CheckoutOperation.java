@@ -21,13 +21,13 @@ import java.util.List;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
-import org.apache.sling.api.SlingHttpServletRequest;
+import org.apache.sling.api.SlingJakartaHttpServletRequest;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
+import org.apache.sling.servlets.post.JakartaPostResponse;
 import org.apache.sling.servlets.post.Modification;
-import org.apache.sling.servlets.post.PostResponse;
 
 /**
  * The <code>CheckoutOperation</code> class implements the
@@ -37,7 +37,7 @@ import org.apache.sling.servlets.post.PostResponse;
  */
 public class CheckoutOperation extends AbstractPostOperation {
     @Override
-    protected void doRun(SlingHttpServletRequest request, PostResponse response, List<Modification> changes)
+    protected void doRun(SlingJakartaHttpServletRequest request, JakartaPostResponse response, List<Modification> changes)
             throws PersistenceException {
         try {
             Iterator<Resource> res = getApplyToResources(request);
@@ -75,7 +75,7 @@ public class CheckoutOperation extends AbstractPostOperation {
      * Checkout operation is always skipping checkin.
      */
     @Override
-    protected boolean isSkipCheckin(SlingHttpServletRequest request) {
+    protected boolean isSkipCheckin(SlingJakartaHttpServletRequest request) {
         return true;
     }
 }

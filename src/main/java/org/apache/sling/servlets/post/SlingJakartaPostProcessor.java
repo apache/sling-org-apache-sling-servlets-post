@@ -20,22 +20,23 @@ package org.apache.sling.servlets.post;
 
 import java.util.List;
 
-import org.apache.sling.api.SlingHttpServletRequest;
+import org.apache.sling.api.SlingJakartaHttpServletRequest;
+import org.osgi.annotation.versioning.ConsumerType;
 
 /**
- * The <code>SlingPostProcessor</code> interface defines a service API to be
+ * The <code>SlingJakartaPostProcessor</code> interface defines a service API to be
  * implemented by service providers extending the Sling default POST servlet.
  * Service providers may register OSGi services of this type to be used by the
  * Sling default POST servlet to handle specific operations.
  * <p>
- * During a request the <code>SlingPostOperation</code> service is called
+ * During a request the <code>SlingJakartaPostOperation</code> service is called
  * with a list of registered post processors. After the operation has performed
  * its changes but before the changes are persisted, all post processors
  * are called.
- * @deprecated Use {@link SlingJakartaPostProcessor} instead.
+ * @since 2.5.0
  */
-@Deprecated
-public interface SlingPostProcessor {
+@ConsumerType
+public interface SlingJakartaPostProcessor {
 
     /**
      * Process the current request.
@@ -46,6 +47,6 @@ public interface SlingPostProcessor {
      * @param changes The list of changes for this request.
      * @throws Exception If an error occurs.
      */
-    void process(SlingHttpServletRequest request, List<Modification> changes)
+    void process(SlingJakartaHttpServletRequest request, List<Modification> changes)
     throws Exception;
 }

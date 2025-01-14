@@ -23,19 +23,18 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.StringTokenizer;
 
-import org.apache.sling.api.SlingHttpServletRequest;
-import org.apache.sling.api.request.header.MediaRangeList;
+import org.apache.sling.api.SlingJakartaHttpServletRequest;
+import org.apache.sling.api.request.builder.Builders;
+import org.apache.sling.api.request.header.JakartaMediaRangeList;
 import org.apache.sling.api.resource.Resource;
-import org.apache.sling.commons.testing.sling.MockSlingHttpServletRequest;
-import org.apache.sling.servlets.post.HtmlResponse;
-import org.apache.sling.servlets.post.JSONResponse;
-import org.apache.sling.servlets.post.PostOperation;
-import org.apache.sling.servlets.post.PostResponse;
+import org.apache.sling.api.wrappers.SlingJakartaHttpServletRequestWrapper;
+import org.apache.sling.api.wrappers.SlingJakartaHttpServletResponseWrapper;
+import org.apache.sling.servlets.post.JakartaHtmlResponse;
+import org.apache.sling.servlets.post.JakartaJSONResponse;
+import org.apache.sling.servlets.post.JakartaPostOperation;
+import org.apache.sling.servlets.post.JakartaPostResponse;
 import org.apache.sling.servlets.post.SlingPostConstants;
-import org.apache.sling.servlets.post.impl.helper.MockSlingHttpServlet3Request;
-import org.apache.sling.servlets.post.impl.helper.MockSlingHttpServlet3Response;
 import org.apache.sling.servlets.post.impl.operations.DeleteOperation;
-
 import junit.framework.TestCase;
 
 import org.mockito.Mockito;
@@ -43,121 +42,131 @@ import static org.mockito.Mockito.eq;
 import org.slf4j.Logger;
 
 public class SlingPostServletTest extends TestCase {
-    
+
     private SlingPostServlet servlet;
-    
+
+    private Resource fakeResource;
     @Override
     protected void setUp() throws Exception {
         super.setUp();
         servlet = new SlingPostServlet();
+        this.fakeResource = Mockito.mock(Resource.class);
     }
 
     public void testIsSetStatus() {
-        StatusParamSlingHttpServletRequest req = new StatusParamSlingHttpServletRequest();
+        SlingJakartaHttpServletRequest req = Builders
+            .newRequestBuilder(fakeResource)
+            .buildJakartaRequest();
 
         // 1. null parameter, expect true
-        req.setStatusParam(null);
         assertTrue("Standard status expected for null param",
             servlet.isSetStatus(req));
 
         // 2. "standard" parameter, expect true
-        req.setStatusParam(SlingPostConstants.STATUS_VALUE_STANDARD);
+        req = Builders
+            .newRequestBuilder(fakeResource)
+            .withParameter(SlingPostConstants.RP_STATUS, SlingPostConstants.STATUS_VALUE_STANDARD)
+            .buildJakartaRequest();
         assertTrue("Standard status expected for '"
             + SlingPostConstants.STATUS_VALUE_STANDARD + "' param",
             servlet.isSetStatus(req));
 
         // 3. "browser" parameter, expect false
-        req.setStatusParam(SlingPostConstants.STATUS_VALUE_BROWSER);
+        req = Builders
+            .newRequestBuilder(fakeResource)
+            .withParameter(SlingPostConstants.RP_STATUS, SlingPostConstants.STATUS_VALUE_BROWSER)
+            .buildJakartaRequest();
         assertFalse("Browser status expected for '"
             + SlingPostConstants.STATUS_VALUE_BROWSER + "' param",
             servlet.isSetStatus(req));
 
         // 4. any parameter, expect true
         String param = "knocking on heaven's door";
-        req.setStatusParam(param);
+        req = Builders
+            .newRequestBuilder(fakeResource)
+            .withParameter(SlingPostConstants.RP_STATUS, param)
+            .buildJakartaRequest();
         assertTrue("Standard status expected for '" + param + "' param",
             servlet.isSetStatus(req));
     }
 
     public void testGetJsonResponse() {
-        MockSlingHttpServletRequest req = new MockSlingHttpServlet3Request(null, null, null, null, null) {
+        SlingJakartaHttpServletRequest origReg = Builders
+            .newRequestBuilder(fakeResource)
+            .buildJakartaRequest();
+
+        SlingJakartaHttpServletRequest req = new SlingJakartaHttpServletRequestWrapper(origReg) {
             @Override
             public String getHeader(String name) {
-                return name.equals(MediaRangeList.HEADER_ACCEPT) ? "application/json" : super.getHeader(name);
-            }
-
-            public <AdapterType> AdapterType adaptTo(Class<AdapterType> type) {
-                return null;
+                return name.equals(JakartaMediaRangeList.HEADER_ACCEPT) ? "application/json" : super.getHeader(name);
             }
         };
-        PostResponse result = servlet.createPostResponse(req);
+        JakartaPostResponse result = servlet.createPostResponse(req);
         assertFalse("Did not expect ErrorHandlingPostResponseWrapper PostResonse", result instanceof ErrorHandlingPostResponseWrapper);
-        assertTrue(result instanceof JSONResponse);
+        assertTrue(result instanceof JakartaJSONResponse);
     }
 
     public void testGetHtmlResponse() {
-        MockSlingHttpServletRequest req = new MockSlingHttpServlet3Request(null, null, null, null, null);
-        PostResponse result = servlet.createPostResponse(req);
+        SlingJakartaHttpServletRequest req = Builders
+            .newRequestBuilder(fakeResource)
+            .buildJakartaRequest();
+        JakartaPostResponse result = servlet.createPostResponse(req);
         assertFalse("Did not expect ErrorHandlingPostResponseWrapper PostResonse", result instanceof ErrorHandlingPostResponseWrapper);
-        assertTrue(result instanceof HtmlResponse);
+        assertTrue(result instanceof JakartaHtmlResponse);
     }
 
     /**
      * SLING-10006 - verify we get the error handling wrapped PostResponse
      */
     public void testGetJsonResponseWithSendError() {
-    	SendErrorParamSlingHttpServletRequest req = new SendErrorParamSlingHttpServletRequest() {
+    	SendErrorParamSlingJakartaHttpServletRequest req = new SendErrorParamSlingJakartaHttpServletRequest() {
             @Override
             public String getHeader(String name) {
-                return name.equals(MediaRangeList.HEADER_ACCEPT) ? "application/json" : super.getHeader(name);
-            }
-
-            public <AdapterType> AdapterType adaptTo(Class<AdapterType> type) {
-                return null;
+                return name.equals(JakartaMediaRangeList.HEADER_ACCEPT) ? "application/json" : super.getHeader(name);
             }
         };
         req.setSendError("true");
-        
-        PostResponse result = servlet.createPostResponse(req);
+
+        JakartaPostResponse result = servlet.createPostResponse(req);
         assertTrue("Expected ErrorHandlingPostResponseWrapper PostResonse", result instanceof ErrorHandlingPostResponseWrapper);
        	result = ((ErrorHandlingPostResponseWrapper)result).getWrapped();
-        assertTrue(result instanceof JSONResponse);
+        assertTrue(result instanceof JakartaJSONResponse);
     }
-    
-    
+
+
     public void testPersistenceExceptionLogging() {
         Logger log = Mockito.mock(Logger.class);
-        SlingHttpServletRequest mockRequest = Mockito.mock(SlingHttpServletRequest.class);
+        SlingJakartaHttpServletRequest mockRequest = Mockito.mock(SlingJakartaHttpServletRequest.class);
         Resource mockResource = Mockito.mock(Resource.class);
         Mockito.when(mockResource.getPath()).thenReturn("/path");
         Mockito.when(mockRequest.getResource()).thenReturn(mockResource);
         servlet.setLog(log);
-        PostOperation operation = new DeleteOperation();
+        JakartaPostOperation operation = new DeleteOperation();
         Exception exception = new IOException("foo");
-        
+
         servlet.setLogStacktraceInExceptions(true);
         String expected = "Exception while handling POST on path [{}] with operation [{}]";
         servlet.logPersistenceException(mockRequest, operation, exception);
         Mockito.verify(log).warn(eq(expected),eq("/path"),eq("org.apache.sling.servlets.post.impl.operations.DeleteOperation"),eq(exception));
-        
+
         servlet.setLogStacktraceInExceptions(false);
         expected = "{} while handling POST on path [{}] with operation [{}]: {}";
         servlet.logPersistenceException(mockRequest, operation, exception);
-        Mockito.verify(log).warn(eq(expected),eq("java.io.IOException"),eq("/path"),eq("org.apache.sling.servlets.post.impl.operations.DeleteOperation"),eq("foo"));  
+        Mockito.verify(log).warn(eq(expected),eq("java.io.IOException"),eq("/path"),eq("org.apache.sling.servlets.post.impl.operations.DeleteOperation"),eq("foo"));
     }
-    
+
 
     /**
      * SLING-10006 - verify we get the error handling wrapped PostResponse
      */
     public void testGetHtmlResponseWithSendError() {
-    	SendErrorParamSlingHttpServletRequest req = new SendErrorParamSlingHttpServletRequest();
+    	SendErrorParamSlingJakartaHttpServletRequest req = new SendErrorParamSlingJakartaHttpServletRequest();
         req.setSendError("true");
-        
-        PostResponse result = servlet.createPostResponse(req);
+
+        JakartaPostResponse result = servlet.createPostResponse(req);
         assertTrue(result instanceof ErrorHandlingPostResponseWrapper);
        	result = ((ErrorHandlingPostResponseWrapper)result).getWrapped();
-        assertTrue(result instanceof HtmlResponse);
+        assertTrue(result instanceof JakartaHtmlResponse);
     }
 
     public void testRedirection() throws Exception {
@@ -175,11 +184,11 @@ public class SlingPostServletTest extends TestCase {
         testRedirection("/", "/fred/abc", "file://c:\\Users\\workspace\\test.java", null);
     }
 
-    private void testRedirection(String requestPath, String resourcePath, String redirect, String expected) 
+    private void testRedirection(String requestPath, String resourcePath, String redirect, String expected)
             throws Exception {
         RedirectServletResponse resp = new RedirectServletResponse();
-        SlingHttpServletRequest request = new RedirectServletRequest(redirect, requestPath);
-        PostResponse htmlResponse = new HtmlResponse();
+        SlingJakartaHttpServletRequest request = new RedirectServletRequest(redirect, requestPath);
+        JakartaPostResponse htmlResponse = new JakartaHtmlResponse();
         htmlResponse.setPath(resourcePath);
         assertEquals(expected != null, servlet.redirectIfNeeded(request, htmlResponse, resp));
         assertEquals(expected, resp.redirectLocation);
@@ -188,13 +197,15 @@ public class SlingPostServletTest extends TestCase {
     /**
      *
      */
-    private final class RedirectServletRequest extends MockSlingHttpServlet3Request {
+    private final class RedirectServletRequest extends SlingJakartaHttpServletRequestWrapper {
 
         private String requestPath;
         private String redirect;
 
         private RedirectServletRequest(String redirect, String requestPath) {
-            super(null, null, null, null, null);
+            super(Builders
+                .newRequestBuilder(Mockito.mock(Resource.class))
+                .buildJakartaRequest());
             this.requestPath = requestPath;
             this.redirect = redirect;
         }
@@ -202,16 +213,22 @@ public class SlingPostServletTest extends TestCase {
         public String getPathInfo() {
             return requestPath;
         }
-        
+
         @Override
         public String getParameter(String name) {
             return SlingPostConstants.RP_REDIRECT_TO.equals(name) ? redirect : null;
         }
     }
 
-    private final class RedirectServletResponse extends MockSlingHttpServlet3Response {
+    private final class RedirectServletResponse extends SlingJakartaHttpServletResponseWrapper {
 
         private String redirectLocation;
+
+        public RedirectServletResponse() {
+            super(Builders
+                .newResponseBuilder()
+                .buildJakartaResponseResult());
+        }
 
         @Override
         public String encodeRedirectURL(String s) {
@@ -239,60 +256,27 @@ public class SlingPostServletTest extends TestCase {
         }
     }
 
-    private static class StatusParamSlingHttpServletRequest extends
-            MockSlingHttpServlet3Request {
+    private static class SendErrorParamSlingJakartaHttpServletRequest extends SlingJakartaHttpServletRequestWrapper {
 
-        private String statusParam;
-
-        public StatusParamSlingHttpServletRequest() {
-            // nothing to setup, we don't care
-            super(null, null, null, null, null);
-        }
-
-        @Override
-        public String getParameter(String name) {
-            if (SlingPostConstants.RP_STATUS.equals(name)) {
-                return statusParam;
-            }
-
-            return super.getParameter(name);
-        }
-
-        void setStatusParam(String statusParam) {
-            this.statusParam = statusParam;
-        }
-
-        public <AdapterType> AdapterType adaptTo(Class<AdapterType> type) {
-            return null;
-        }
-    }
-
-    private static class SendErrorParamSlingHttpServletRequest extends
-	    MockSlingHttpServlet3Request {
-		
 		private String sendError;
-		
-		public SendErrorParamSlingHttpServletRequest() {
-		    // nothing to setup, we don't care
-		    super(null, null, null, null, null);
+
+		public SendErrorParamSlingJakartaHttpServletRequest() {
+            super(Builders
+                .newRequestBuilder(Mockito.mock(Resource.class))
+                .buildJakartaRequest());
 		}
-		
+
 		@Override
 		public String getParameter(String name) {
 		    if (SlingPostConstants.RP_SEND_ERROR.equals(name)) {
 		        return sendError;
 		    }
-		
+
 		    return super.getParameter(name);
 		}
-		
+
 		void setSendError(String sendErrorParam) {
 		    this.sendError = sendErrorParam;
 		}
-		
-		public <AdapterType> AdapterType adaptTo(Class<AdapterType> type) {
-		    return null;
-		}
 	}
-
 }

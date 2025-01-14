@@ -28,7 +28,7 @@
 
     <artifactId>org.apache.sling.servlets.post</artifactId>
     <packaging>jar</packaging>
-    <version>2.6.1-SNAPSHOT</version>
+    <version>3.0.0-SNAPSHOT</version>
 
     <name>Apache Sling Servlets POST</name>
     <description>
@@ -45,6 +45,7 @@
     <properties>
         <site.jira.version.id>12314180</site.jira.version.id>
         <project.build.outputTimestamp>2023-10-05T11:03:56Z</project.build.outputTimestamp>
+        <sling.java.version>17</sling.java.version>
     </properties>
 
     <build>
@@ -60,7 +61,7 @@
            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.2.4</version>
+                <version>3.6.0</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -128,10 +129,22 @@
             <artifactId>org.osgi.service.metatype.annotations</artifactId>
             <scope>provided</scope>
         </dependency>
-         <dependency>
+        <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
-             <scope>provided</scope>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <version>6.0.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.apache.felix.http.wrappers</artifactId>
+            <version>1.1.8</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>jakarta.json</groupId>
@@ -152,7 +165,7 @@
         <dependency>
             <groupId>org.apache.sling</groupId>
             <artifactId>org.apache.sling.api</artifactId>
-            <version>2.24.0</version>
+            <version>3.0.0-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -207,12 +220,6 @@
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
             <version>5.3.1</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.sling</groupId>
-            <artifactId>org.apache.sling.servlet-helpers</artifactId>
-            <version>1.4.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>

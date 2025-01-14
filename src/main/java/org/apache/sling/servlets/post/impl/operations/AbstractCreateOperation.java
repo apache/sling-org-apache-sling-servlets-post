@@ -26,7 +26,7 @@ import java.util.Random;
 import java.util.regex.Pattern;
 
 import org.apache.jackrabbit.JcrConstants;
-import org.apache.sling.api.SlingHttpServletRequest;
+import org.apache.sling.api.SlingJakartaHttpServletRequest;
 import org.apache.sling.api.request.RequestParameter;
 import org.apache.sling.api.request.RequestParameterMap;
 import org.apache.sling.api.resource.ModifiableValueMap;
@@ -34,9 +34,9 @@ import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceUtil;
+import org.apache.sling.servlets.post.JakartaNodeNameGenerator;
+import org.apache.sling.servlets.post.JakartaPostResponse;
 import org.apache.sling.servlets.post.Modification;
-import org.apache.sling.servlets.post.NodeNameGenerator;
-import org.apache.sling.servlets.post.PostResponse;
 import org.apache.sling.servlets.post.SlingPostConstants;
 import org.apache.sling.servlets.post.VersioningConfiguration;
 import org.apache.sling.servlets.post.impl.helper.Chunk;
@@ -49,12 +49,12 @@ abstract class AbstractCreateOperation extends AbstractPostOperation {
     /**
      * The default node name generator
      */
-    private NodeNameGenerator defaultNodeNameGenerator;
+    private JakartaNodeNameGenerator defaultNodeNameGenerator;
 
     /**
      * utility class for generating node names
      */
-    private NodeNameGenerator[] extraNodeNameGenerators;
+    private JakartaNodeNameGenerator[] extraNodeNameGenerators;
 
     /**
      * regular expression for parameters to ignore
@@ -67,12 +67,12 @@ abstract class AbstractCreateOperation extends AbstractPostOperation {
     }
 
     public void setDefaultNodeNameGenerator(
-            NodeNameGenerator defaultNodeNameGenerator) {
+            JakartaNodeNameGenerator defaultNodeNameGenerator) {
         this.defaultNodeNameGenerator = defaultNodeNameGenerator;
     }
 
     public void setExtraNodeNameGenerators(
-            NodeNameGenerator[] extraNodeNameGenerators) {
+            JakartaNodeNameGenerator[] extraNodeNameGenerators) {
         this.extraNodeNameGenerators = extraNodeNameGenerators;
     }
 
@@ -96,7 +96,7 @@ abstract class AbstractCreateOperation extends AbstractPostOperation {
      * @return If a prefix is required.
      */
     private final boolean requireItemPathPrefix(
-            SlingHttpServletRequest request) {
+            SlingJakartaHttpServletRequest request) {
 
         boolean requirePrefix = false;
 
@@ -139,7 +139,7 @@ abstract class AbstractCreateOperation extends AbstractPostOperation {
      */
     protected void processCreate(final ResourceResolver resolver,
             final Map<String, RequestProperty> reqProperties,
-            final PostResponse response,
+            final JakartaPostResponse response,
             final List<Modification> changes,
             final VersioningConfiguration versioningConfiguration)
     throws PersistenceException {
@@ -226,8 +226,8 @@ abstract class AbstractCreateOperation extends AbstractPostOperation {
      * @return the collected properties
      */
     protected Map<String, RequestProperty> collectContent(
-            final SlingHttpServletRequest request,
-            final PostResponse response) {
+            final SlingJakartaHttpServletRequest request,
+            final JakartaPostResponse response) {
 
         final boolean requireItemPrefix = requireItemPathPrefix(request);
 
@@ -479,7 +479,7 @@ abstract class AbstractCreateOperation extends AbstractPostOperation {
      * path by prepending the response path (<code>response.getPath</code>) to
      * the parameter name if not already absolute.
      */
-    private String toPropertyPath(String paramName, PostResponse response) {
+    private String toPropertyPath(String paramName, JakartaPostResponse response) {
         if (!paramName.startsWith("/")) {
             paramName = ResourceUtil.normalize(response.getPath() + '/' + paramName);
         }
@@ -646,7 +646,7 @@ abstract class AbstractCreateOperation extends AbstractPostOperation {
     }
 
 
-    protected String generateName(SlingHttpServletRequest request, String basePath)
+    protected String generateName(SlingJakartaHttpServletRequest request, String basePath)
     	throws PersistenceException {
 
 		// SLING-1091: If a :name parameter is supplied, the (first) value of this parameter is used unmodified as the name
@@ -676,7 +676,7 @@ abstract class AbstractCreateOperation extends AbstractPostOperation {
 
 		String generatedName = null;
 		if (extraNodeNameGenerators != null) {
-		    for (NodeNameGenerator generator : extraNodeNameGenerators) {
+		    for (JakartaNodeNameGenerator generator : extraNodeNameGenerators) {
 		        generatedName = generator.getNodeName(request, basePath, requirePrefix, defaultNodeNameGenerator);
 		        if (generatedName != null) {
 		            break;
@@ -697,7 +697,7 @@ abstract class AbstractCreateOperation extends AbstractPostOperation {
     }
 
     /** Generate a unique path in case the node name generator didn't */
-    private String ensureUniquePath(SlingHttpServletRequest request, String basePath) throws PersistenceException {
+    private String ensureUniquePath(SlingJakartaHttpServletRequest request, String basePath) throws PersistenceException {
 		// if resulting path exists, add a suffix until it's not the case
 		// anymore
         final ResourceResolver resolver = request.getResourceResolver();

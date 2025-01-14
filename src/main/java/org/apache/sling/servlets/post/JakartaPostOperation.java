@@ -18,13 +18,13 @@
  */
 package org.apache.sling.servlets.post;
 
-import org.apache.sling.api.SlingHttpServletRequest;
+import org.apache.sling.api.SlingJakartaHttpServletRequest;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.servlets.post.exceptions.PreconditionViolatedPersistenceException;
 import org.apache.sling.servlets.post.exceptions.TemporaryPersistenceException;
 
 /**
- * The <code>PostOperation</code> interface defines the service API to be
+ * The <code>JakartaPostOperation</code> interface defines the service API to be
  * implemented by service providers extending the Sling POST servlet. Service
  * providers may register OSGi services of this type to be used by the Sling
  * default POST servlet to handle specific operations.
@@ -40,17 +40,16 @@ import org.apache.sling.servlets.post.exceptions.TemporaryPersistenceException;
  * interface.These names should not be used by <code>SlingPostOperation</code>
  * service providers.
  * <p>
- * This interface replaces the old {@link SlingPostOperation} service interface
- * adding support for extensible responses by means of the {@link PostResponse}
+ * This interface replaces the old {@link JakartaPostOperation} service interface
+ * adding support for extensible responses by means of the {@link JakartaPostResponse}
  * interface as well as operation postprocessing.
  * <p>
  * Implementors of this interface are advised to extend the
- * {@link AbstractPostOperation} class to benefit from various processings
+ * {@link AbstractJakartaPostOperation} class to benefit from various processings
  * implemented by that abstract class.
- * @deprecated Use {@link JakartaPostOperation} instead.
+ * @since 2.5.0
  */
-@Deprecated
-public interface PostOperation {
+public interface JakartaPostOperation {
 
     /**
      * The name of the Sling POST operation service.
@@ -70,11 +69,11 @@ public interface PostOperation {
      * Executes the operation provided by this service implementation. This
      * method is called by the Sling POST servlet.
      *
-     * @param request The <code>SlingHttpServletRequest</code> object providing
+     * @param request The <code>SlingJakartaHttpServletRequest</code> object providing
      *            the request input for the operation.
-     * @param response The <code>PostResponse</code> into which the operation
+     * @param response The <code>JakartaPostResponse</code> into which the operation
      *            steps should be recorded.
-     * @param processors The {@link SlingPostProcessor} services to be called
+     * @param processors The {@link SlingJakartaPostProcessor} services to be called
      *            after applying the operation. This may be <code>null</code> if
      *            there are none.
      * @throws PersistenceException when the commit fails
@@ -90,6 +89,6 @@ public interface PostOperation {
      * @throws TemporaryPersistenceException when a commit failed, but a retry could make
      *             the operation work successfully.
      */
-    void run(SlingHttpServletRequest request, PostResponse response,
-            SlingPostProcessor[] processors) throws PreconditionViolatedPersistenceException, TemporaryPersistenceException, PersistenceException;
+    void run(SlingJakartaHttpServletRequest request, JakartaPostResponse response,
+            SlingJakartaPostProcessor[] processors) throws PreconditionViolatedPersistenceException, TemporaryPersistenceException, PersistenceException;
 }

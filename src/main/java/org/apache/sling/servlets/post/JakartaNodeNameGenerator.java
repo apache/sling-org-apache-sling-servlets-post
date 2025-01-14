@@ -16,14 +16,15 @@
  */
 package org.apache.sling.servlets.post;
 
-import org.apache.sling.api.SlingHttpServletRequest;
+import org.apache.sling.api.SlingJakartaHttpServletRequest;
+import org.osgi.annotation.versioning.ConsumerType;
 
 /**
  * Service interface which allows for custom node name generation for * resources.
- * @deprecated Use {@link JakartaNodeNameGenerator} instead.
+ * @since 2.5.0
  */
-@Deprecated
-public interface NodeNameGenerator {
+@ConsumerType
+public interface JakartaNodeNameGenerator {
 
     /**
      * Get the to-be-created node name from the request.
@@ -33,8 +34,8 @@ public interface NodeNameGenerator {
      * @param requirePrefix if true, ignore parameters which do not being with ./
      * @param defaultNodeNameGenerator the default node name generator
      *
-     * @return the node name to be created or null if other NodeNameGenerators should be consulted
+     * @return the node name to be created or null if other JakartaNodeNameGenerator should be consulted
      */
-    public String getNodeName(SlingHttpServletRequest request, String parentPath, boolean requirePrefix,
-            NodeNameGenerator defaultNodeNameGenerator);
+    public String getNodeName(SlingJakartaHttpServletRequest request, String parentPath, boolean requirePrefix,
+            JakartaNodeNameGenerator defaultNodeNameGenerator);
 }

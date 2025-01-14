@@ -24,91 +24,91 @@ import org.apache.sling.servlets.post.PostResponse;
 import org.junit.Test;
 
 public class HtmlResponseProxyTest {
-    
+
     @Test
     public void testConstructor() {
         new HtmlResponseProxy(POST_RESPONSE);
     }
-    
+
     private static final PostResponse POST_RESPONSE = new PostResponse() {
-        
+
         public void setTitle(String title) {
         }
-        
+
         public void setStatus(int code, String message) {
         }
-        
+
         public void setReferer(String referer) {
         }
-        
+
         public void setPath(String path) {
         }
-        
+
         public void setParentLocation(String parentLocation) {
         }
-        
+
         public void setLocation(String location) {
         }
-        
+
         public void setError(Throwable error) {
         }
-        
+
         public void setCreateRequest(boolean isCreateRequest) {
         }
-        
+
         public void send(HttpServletResponse response, boolean setStatus) throws IOException {
         }
-        
+
         public void onMoved(String srcPath, String dstPath) {
         }
-        
+
         public void onModified(String path) {
         }
-        
+
         public void onDeleted(String path) {
         }
-        
+
         public void onCreated(String path) {
         }
-        
+
         public void onCopied(String srcPath, String dstPath) {
         }
-        
+
         public void onChange(String type, String... arguments) {
         }
-        
+
         public boolean isSuccessful() {
             return false;
         }
-        
+
         public boolean isCreateRequest() {
             return false;
         }
-        
+
         public String getStatusMessage() {
             return null;
         }
-        
+
         public int getStatusCode() {
             return 0;
         }
-        
+
         public String getReferer() {
             return null;
         }
-        
+
         public String getPath() {
             return null;
         }
-        
+
         public String getParentLocation() {
             return null;
         }
-        
+
         public String getLocation() {
             return null;
         }
-        
+
         public Throwable getError() {
             return null;
         }

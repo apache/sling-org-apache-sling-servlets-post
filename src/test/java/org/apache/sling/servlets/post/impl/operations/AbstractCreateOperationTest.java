@@ -24,17 +24,17 @@ import java.util.regex.Pattern;
 
 import junit.framework.TestCase;
 
-import org.apache.sling.api.SlingHttpServletRequest;
+import org.apache.sling.api.SlingJakartaHttpServletRequest;
+import org.apache.sling.servlets.post.JakartaPostResponse;
 import org.apache.sling.servlets.post.Modification;
-import org.apache.sling.servlets.post.PostResponse;
 
 public class AbstractCreateOperationTest extends TestCase {
 
     private AbstractCreateOperation op = new AbstractCreateOperation() {
 
         @Override
-        protected void doRun(SlingHttpServletRequest request,
-                PostResponse response, List<Modification> changes) {
+        protected void doRun(SlingJakartaHttpServletRequest request,
+                JakartaPostResponse response, List<Modification> changes) {
             // none here
         }
     };

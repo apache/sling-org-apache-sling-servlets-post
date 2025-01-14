@@ -16,22 +16,19 @@
  */
 package org.apache.sling.servlets.post;
 
-import org.apache.sling.commons.testing.sling.MockSlingHttpServletResponse;
+import org.apache.sling.api.request.builder.Builders;
+import org.apache.sling.api.request.builder.SlingJakartaHttpServletResponseResult;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-
 import static org.junit.Assert.*;
 
-public class HtmlResponseTest {
-    protected HtmlResponse res;
+public class JakartaHtmlResponseTest {
+    protected JakartaHtmlResponse res;
 
     @Before
     public void setUp() throws Exception {
-        res = new HtmlResponse();
+        res = new JakartaHtmlResponse();
         res.setReferer("");
     }
 
@@ -39,30 +36,18 @@ public class HtmlResponseTest {
     public void testNoChangesOnError() throws Exception {
         res.onChange("modified", "argument1");
         res.setError(new Exception("some exception"));
-        final StringWriter stringWriter = new StringWriter();
-        MockSlingHttpServletResponse response = new MockSlingHttpServletResponse() {
-            @Override
-            public PrintWriter getWriter() throws IOException {
-                return new PrintWriter(stringWriter);
-            }
-        };
+        SlingJakartaHttpServletResponseResult response = Builders.newResponseBuilder().buildJakartaResponseResult();
         res.doSend(response);
-        String output = stringWriter.toString();
+        String output = response.getOutputAsString();
         assertTrue(output.contains("<div id=\"ChangeLog\"></div>"));
     }
 
     @Test
     public void testChangesOnNoError() throws Exception {
         res.onChange("modified", "argument1");
-        final StringWriter stringWriter = new StringWriter();
-        MockSlingHttpServletResponse response = new MockSlingHttpServletResponse() {
-            @Override
-            public PrintWriter getWriter() throws IOException {
-                return new PrintWriter(stringWriter);
-            }
-        };
+        SlingJakartaHttpServletResponseResult response = Builders.newResponseBuilder().buildJakartaResponseResult();
         res.doSend(response);
-        String output = stringWriter.toString();
+        String output = response.getOutputAsString();
         assertTrue(output.contains("<div id=\"ChangeLog\">&lt;pre&gt;modified(&quot;argument1&quot;);&lt;br/&gt;&lt;/pre&gt;</div>"));
     }
 }

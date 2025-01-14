@@ -18,23 +18,22 @@ package org.apache.sling.servlets.post;
 
 import java.io.IOException;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
- * Provides a simple implementation of PostResponse that can be subclassed by developers wishing to provide specialized behavior
- * to an existing PostResponse instance. The default implementation of all methods is to call through to the wrapped
- * PostResponse instance.
- * @deprecated Use {@link AbstractJakartaPostResponseWrapper} instead.
+ * Provides a simple implementation of JakartaPostResponse that can be subclassed by developers wishing to provide specialized behavior
+ * to an existing JakartaPostResponse instance. The default implementation of all methods is to call through to the wrapped
+ * JakartaPostResponse instance.
+ * @since 2.5.0
  */
-@Deprecated
-public abstract class AbstractPostResponseWrapper implements PostResponse {
+public abstract class AbstractJakartaPostResponseWrapper implements JakartaPostResponse {
 
     /**
      * Use this method to return an instance of the class being wrapped.
      *
      * @return the wrapped PostResponse instance
      */
-    public abstract PostResponse getWrapped();
+    public abstract JakartaPostResponse getWrapped();
 
     @Override
     public void setReferer(String referer) {
