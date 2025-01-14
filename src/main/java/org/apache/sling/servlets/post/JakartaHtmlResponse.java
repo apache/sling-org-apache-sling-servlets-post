@@ -23,7 +23,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.Writer;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.sling.api.request.ResponseUtil;
 
@@ -31,10 +31,9 @@ import org.apache.sling.api.request.ResponseUtil;
  * The <code>HtmlResponse</code> is an {@link AbstractPostResponse} preparing
  * the response in HTML (actually XHTML) such that it can be interpreted
  * as a plain response in a browser or as XML response in an Ajax request.
- * @deprecated Use {@link JakartaHtmlResponse} instead.
+ * @since 2.5.0
  */
-@Deprecated
-public class HtmlResponse extends AbstractPostResponse {
+public class JakartaHtmlResponse extends AbstractJakartaPostResponse {
 
     /**
      * Name of the property into which the change log is gathered to be

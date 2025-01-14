@@ -26,17 +26,17 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import org.apache.sling.api.SlingHttpServletRequest;
+import org.apache.sling.api.SlingJakartaHttpServletRequest;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceUtil;
 import org.apache.sling.api.wrappers.SlingRequestPaths;
+import org.apache.sling.servlets.post.JakartaPostOperation;
+import org.apache.sling.servlets.post.JakartaPostResponse;
 import org.apache.sling.servlets.post.Modification;
-import org.apache.sling.servlets.post.PostOperation;
-import org.apache.sling.servlets.post.PostResponse;
+import org.apache.sling.servlets.post.SlingJakartaPostProcessor;
 import org.apache.sling.servlets.post.SlingPostConstants;
-import org.apache.sling.servlets.post.SlingPostProcessor;
 import org.apache.sling.servlets.post.VersioningConfiguration;
 import org.apache.sling.servlets.post.exceptions.PreconditionViolatedPersistenceException;
 import org.apache.sling.servlets.post.exceptions.TemporaryPersistenceException;
@@ -46,7 +46,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * The <code>AbstractPostOperation</code> class is a base implementation of the
- * {@link PostOperation} service interface providing actual implementations with
+ * {@link JakartaPostOperation} service interface providing actual implementations with
  * useful tooling and common functionality like preparing the change logs or
  * saving or refreshing.
  *
@@ -54,7 +54,7 @@ import org.slf4j.LoggerFactory;
  * custom operations you'll need to embed it in your bundles using the appropriate
  * bnd directive.
  */
-public abstract class AbstractPostOperation implements PostOperation {
+public abstract class AbstractPostOperation implements JakartaPostOperation {
 
     /**
      * Default logger
@@ -67,9 +67,9 @@ public abstract class AbstractPostOperation implements PostOperation {
     /**
      * Prepares and finalizes the actual operation. Preparation encompasses
      * getting the absolute path of the item to operate on by calling the
-     * {@link #getResourcePath(SlingHttpServletRequest)} method and setting the
+     * {@link #getResourcePath(SlingJakartaHttpServletRequest)} method and setting the
      * location and parent location on the response. After the operation has
-     * been done in the {@link #doRun(SlingHttpServletRequest, PostResponse, List)}
+     * been done in the {@link #doRun(SlingJakartaHttpServletRequest, PostResponse, List)}
      * method the session is saved if there are unsaved modifications. In case
      * of errors, the unsaved changes in the session are rolled back.
      *
@@ -79,9 +79,9 @@ public abstract class AbstractPostOperation implements PostOperation {
      * @param processors The array of processors
      */
     @Override
-    public void run(final SlingHttpServletRequest request,
-                    final PostResponse response,
-                    final SlingPostProcessor[] processors) throws PreconditionViolatedPersistenceException, TemporaryPersistenceException, PersistenceException {
+    public void run(final SlingJakartaHttpServletRequest request,
+                    final JakartaPostResponse response,
+                    final SlingJakartaPostProcessor[] processors) throws PreconditionViolatedPersistenceException, TemporaryPersistenceException, PersistenceException {
         final VersioningConfiguration versionableConfiguration = getVersioningConfiguration(request);
 
         try {
@@ -105,7 +105,7 @@ public abstract class AbstractPostOperation implements PostOperation {
             // invoke processors
             try {
                 if (processors != null) {
-                    for (SlingPostProcessor processor : processors) {
+                    for (SlingJakartaPostProcessor processor : processors) {
                         request.getRequestProgressTracker().log("Calling Sling Post Processor {0}", processor.getClass().getName());
                         processor.process(request, changes);
                     }
@@ -198,7 +198,7 @@ public abstract class AbstractPostOperation implements PostOperation {
      * parent location set. Other properties are expected to be set by this
      * implementation.
      *
-     * @param request The <code>SlingHttpServletRequest</code> providing the
+     * @param request The <code>SlingJakartaHttpServletRequest</code> providing the
      *            input, mostly in terms of request parameters, to the
      *            operation.
      * @param response The {@link PostResponse} to fill with response
@@ -208,8 +208,8 @@ public abstract class AbstractPostOperation implements PostOperation {
      * @throws PersistenceException Maybe thrown if any error occurs while
      *             accessing the repository.
      */
-    protected abstract void doRun(SlingHttpServletRequest request,
-            PostResponse response,
+    protected abstract void doRun(SlingJakartaHttpServletRequest request,
+            JakartaPostResponse response,
             List<Modification> changes) throws PersistenceException;
 
     /**
@@ -217,7 +217,7 @@ public abstract class AbstractPostOperation implements PostOperation {
      * @param request The http request
      * @return The versioning configuration
      */
-    protected VersioningConfiguration getVersioningConfiguration(final SlingHttpServletRequest request) {
+    protected VersioningConfiguration getVersioningConfiguration(final SlingJakartaHttpServletRequest request) {
         VersioningConfiguration versionableConfiguration =
             (VersioningConfiguration) request.getAttribute(VersioningConfiguration.class.getName());
         return versionableConfiguration != null ? versionableConfiguration : new VersioningConfiguration();
@@ -228,7 +228,7 @@ public abstract class AbstractPostOperation implements PostOperation {
      * @param request The http request
      * @return {@code true} if checkin should be skipped
      */
-    protected boolean isSkipCheckin(SlingHttpServletRequest request) {
+    protected boolean isSkipCheckin(SlingJakartaHttpServletRequest request) {
         return !getVersioningConfiguration(request).isAutoCheckin();
     }
 
@@ -237,7 +237,7 @@ public abstract class AbstractPostOperation implements PostOperation {
      * @param request The http request
      * @return {@code true} If committing be skipped
      */
-    private boolean isSkipSessionHandling(SlingHttpServletRequest request) {
+    private boolean isSkipSessionHandling(SlingJakartaHttpServletRequest request) {
         return Boolean.parseBoolean((String) request.getAttribute(SlingPostConstants.ATTR_SKIP_SESSION_HANDLING)) == true;
     }
 
@@ -246,7 +246,7 @@ public abstract class AbstractPostOperation implements PostOperation {
      * @param request The http request
      * @return {@code true} if a commit is required.
      */
-    private boolean isResourceResolverCommitRequired(SlingHttpServletRequest request) {
+    private boolean isResourceResolverCommitRequired(SlingJakartaHttpServletRequest request) {
         return !isSkipSessionHandling(request) && request.getResourceResolver().hasChanges();
     }
 
@@ -258,13 +258,13 @@ public abstract class AbstractPostOperation implements PostOperation {
      * addressed in the {@link SlingPostConstants#RP_APPLY_TO} parameter is
      * ignored.
      *
-     * @param request The <code>SlingHttpServletRequest</code> object used to
+     * @param request The <code>SlingJakartaHttpServletRequest</code> object used to
      *            get the {@link SlingPostConstants#RP_APPLY_TO} parameter.
      * @return The iterator of resources listed in the parameter or
      *         <code>null</code> if the parameter is not set in the request.
      */
     protected Iterator<Resource> getApplyToResources(
-            final SlingHttpServletRequest request) {
+            final SlingJakartaHttpServletRequest request) {
 
         final String[] applyTo = request.getParameterValues(SlingPostConstants.RP_APPLY_TO);
         if (applyTo == null) {
@@ -282,7 +282,7 @@ public abstract class AbstractPostOperation implements PostOperation {
      * @param path the path to externalize
      * @return the url
      */
-    protected final String externalizePath(final SlingHttpServletRequest request,
+    protected final String externalizePath(final SlingJakartaHttpServletRequest request,
             final String path) {
         StringBuilder ret = new StringBuilder();
         ret.append(SlingRequestPaths.getContextPath(request));
@@ -308,7 +308,7 @@ public abstract class AbstractPostOperation implements PostOperation {
      * @param request The http request
      * @return The resource path
      */
-    protected String getResourcePath(SlingHttpServletRequest request) {
+    protected String getResourcePath(SlingJakartaHttpServletRequest request) {
         return request.getResource().getPath();
     }
 
@@ -324,7 +324,7 @@ public abstract class AbstractPostOperation implements PostOperation {
      * @param changes the list of modifications
      * @throws PersistenceException in case the operation is not successful
      */
-    protected void orderResource(final SlingHttpServletRequest request,
+    protected void orderResource(final SlingJakartaHttpServletRequest request,
             final Resource resource,
             final List<Modification> changes) throws PersistenceException {
 
@@ -420,7 +420,7 @@ public abstract class AbstractPostOperation implements PostOperation {
 
         private Iterator<Resource> resourceIterator = null;
 
-        ApplyToIterator(SlingHttpServletRequest request, String[] paths) {
+        ApplyToIterator(SlingJakartaHttpServletRequest request, String[] paths) {
             this.resolver = request.getResourceResolver();
             this.baseResource = request.getResource();
             this.paths = paths;

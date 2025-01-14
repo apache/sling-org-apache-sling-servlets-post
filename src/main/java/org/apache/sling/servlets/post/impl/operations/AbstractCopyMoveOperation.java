@@ -19,14 +19,14 @@ package org.apache.sling.servlets.post.impl.operations;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
-import org.apache.sling.api.SlingHttpServletRequest;
+import org.apache.sling.api.SlingJakartaHttpServletRequest;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceUtil;
+import org.apache.sling.servlets.post.JakartaPostResponse;
 import org.apache.sling.servlets.post.Modification;
-import org.apache.sling.servlets.post.PostResponse;
 import org.apache.sling.servlets.post.SlingPostConstants;
 import org.apache.sling.servlets.post.VersioningConfiguration;
 
@@ -38,8 +38,8 @@ import org.apache.sling.servlets.post.VersioningConfiguration;
 abstract class AbstractCopyMoveOperation extends AbstractPostOperation {
 
     @Override
-    protected final void doRun(final SlingHttpServletRequest request,
-            final PostResponse response,
+    protected final void doRun(final SlingJakartaHttpServletRequest request,
+            final JakartaPostResponse response,
             final List<Modification> changes)
     throws PersistenceException {
         final VersioningConfiguration versioningConfiguration = getVersioningConfiguration(request);

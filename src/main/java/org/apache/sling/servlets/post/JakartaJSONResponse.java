@@ -26,7 +26,7 @@ import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonStructure;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.StringReader;
 import java.math.BigDecimal;
@@ -38,12 +38,11 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * The <code>JSONResponse</code> is an {@link AbstractPostResponse} preparing
+ * The <code>JSONResponse</code> is an {@link AbstractJakartaPostResponse} preparing
  * the response in JSON.
- * @deprecated Use {@link JakartaJSONResponse} instead.
+ * @since 2.5.0
  */
-@Deprecated
-public class JSONResponse extends AbstractPostResponse {
+public class JakartaJSONResponse extends AbstractJakartaPostResponse {
 
     public static final String RESPONSE_CONTENT_TYPE = "application/json";
 

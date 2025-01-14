@@ -28,29 +28,32 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.servlet.Servlet;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.Servlet;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletResponse;
 
-import org.apache.sling.api.SlingHttpServletRequest;
-import org.apache.sling.api.SlingHttpServletResponse;
+import org.apache.sling.api.SlingJakartaHttpServletRequest;
+import org.apache.sling.api.SlingJakartaHttpServletResponse;
 import org.apache.sling.api.resource.PersistenceException;
-import org.apache.sling.api.request.header.MediaRangeList;
+import org.apache.sling.api.request.header.JakartaMediaRangeList;
 import org.apache.sling.api.resource.ResourceNotFoundException;
 import org.apache.sling.api.resource.ResourceUtil;
-import org.apache.sling.api.servlets.SlingAllMethodsServlet;
+import org.apache.sling.api.servlets.SlingJakartaAllMethodsServlet;
 import org.apache.sling.jcr.contentloader.ContentImporter;
-import org.apache.sling.servlets.post.HtmlResponse;
-import org.apache.sling.servlets.post.JSONResponse;
+import org.apache.sling.servlets.post.JakartaHtmlResponse;
+import org.apache.sling.servlets.post.JakartaJSONResponse;
+import org.apache.sling.servlets.post.JakartaNodeNameGenerator;
+import org.apache.sling.servlets.post.JakartaPostOperation;
+import org.apache.sling.servlets.post.JakartaPostResponse;
+import org.apache.sling.servlets.post.JakartaPostResponseCreator;
 import org.apache.sling.servlets.post.NodeNameGenerator;
 import org.apache.sling.servlets.post.PostOperation;
-import org.apache.sling.servlets.post.PostResponse;
 import org.apache.sling.servlets.post.PostResponseCreator;
+import org.apache.sling.servlets.post.SlingJakartaPostProcessor;
 import org.apache.sling.servlets.post.SlingPostConstants;
 import org.apache.sling.servlets.post.SlingPostProcessor;
 import org.apache.sling.servlets.post.VersioningConfiguration;
 import org.apache.sling.servlets.post.exceptions.PreconditionViolatedPersistenceException;
-import org.apache.sling.servlets.post.exceptions.TemporaryPersistenceException;
 import org.apache.sling.servlets.post.impl.helper.DateParser;
 import org.apache.sling.servlets.post.impl.helper.DefaultNodeNameGenerator;
 import org.apache.sling.servlets.post.impl.helper.JCRSupport;
@@ -64,6 +67,10 @@ import org.apache.sling.servlets.post.impl.operations.MoveOperation;
 import org.apache.sling.servlets.post.impl.operations.NopOperation;
 import org.apache.sling.servlets.post.impl.operations.RestoreOperation;
 import org.apache.sling.servlets.post.impl.operations.StreamedUploadOperation;
+import org.apache.sling.servlets.post.impl.wrapper.JavaxToJakartaNodeNameGenerator;
+import org.apache.sling.servlets.post.impl.wrapper.JavaxToJakartaPostOperation;
+import org.apache.sling.servlets.post.impl.wrapper.JavaxToJakartaPostResponseCreator;
+import org.apache.sling.servlets.post.impl.wrapper.JavaxToSlingJakartaPostProcessor;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceRegistration;
@@ -92,7 +99,7 @@ import org.slf4j.LoggerFactory;
             "sling.servlet.paths=sling/servlet/default/POST"
     })
 @Designate(ocd = SlingPostServlet.Config.class)
-public class SlingPostServlet extends SlingAllMethodsServlet {
+public class SlingPostServlet extends SlingJakartaAllMethodsServlet {
 
     private static final long serialVersionUID = 1837674988291697074L;
 
@@ -154,13 +161,13 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
                             "content to the repository. By default this is \"j_.*\" thus ignoring all "+
                             "request parameters starting with j_ such as j_username.")
         String servlet_post_ignorePattern() default "j_.*";
-        
+
         @AttributeDefinition(name="Backwards compatible statuscode",
                 description="In backwards compatibility mode exceptions will always create a statuscode "
                     + "500 (see SLING-9896)")
         boolean legacy_statuscode_on_persistence_exception() default false;
-        
-        @AttributeDefinition(name="Log stacktraces on exceptions", 
+
+        @AttributeDefinition(name="Log stacktraces on exceptions",
                 description="Log the full stacktrace in case of an exception")
         boolean logStacktraceInExceptions() default true;
     }
@@ -180,35 +187,35 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
 
     private final StreamedUploadOperation streamedUploadOperation = new StreamedUploadOperation();
 
-    private ServiceRegistration<PostOperation>[] internalOperations;
+    private ServiceRegistration<JakartaPostOperation>[] internalOperations;
 
     /** Map of post operations. */
-    private final Map<String, PostOperation> postOperations = new HashMap<>();
+    private final Map<String, JakartaPostOperation> postOperations = new HashMap<>();
 
     /** Sorted list of post processor holders. */
     private final List<PostProcessorHolder> postProcessors = new ArrayList<>();
 
     /** Cached list of post processors, used during request processing. */
-    private SlingPostProcessor[] cachedPostProcessors = new SlingPostProcessor[0];
+    private SlingJakartaPostProcessor[] cachedPostProcessors = new SlingJakartaPostProcessor[0];
 
     /** Sorted list of node name generator holders. */
     private final List<NodeNameGeneratorHolder> nodeNameGenerators = new ArrayList<>();
 
     /** Cached list of node name generators used during request processing. */
-    private NodeNameGenerator[] cachedNodeNameGenerators = new NodeNameGenerator[0];
+    private JakartaNodeNameGenerator[] cachedNodeNameGenerators = new JakartaNodeNameGenerator[0];
 
     /** Sorted list of post response creator holders. */
     private final List<PostResponseCreatorHolder> postResponseCreators = new ArrayList<>();
 
     /** Cached array of post response creators used during request processing. */
-    private PostResponseCreator[] cachedPostResponseCreators = new PostResponseCreator[0];
+    private JakartaPostResponseCreator[] cachedPostResponseCreators = new JakartaPostResponseCreator[0];
 
     private VersioningConfiguration baseVersioningConfiguration;
 
     private ImportOperation importOperation;
-    
+
     private boolean backwardsCompatibleStatuscode;
-    
+
     private boolean logStacktraceInExceptions;
 
     public SlingPostServlet() {
@@ -224,17 +231,17 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
     }
 
     @Override
-    protected void doPost(final SlingHttpServletRequest request,
-            final SlingHttpServletResponse response) throws IOException {
+    protected void doPost(final SlingJakartaHttpServletRequest request,
+            final SlingJakartaHttpServletResponse response) throws IOException {
         final VersioningConfiguration localVersioningConfig = createRequestVersioningConfiguration(request);
 
         request.setAttribute(VersioningConfiguration.class.getName(), localVersioningConfig);
 
         // prepare the response
-        final PostResponse htmlResponse = createPostResponse(request);
+        final JakartaPostResponse htmlResponse = createPostResponse(request);
         htmlResponse.setReferer(request.getHeader("referer"));
 
-        final PostOperation operation = getSlingPostOperation(request);
+        final JakartaPostOperation operation = getSlingPostOperation(request);
         if (operation == null) {
 
             htmlResponse.setStatus(
@@ -244,7 +251,7 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
         } else {
             request.getRequestProgressTracker().log(
                     "Calling PostOperation: {0}", operation.getClass().getName());
-            final SlingPostProcessor[] processors = this.cachedPostProcessors;
+            final SlingJakartaPostProcessor[] processors = this.cachedPostProcessors;
             try {
                 operation.run(request, htmlResponse, processors);
             } catch (ResourceNotFoundException rnfe) {
@@ -283,20 +290,20 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
         htmlResponse.send(response, isSetStatus(request));
     }
 
-    protected void logPersistenceException (SlingHttpServletRequest request, PostOperation operation, Exception e ) {
+    protected void logPersistenceException (SlingJakartaHttpServletRequest request, JakartaPostOperation operation, Exception e ) {
         if (logStacktraceInExceptions) {
             log.warn("Exception while handling POST on path [{}] with operation [{}]",
                 request.getResource().getPath(),operation.getClass().getName(),e);
         } else {
             log.warn("{} while handling POST on path [{}] with operation [{}]: {}",
-                    e.getClass().getName(), 
+                    e.getClass().getName(),
                     request.getResource().getPath(),
                     operation.getClass().getName(),
                     e.getMessage());
         }
     }
-    
-    
+
+
     /**
      * Redirects the HttpServletResponse, if redirectURL is not empty
      * @param htmlResponse
@@ -305,7 +312,7 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
      * @return Whether a redirect was requested
      * @throws IOException
      */
-    boolean redirectIfNeeded(final SlingHttpServletRequest request, final PostResponse htmlResponse, final SlingHttpServletResponse response)
+    boolean redirectIfNeeded(final SlingJakartaHttpServletRequest request, final JakartaPostResponse htmlResponse, final SlingJakartaHttpServletResponse response)
             throws IOException {
         final String redirectURL = getRedirectUrl(request, htmlResponse);
         if (redirectURL != null) {
@@ -339,9 +346,9 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
      * </ul>
      * or a {@link org.apache.sling.servlets.post.PostResponse} otherwise
      */
-    PostResponse createPostResponse(final SlingHttpServletRequest req) {
-        PostResponse response = null;
-        for (final PostResponseCreator creator : cachedPostResponseCreators) {
+    JakartaPostResponse createPostResponse(final SlingJakartaHttpServletRequest req) {
+        JakartaPostResponse response = null;
+        for (final JakartaPostResponseCreator creator : cachedPostResponseCreators) {
             response = creator.createPostResponse(req);
             if (response != null) {
                 break;
@@ -350,11 +357,11 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
 
         if (response == null) {
             // Fall through to default behavior
-            final MediaRangeList mediaRangeList = new MediaRangeList(req);
-            if (JSONResponse.RESPONSE_CONTENT_TYPE.equals(mediaRangeList.prefer("text/html", JSONResponse.RESPONSE_CONTENT_TYPE))) {
-                response = new JSONResponse();
+            final JakartaMediaRangeList mediaRangeList = new JakartaMediaRangeList(req);
+            if (JakartaJSONResponse.RESPONSE_CONTENT_TYPE.equals(mediaRangeList.prefer("text/html", JakartaJSONResponse.RESPONSE_CONTENT_TYPE))) {
+                response = new JakartaJSONResponse();
             } else {
-                response = new HtmlResponse();
+                response = new JakartaHtmlResponse();
             }
         }
 
@@ -368,11 +375,11 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
     /**
      * Checks whether the normal error handling using Sling's error handlers will be used instead
      * of the error response based on a template.
-     * 
+     *
      * @param request the request to check
      * @return true or false
      */
-    private boolean isSendError(SlingHttpServletRequest request){
+    private boolean isSendError(SlingJakartaHttpServletRequest request){
         boolean sendError = false;
         String sendErrorParam = request.getParameter(SlingPostConstants.RP_SEND_ERROR);
         if (sendErrorParam != null && "true".equalsIgnoreCase(sendErrorParam)) {
@@ -381,8 +388,8 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
         return sendError;
     }
 
-    private PostOperation getSlingPostOperation(
-            final SlingHttpServletRequest request) {
+    private JakartaPostOperation getSlingPostOperation(
+            final SlingJakartaHttpServletRequest request) {
         if (streamedUploadOperation.isRequestStreamed(request)) {
             return streamedUploadOperation;
         }
@@ -404,7 +411,7 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
      * @param ctx the post processor
      * @return the redirect location or <code>null</code>
      */
-    protected String getRedirectUrl(final SlingHttpServletRequest request, final PostResponse ctx) {
+    protected String getRedirectUrl(final SlingJakartaHttpServletRequest request, final JakartaPostResponse ctx) {
         // redirect param has priority (but see below, magic star)
         String result = request.getParameter(SlingPostConstants.RP_REDIRECT_TO);
         if (result != null) {
@@ -461,7 +468,7 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
         return result;
     }
 
-    protected boolean isSetStatus(final SlingHttpServletRequest request) {
+    protected boolean isSetStatus(final SlingJakartaHttpServletRequest request) {
         final String statusParam = request.getParameter(SlingPostConstants.RP_STATUS);
         if (statusParam == null) {
             log.debug(
@@ -500,7 +507,7 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
         this.configure(configuration);
 
         // other predefined operations
-        final ArrayList<ServiceRegistration<PostOperation>> providedServices = new ArrayList<>();
+        final ArrayList<ServiceRegistration<JakartaPostOperation>> providedServices = new ArrayList<>();
         providedServices.add(registerOperation(bundleContext,
             SlingPostConstants.OPERATION_MODIFY, modifyOperation));
         providedServices.add(registerOperation(bundleContext,
@@ -526,15 +533,15 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
         internalOperations = providedServices.toArray(new ServiceRegistration[providedServices.size()]);
     }
 
-    private ServiceRegistration<PostOperation> registerOperation(final BundleContext context,
-            final String opCode, final PostOperation operation) {
+    private ServiceRegistration<JakartaPostOperation> registerOperation(final BundleContext context,
+            final String opCode, final JakartaPostOperation operation) {
         final Hashtable<String, Object> properties = new Hashtable<>();
-        properties.put(PostOperation.PROP_OPERATION_NAME, opCode);
+        properties.put(JakartaPostOperation.PROP_OPERATION_NAME, opCode);
         properties.put(Constants.SERVICE_DESCRIPTION,
             "Apache Sling POST Servlet Operation " + opCode);
         properties.put(Constants.SERVICE_VENDOR,
             context.getBundle().getHeaders().get(Constants.BUNDLE_VENDOR));
-        return context.registerService(PostOperation.class, operation,
+        return context.registerService(JakartaPostOperation.class, operation,
             properties);
     }
 
@@ -562,7 +569,7 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
 
         final String[] nameHints = configuration.servlet_post_nodeNameHints();
         final int nameMax = configuration.servlet_post_nodeNameMaxLength();
-        final NodeNameGenerator nodeNameGenerator = new DefaultNodeNameGenerator(
+        final JakartaNodeNameGenerator nodeNameGenerator = new DefaultNodeNameGenerator(
             nameHints, nameMax);
 
         final String paramMatch = configuration.servlet_post_ignorePattern();
@@ -588,7 +595,7 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
     @Deactivate
     protected void deactivate() {
         if (internalOperations != null) {
-            for (final ServiceRegistration<PostOperation> registration : internalOperations) {
+            for (final ServiceRegistration<JakartaPostOperation> registration : internalOperations) {
                 registration.unregister();
             }
             internalOperations = null;
@@ -602,11 +609,11 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
     /**
      * Bind a new post operation
      */
-    @Reference(service = PostOperation.class,
+    @Reference(service = JakartaPostOperation.class,
             cardinality = ReferenceCardinality.MULTIPLE,
             policy = ReferencePolicy.DYNAMIC)
-    protected void bindPostOperation(final PostOperation operation, final Map<String, Object> properties) {
-        final String operationName = (String) properties.get(PostOperation.PROP_OPERATION_NAME);
+    protected void bindJakartaPostOperation(final JakartaPostOperation operation, final Map<String, Object> properties) {
+        final String operationName = (String) properties.get(JakartaPostOperation.PROP_OPERATION_NAME);
         if ( operationName != null && operation != null ) {
             synchronized (this.postOperations) {
                 this.postOperations.put(operationName, operation);
@@ -617,13 +624,32 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
     /**
      * Unbind a post operation
      */
-    protected void unbindPostOperation(final PostOperation operation, final Map<String, Object> properties) {
-        final String operationName = (String) properties.get(PostOperation.PROP_OPERATION_NAME);
+    protected void unbindJakartaPostOperation(final JakartaPostOperation operation, final Map<String, Object> properties) {
+        final String operationName = (String) properties.get(JakartaPostOperation.PROP_OPERATION_NAME);
         if ( operationName != null ) {
             synchronized (this.postOperations) {
                 this.postOperations.remove(operationName);
             }
         }
+    }
+
+    /**
+     * Bind a new post operation
+     */
+    @SuppressWarnings("deprecation")
+    @Reference(service = PostOperation.class,
+            cardinality = ReferenceCardinality.MULTIPLE,
+            policy = ReferencePolicy.DYNAMIC)
+    protected void bindPostOperation(final PostOperation operation, final Map<String, Object> properties) {
+        this.bindJakartaPostOperation(new JavaxToJakartaPostOperation(operation), properties);
+    }
+
+    /**
+     * Unbind a post operation
+     */
+    @SuppressWarnings("deprecation")
+    protected void unbindPostOperation(final PostOperation operation, final Map<String, Object> properties) {
+        this.unbindJakartaPostOperation(new JavaxToJakartaPostOperation(operation), properties);
     }
 
     private int getRanking(final Map<String, Object> properties) {
@@ -634,10 +660,10 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
     /**
      * Bind a new post processor
      */
-    @Reference(service = SlingPostProcessor.class,
+    @Reference(service = SlingJakartaPostProcessor.class,
             cardinality = ReferenceCardinality.MULTIPLE,
             policy = ReferencePolicy.DYNAMIC)
-    protected void bindPostProcessor(final SlingPostProcessor processor, final Map<String, Object> properties) {
+    protected void bindJakartaPostProcessor(final SlingJakartaPostProcessor processor, final Map<String, Object> properties) {
         final PostProcessorHolder pph = new PostProcessorHolder();
         pph.processor = processor;
         pph.ranking = getRanking(properties);
@@ -660,12 +686,12 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
     /**
      * Unbind a post processor
      */
-    protected void unbindPostProcessor(final SlingPostProcessor processor, final Map<String, Object> properties) {
+    protected void unbindJakartaPostProcessor(final SlingJakartaPostProcessor processor, final Map<String, Object> properties) {
         synchronized ( this.postProcessors ) {
             final Iterator<PostProcessorHolder> i = this.postProcessors.iterator();
             while ( i.hasNext() ) {
                 final PostProcessorHolder current = i.next();
-                if ( current.processor == processor ) {
+                if ( current.isSame(processor) ) {
                     i.remove();
                 }
             }
@@ -674,11 +700,30 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
     }
 
     /**
+     * Bind a new post processor
+     */
+    @SuppressWarnings("deprecation")
+    @Reference(service = SlingPostProcessor.class,
+            cardinality = ReferenceCardinality.MULTIPLE,
+            policy = ReferencePolicy.DYNAMIC)
+    protected void bindPostProcessor(final SlingPostProcessor processor, final Map<String, Object> properties) {
+        this.bindJakartaPostProcessor(new JavaxToSlingJakartaPostProcessor(processor), properties);
+    }
+
+    /**
+     * Unbind a post processor
+     */
+    @SuppressWarnings("deprecation")
+    protected void unbindPostProcessor(final SlingPostProcessor processor, final Map<String, Object> properties) {
+        this.unbindJakartaPostProcessor(new JavaxToSlingJakartaPostProcessor(processor), properties);
+    }
+
+    /**
      * Update the post processor cache
      * This method is called by sync'ed methods, no need to add additional syncing.
      */
     private void updatePostProcessorCache() {
-        final SlingPostProcessor[] localCache = new SlingPostProcessor[this.postProcessors.size()];
+        final SlingJakartaPostProcessor[] localCache = new SlingJakartaPostProcessor[this.postProcessors.size()];
         int index = 0;
         for(final PostProcessorHolder current : this.postProcessors) {
             localCache[index] = current.processor;
@@ -690,10 +735,10 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
     /**
      * Bind a new node name generator
      */
-    @Reference(service = NodeNameGenerator.class,
+    @Reference(service = JakartaNodeNameGenerator.class,
             cardinality = ReferenceCardinality.MULTIPLE,
             policy = ReferencePolicy.DYNAMIC)
-    protected void bindNodeNameGenerator(final NodeNameGenerator generator, final Map<String, Object> properties) {
+    protected void bindJakartaNodeNameGenerator(final JakartaNodeNameGenerator generator, final Map<String, Object> properties) {
         final NodeNameGeneratorHolder nngh = new NodeNameGeneratorHolder();
         nngh.generator = generator;
         nngh.ranking = getRanking(properties);
@@ -716,12 +761,12 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
     /**
      * Unbind a node name generator
      */
-    protected void unbindNodeNameGenerator(final NodeNameGenerator generator, final Map<String, Object> properties) {
+    protected void unbindJakartaNodeNameGenerator(final JakartaNodeNameGenerator generator, final Map<String, Object> properties) {
         synchronized ( this.nodeNameGenerators ) {
             final Iterator<NodeNameGeneratorHolder> i = this.nodeNameGenerators.iterator();
             while ( i.hasNext() ) {
                 final NodeNameGeneratorHolder current = i.next();
-                if ( current.generator == generator ) {
+                if ( current.isSame(generator) ) {
                     i.remove();
                 }
             }
@@ -730,11 +775,30 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
     }
 
     /**
+     * Bind a new node name generator
+     */
+    @SuppressWarnings("deprecation")
+    @Reference(service = NodeNameGenerator.class,
+            cardinality = ReferenceCardinality.MULTIPLE,
+            policy = ReferencePolicy.DYNAMIC)
+    protected void bindNodeNameGenerator(final NodeNameGenerator generator, final Map<String, Object> properties) {
+        this.bindJakartaNodeNameGenerator(new JavaxToJakartaNodeNameGenerator(generator), properties);
+    }
+
+    /**
+     * Unbind a node name generator
+     */
+    @SuppressWarnings("deprecation")
+    protected void unbindNodeNameGenerator(final NodeNameGenerator generator, final Map<String, Object> properties) {
+        this.unbindJakartaNodeNameGenerator(new JavaxToJakartaNodeNameGenerator(generator), properties);
+    }
+
+    /**
      * Update the node name generator cache
      * This method is called by sync'ed methods, no need to add additional syncing.
      */
     private void updateNodeNameGeneratorCache() {
-        final NodeNameGenerator[] localCache = new NodeNameGenerator[this.nodeNameGenerators.size()];
+        final JakartaNodeNameGenerator[] localCache = new JakartaNodeNameGenerator[this.nodeNameGenerators.size()];
         int index = 0;
         for(final NodeNameGeneratorHolder current : this.nodeNameGenerators) {
             localCache[index] = current.generator;
@@ -750,10 +814,10 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
     /**
      * Bind a new post response creator
      */
-    @Reference(service = PostResponseCreator.class,
+    @Reference(service = JakartaPostResponseCreator.class,
             cardinality = ReferenceCardinality.MULTIPLE,
             policy = ReferencePolicy.DYNAMIC)
-    protected void bindPostResponseCreator(final PostResponseCreator creator, final Map<String, Object> properties) {
+    protected void bindJakartaPostResponseCreator(final JakartaPostResponseCreator creator, final Map<String, Object> properties) {
         final PostResponseCreatorHolder nngh = new PostResponseCreatorHolder();
         nngh.creator = creator;
         nngh.ranking = getRanking(properties);
@@ -776,12 +840,12 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
     /**
      * Unbind a post response creator
      */
-    protected void unbindPostResponseCreator(final PostResponseCreator creator, final Map<String, Object> properties) {
+    protected void unbindJakartaPostResponseCreator(final JakartaPostResponseCreator creator, final Map<String, Object> properties) {
         synchronized ( this.postResponseCreators ) {
             final Iterator<PostResponseCreatorHolder> i = this.postResponseCreators.iterator();
             while ( i.hasNext() ) {
                 final PostResponseCreatorHolder current = i.next();
-                if ( current.creator == creator ) {
+                if ( current.isSame(creator) ) {
                     i.remove();
                 }
             }
@@ -790,11 +854,30 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
     }
 
     /**
+     * Bind a new post response creator
+     */
+    @SuppressWarnings("deprecation")
+    @Reference(service = PostResponseCreator.class,
+            cardinality = ReferenceCardinality.MULTIPLE,
+            policy = ReferencePolicy.DYNAMIC)
+    protected void bindPostResponseCreator(final PostResponseCreator creator, final Map<String, Object> properties) {
+        this.bindJakartaPostResponseCreator(new JavaxToJakartaPostResponseCreator(creator), properties);
+    }
+
+    /**
+     * Unbind a post response creator
+     */
+    @SuppressWarnings("deprecation")
+    protected void unbindPostResponseCreator(final PostResponseCreator creator, final Map<String, Object> properties) {
+        this.unbindJakartaPostResponseCreator(new JavaxToJakartaPostResponseCreator(creator), properties);
+    }
+
+    /**
      * Update the post response creator cache
      * This method is called by sync'ed methods, no need to add additional syncing.
      */
     private void updatePostResponseCreatorCache() {
-        final PostResponseCreator[] localCache = new PostResponseCreator[this.postResponseCreators.size()];
+        final JakartaPostResponseCreator[] localCache = new JakartaPostResponseCreator[this.postResponseCreators.size()];
         int index = 0;
         for(final PostResponseCreatorHolder current : this.postResponseCreators) {
             localCache[index] = current.creator;
@@ -827,7 +910,7 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
         return cfg;
     }
 
-    private VersioningConfiguration createRequestVersioningConfiguration(SlingHttpServletRequest request) {
+    private VersioningConfiguration createRequestVersioningConfiguration(SlingJakartaHttpServletRequest request) {
         VersioningConfiguration cfg = baseVersioningConfiguration.clone();
 
         String paramValue = request.getParameter(PARAM_CHECKIN_ON_CREATE);
@@ -846,25 +929,58 @@ public class SlingPostServlet extends SlingAllMethodsServlet {
     }
 
     private static final class PostProcessorHolder {
-        public SlingPostProcessor processor;
+        public SlingJakartaPostProcessor processor;
         public int ranking;
+
+        public boolean isSame(final SlingJakartaPostProcessor processor) {
+            if ( this.processor == processor ) {
+                return true;
+            }
+            if ( processor instanceof JavaxToSlingJakartaPostProcessor
+                    && this.processor instanceof JavaxToSlingJakartaPostProcessor ) {
+                return ((JavaxToSlingJakartaPostProcessor)processor).getDelegate() == ((JavaxToSlingJakartaPostProcessor)this.processor).getDelegate();
+            }
+            return false;
+        }
     }
 
     private static final class NodeNameGeneratorHolder {
-        public NodeNameGenerator generator;
+        public JakartaNodeNameGenerator generator;
         public int ranking;
+
+        public boolean isSame(final JakartaNodeNameGenerator generator) {
+            if ( this.generator == generator ) {
+                return true;
+            }
+            if ( generator instanceof JavaxToJakartaNodeNameGenerator
+                    && this.generator instanceof JavaxToJakartaNodeNameGenerator ) {
+                return ((JavaxToJakartaNodeNameGenerator)generator).getDelegate() == ((JavaxToJakartaNodeNameGenerator)this.generator).getDelegate();
+            }
+            return false;
+        }
     }
 
     private static final class PostResponseCreatorHolder {
-        public PostResponseCreator creator;
+        public JakartaPostResponseCreator creator;
         public int ranking;
+
+        public boolean isSame(final JakartaPostResponseCreator creator) {
+            if ( this.creator == creator ) {
+                return true;
+            }
+            if ( creator instanceof JavaxToJakartaPostResponseCreator
+                    && this.creator instanceof JavaxToJakartaPostResponseCreator ) {
+                return ((JavaxToJakartaPostResponseCreator)creator).getDelegate() == ((JavaxToJakartaPostResponseCreator)this.creator).getDelegate();
+            }
+            return false;
+        }
     }
-    
+
     // for testing
     protected void setLog(Logger log) {
         this.log = log;
     }
-    
+
     // for testing
     protected void setLogStacktraceInExceptions(boolean flag) {
         this.logStacktraceInExceptions = flag;
