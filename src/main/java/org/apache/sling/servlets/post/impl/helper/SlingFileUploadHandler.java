@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.SequenceInputStream;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
@@ -365,7 +366,7 @@ public class SlingFileUploadHandler {
         SequenceInputStream  mergeStrm = null;
         File file = null;
         try {
-            file = File.createTempFile("tmp-", "-mergechunk");
+            file = Files.createTempFile("tmp-", "-mergechunk").toFile();
             out = new FileOutputStream(file);
             String startPattern = SlingPostConstants.CHUNK_NODE_NAME + "_" + "0_";
             Iterator<Resource> itr = new FilteringResourceIterator(parentResource.listChildren(), startPattern);
