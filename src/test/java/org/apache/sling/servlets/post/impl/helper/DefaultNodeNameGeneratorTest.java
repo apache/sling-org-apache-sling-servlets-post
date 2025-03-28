@@ -1,23 +1,22 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.servlets.post.impl.helper;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -30,6 +29,9 @@ import org.apache.sling.servlets.post.JakartaNodeNameGenerator;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 /**
  * Test node name generator
  */
@@ -38,28 +40,25 @@ public class DefaultNodeNameGeneratorTest {
     protected String nodeName(Map<String, String[]> parameterMap) {
         return nodeName(parameterMap, false);
     }
+
     protected String nodeName(Map<String, String[]> parameterMap, boolean requirePrefix) {
-        SlingJakartaHttpServletRequest request = Builders
-            .newRequestBuilder(Mockito.mock(Resource.class))
-            .withParameters(parameterMap).buildJakartaRequest();
+        SlingJakartaHttpServletRequest request = Builders.newRequestBuilder(Mockito.mock(Resource.class))
+                .withParameters(parameterMap)
+                .buildJakartaRequest();
 
         String basePath = null;
         JakartaNodeNameGenerator defaultNodeNameGenerator = null;
 
-        String[] parameterNames = new String[] {
-                "title",
-                "sling:subject"
-            };
+        String[] parameterNames = new String[] {"title", "sling:subject"};
         int maxNameLength = 10;
-        JakartaNodeNameGenerator nodeNameGenerator = new DefaultNodeNameGenerator(
-                parameterNames,
-                maxNameLength);
+        JakartaNodeNameGenerator nodeNameGenerator = new DefaultNodeNameGenerator(parameterNames, maxNameLength);
         return nodeNameGenerator.getNodeName(request, basePath, requirePrefix, defaultNodeNameGenerator);
     }
 
     protected void assertDefaultName(Map<String, String[]> parameterMap) {
         assertDefaultName(parameterMap, false);
     }
+
     protected void assertDefaultName(Map<String, String[]> parameterMap, boolean requirePrefix) {
         String nodeName = nodeName(parameterMap, requirePrefix);
         assertTrue(nodeName.matches("\\d+_\\d+"));
@@ -68,6 +67,7 @@ public class DefaultNodeNameGeneratorTest {
     protected void assertExpectedName(Map<String, String[]> parameterMap, String expectedName) {
         assertExpectedName(parameterMap, expectedName, false);
     }
+
     protected void assertExpectedName(Map<String, String[]> parameterMap, String expectedName, boolean requirePrefix) {
         String nodeName = nodeName(parameterMap, requirePrefix);
         assertEquals(expectedName, nodeName);
@@ -190,5 +190,4 @@ public class DefaultNodeNameGeneratorTest {
         map.put("sling:subject@ValueFrom", new String[] {"sling:message"});
         assertDefaultName(map);
     }
-
 }

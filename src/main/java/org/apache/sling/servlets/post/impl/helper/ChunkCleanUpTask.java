@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.servlets.post.impl.helper;
 
@@ -54,28 +56,31 @@ import org.slf4j.LoggerFactory;
  * default workspace assuming users are stored in that workspace and the
  * administrative user has full access.
  */
-@Component(service = Runnable.class,
-    property = {
-           "service.description=Periodic Chunk Cleanup Job",
-           "service.vendor=The Apache Software Foundation"
-    })
+@Component(
+        service = Runnable.class,
+        property = {"service.description=Periodic Chunk Cleanup Job", "service.vendor=The Apache Software Foundation"})
 @Designate(ocd = ChunkCleanUpTask.Config.class)
 public class ChunkCleanUpTask implements Runnable {
 
-    @ObjectClassDefinition(name = "Apache Sling Post Chunk Upload : Cleanup Task",
+    @ObjectClassDefinition(
+            name = "Apache Sling Post Chunk Upload : Cleanup Task",
             description = "Task to regularly purge incomplete chunks from the repository")
     public @interface Config {
 
-        @AttributeDefinition(name = "Schedule", description = "Cron expression scheudling this job. Default is hourly 17m23s after the hour. "
-                + "See http://www.docjar.com/docs/api/org/quartz/CronTrigger.html for a description "
-                + "of the format for this value.")
+        @AttributeDefinition(
+                name = "Schedule",
+                description = "Cron expression scheudling this job. Default is hourly 17m23s after the hour. "
+                        + "See http://www.docjar.com/docs/api/org/quartz/CronTrigger.html for a description "
+                        + "of the format for this value.")
         String scheduler_expression() default "31 41 0/12 * * ?";
 
-        @AttributeDefinition(name = "scheduler.concurrent",
+        @AttributeDefinition(
+                name = "scheduler.concurrent",
                 description = "Allow Chunk Cleanup Task to run concurrently (default: false).")
         boolean scheduler_concurrent() default false;
 
-        @AttributeDefinition(name = "Cleanup Age",
+        @AttributeDefinition(
+                name = "Cleanup Age",
                 description = "The chunk's age in minutes before it is considered for clean up.")
         int chunk_cleanup_age() default 360;
     }
@@ -120,8 +125,7 @@ public class ChunkCleanUpTask implements Runnable {
         try {
             admin = rrFactory.getAdministrativeResourceResolver(null);
 
-            final Iterator<Resource> rsrcIter = admin.findResources(
-                "SELECT * FROM [sling:chunks] ", "sql");
+            final Iterator<Resource> rsrcIter = admin.findResources("SELECT * FROM [sling:chunks] ", "sql");
             while (rsrcIter.hasNext()) {
                 final Resource rsrc = rsrcIter.next();
                 if (isEligibleForCleanUp(rsrc)) {
@@ -141,9 +145,7 @@ public class ChunkCleanUpTask implements Runnable {
             }
 
         } catch (Throwable t) {
-            log.error(
-                "ChunkCleanUpTask: General failure while trying to cleanup chunks",
-                t);
+            log.error("ChunkCleanUpTask: General failure while trying to cleanup chunks", t);
         } finally {
             if (admin != null) {
                 admin.close();
@@ -151,8 +153,8 @@ public class ChunkCleanUpTask implements Runnable {
         }
         long end = System.currentTimeMillis();
         log.info(
-            "ChunkCleanUpTask finished: Removed {} chunk upload(s) in {}ms ({} chunk upload(s) still active)",
-            new Object[] { numCleaned, (end - start), numLive });
+                "ChunkCleanUpTask finished: Removed {} chunk upload(s) in {}ms ({} chunk upload(s) still active)",
+                new Object[] {numCleaned, (end - start), numLive});
     }
 
     /**
@@ -170,9 +172,9 @@ public class ChunkCleanUpTask implements Runnable {
     private boolean isEligibleForCleanUp(Resource rsrc) {
         boolean result = false;
         final Resource lastChunkNode = uploadhandler.getLastChunk(rsrc);
-        if ( lastChunkNode != null ) {
+        if (lastChunkNode != null) {
             final Calendar created = lastChunkNode.getValueMap().get(JcrConstants.JCR_CREATED, Calendar.class);
-            if ( created != null && System.currentTimeMillis() - created.getTimeInMillis() > chunkCleanUpAge ) {
+            if (created != null && System.currentTimeMillis() - created.getTimeInMillis() > chunkCleanUpAge) {
                 result = true;
             }
         }
@@ -182,9 +184,9 @@ public class ChunkCleanUpTask implements Runnable {
     @Activate
     protected void activate(final Config configuration) {
         chunkCleanUpAge = configuration.chunk_cleanup_age();
-        log.info("scheduler config [{}], chunkGarbageTime  [{}] ms",
-            configuration.scheduler_expression(),
-            chunkCleanUpAge);
-
+        log.info(
+                "scheduler config [{}], chunkGarbageTime  [{}] ms",
+                configuration.scheduler_expression(),
+                chunkCleanUpAge);
     }
 }

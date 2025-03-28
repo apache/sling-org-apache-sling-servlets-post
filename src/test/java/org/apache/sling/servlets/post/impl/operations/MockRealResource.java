@@ -16,7 +16,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.apache.sling.servlets.post.impl.operations;
 
 import java.io.ByteArrayInputStream;
@@ -46,18 +45,18 @@ public class MockRealResource implements Resource {
         this.path = path;
         this.resourceType = resourceType;
         this.name = path.substring(path.lastIndexOf('/'));
-        this.parentPath = path.substring(0,path.lastIndexOf('/'));
+        this.parentPath = path.substring(0, path.lastIndexOf('/'));
     }
 
-    public MockRealResource(ResourceResolver resourceResolver, String path, String resourceType, Map<String, Object> properties) {
+    public MockRealResource(
+            ResourceResolver resourceResolver, String path, String resourceType, Map<String, Object> properties) {
         this.resourceResolver = resourceResolver;
         this.path = path;
-        this.name = path.substring(path.lastIndexOf('/')+1);
-        this.parentPath = path.substring(0,path.lastIndexOf('/'));
+        this.name = path.substring(path.lastIndexOf('/') + 1);
+        this.parentPath = path.substring(0, path.lastIndexOf('/'));
         this.resourceType = resourceType;
         this.properties.putAll(properties);
     }
-
 
     @Override
     public String getPath() {
@@ -79,13 +78,14 @@ public class MockRealResource implements Resource {
         return resourceResolver.listChildren(this);
     }
 
-    @Override    public Iterable<Resource> getChildren() {
+    @Override
+    public Iterable<Resource> getChildren() {
         return resourceResolver.getChildren(this);
     }
 
     @Override
     public Resource getChild(String s) {
-        return resourceResolver.getResource(path +"/"+ s);
+        return resourceResolver.getResource(path + "/" + s);
     }
 
     @Override
@@ -124,7 +124,8 @@ public class MockRealResource implements Resource {
                 return (AdapterType) o;
             } else {
                 try {
-                    return (AdapterType) new ByteArrayInputStream(String.valueOf(properties.get("jcr:data")).getBytes("UTF-8"));
+                    return (AdapterType) new ByteArrayInputStream(
+                            String.valueOf(properties.get("jcr:data")).getBytes("UTF-8"));
                 } catch (UnsupportedEncodingException e) {
                     throw new RuntimeException("Cant convert UTF-8 to byte[]");
                 }

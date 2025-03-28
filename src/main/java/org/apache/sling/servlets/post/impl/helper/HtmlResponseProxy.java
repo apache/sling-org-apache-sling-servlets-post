@@ -18,9 +18,9 @@
  */
 package org.apache.sling.servlets.post.impl.helper;
 
-import java.io.IOException;
-
 import javax.servlet.http.HttpServletResponse;
+
+import java.io.IOException;
 
 import org.apache.sling.api.servlets.HtmlResponse;
 import org.apache.sling.servlets.post.PostResponse;
@@ -45,7 +45,7 @@ public class HtmlResponseProxy extends HtmlResponse {
     private boolean createRequest;
 
     public HtmlResponseProxy(final PostResponse postResponse) {
-        if(postResponse == null) {
+        if (postResponse == null) {
             throw new IllegalArgumentException("Null PostResponse, cannot build HtmlResponseProxy");
         }
         this.postResponse = postResponse;
@@ -130,14 +130,13 @@ public class HtmlResponseProxy extends HtmlResponse {
         postResponse.onMoved(srcPath, dstPath);
     }
 
-    public void send(HttpServletResponse response, boolean setStatus)
-            throws IOException {
+    public void send(HttpServletResponse response, boolean setStatus) throws IOException {
         postResponse.send(response, setStatus);
     }
 
     public void setCreateRequest(boolean isCreateRequest) {
         createRequest = isCreateRequest;
-        if(postResponse != null) {
+        if (postResponse != null) {
             // ugly...needed because of SLING-2453, this is called
             // by the base class's constructor before postResponse is set
             postResponse.setCreateRequest(isCreateRequest);

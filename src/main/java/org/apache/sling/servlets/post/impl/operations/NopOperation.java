@@ -34,8 +34,11 @@ import org.apache.sling.servlets.post.exceptions.TemporaryPersistenceException;
 public class NopOperation implements JakartaPostOperation {
 
     @Override
-    public void run(SlingJakartaHttpServletRequest request, JakartaPostResponse response,
-            SlingJakartaPostProcessor[] processors) throws PreconditionViolatedPersistenceException, TemporaryPersistenceException {
+    public void run(
+            SlingJakartaHttpServletRequest request,
+            JakartaPostResponse response,
+            SlingJakartaPostProcessor[] processors)
+            throws PreconditionViolatedPersistenceException, TemporaryPersistenceException {
 
         // get the :nopstatus parameter for a specific code
         int status = SlingPostConstants.NOPSTATUS_VALUE_DEFAULT;
@@ -53,5 +56,4 @@ public class NopOperation implements JakartaPostOperation {
 
         response.setStatus(status, "Null Operation Status: " + status);
     }
-
 }

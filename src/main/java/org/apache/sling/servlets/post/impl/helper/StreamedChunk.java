@@ -1,20 +1,21 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.sling.servlets.post.impl.helper;
 
 import java.io.ByteArrayInputStream;
@@ -32,7 +33,6 @@ import java.util.regex.Pattern;
 
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.Part;
-
 import org.apache.jackrabbit.JcrConstants;
 import org.apache.sling.api.resource.ModifiableValueMap;
 import org.apache.sling.api.resource.PersistenceException;
@@ -95,19 +95,20 @@ public class StreamedChunk {
 
         String contentRangeHeader = part.getHeader("Content-Range");
         String contentLengthHeader = part.getHeader("Content-Length");
-        if ( contentRangeHeader != null ) {
+        if (contentRangeHeader != null) {
             ContentRange contentRange = new ContentRange(contentRangeHeader);
             fileLength = contentRange.length;
             offset = contentRange.offset;
             chunkLength = contentRange.range;
             chunked = true;
 
-        } else if ( formFields.containsKey(part.getName()+"@Length") && formFields.containsKey(part.getName()+"@Offset")) {
+        } else if (formFields.containsKey(part.getName() + "@Length")
+                && formFields.containsKey(part.getName() + "@Offset")) {
             fileLength = Long.parseLong(lastFrom(formFields.get(part.getName() + "@Length")));
             offset = Long.parseLong(lastFrom(formFields.get(part.getName() + "@Offset")));
             if (contentLengthHeader != null) {
                 chunkLength = Long.parseLong(contentLengthHeader);
-            } else if ( formFields.containsKey(part.getName() + "@PartLength")) {
+            } else if (formFields.containsKey(part.getName() + "@PartLength")) {
                 chunkLength = Long.parseLong(lastFrom(formFields.get(part.getName() + "@PartLength")));
             } else {
                 // must assume the chunk contains all the data.
@@ -118,19 +119,19 @@ public class StreamedChunk {
         } else {
             offset = 0;
             if (contentLengthHeader != null) {
-                fileLength =  Long.parseLong(contentLengthHeader);
+                fileLength = Long.parseLong(contentLengthHeader);
                 chunkLength = fileLength;
             } else {
                 fileLength = -1;
                 chunkLength = -1;
             }
             chunked = false;
-
         }
-        chunkResourceName = "chunk_"+offset+"-"+(offset+chunkLength);
-        completed = ((offset+chunkLength) == fileLength) || formFields.containsKey(part.getName()+"@Completed");
-        LOGGER.debug(" chunkResourceName {},  chunked {},completed {},  fileLength {}, chunkLength {}, offset {} ",
-                new Object[]{chunkResourceName, chunked, completed, fileLength, chunkLength, offset});
+        chunkResourceName = "chunk_" + offset + "-" + (offset + chunkLength);
+        completed = ((offset + chunkLength) == fileLength) || formFields.containsKey(part.getName() + "@Completed");
+        LOGGER.debug(
+                " chunkResourceName {},  chunked {},completed {},  fileLength {}, chunkLength {}, offset {} ",
+                new Object[] {chunkResourceName, chunked, completed, fileLength, chunkLength, offset});
     }
 
     /**
@@ -154,14 +155,13 @@ public class StreamedChunk {
         return result;
     }
 
-
     /**
      * The last element of strings.
      * @param strings a non null non zero string array.
      * @return the last element.
      */
     private String lastFrom(List<String> strings) {
-        return strings.get(strings.size()-1);
+        return strings.get(strings.size() - 1);
     }
 
     /**
@@ -171,25 +171,29 @@ public class StreamedChunk {
      * @throws IllegalStateException if the contentResource is not consistent with the part being streamed.
      * @throws PersistenceException if the part cant be streamed.
      */
-    private void updateState(Resource contentResource, List<Modification> changes) throws IllegalStateException, PersistenceException {
+    private void updateState(Resource contentResource, List<Modification> changes)
+            throws IllegalStateException, PersistenceException {
         final ModifiableValueMap vm = contentResource.adaptTo(ModifiableValueMap.class);
-        if ( vm == null ) {
+        if (vm == null) {
             throw new PersistenceException("Resource at " + contentResource.getPath() + " is not modifiable.");
         }
         vm.put(JcrConstants.JCR_LASTMODIFIED, Calendar.getInstance());
         vm.put(JcrConstants.JCR_MIMETYPE, getContentType(part));
         if (chunked) {
-            if ( vm.containsKey(SLING_FILE_LENGTH)) {
+            if (vm.containsKey(SLING_FILE_LENGTH)) {
                 long previousFileLength = vm.get(SLING_FILE_LENGTH, Long.class);
                 if (previousFileLength != fileLength) {
-                    throw new IllegalStateException("Chunk file length has changed while cunks were being uploaded expected " + previousFileLength + " chunk contained  " + fileLength);
+                    throw new IllegalStateException(
+                            "Chunk file length has changed while cunks were being uploaded expected "
+                                    + previousFileLength + " chunk contained  " + fileLength);
                 }
             }
             long previousChunksLength = 0;
-            if ( vm.containsKey(SLING_CHUNKS_LENGTH)) {
+            if (vm.containsKey(SLING_CHUNKS_LENGTH)) {
                 previousChunksLength = vm.get(SLING_CHUNKS_LENGTH, Long.class);
                 if (previousChunksLength != offset) {
-                    throw new IllegalStateException("Chunks recieved out of order, was expecting chunk starting at " + offset + " found last chunk ending at " + previousChunksLength);
+                    throw new IllegalStateException("Chunks recieved out of order, was expecting chunk starting at "
+                            + offset + " found last chunk ending at " + previousChunksLength);
                 }
             }
             vm.put(SLING_CHUNKS_LENGTH, previousChunksLength + chunkLength);
@@ -230,8 +234,9 @@ public class StreamedChunk {
             }
         }
 
-        Resource result = fileResource.getResourceResolver().create(fileResource, JcrConstants.JCR_CONTENT, resourceProps);
-        for( String key : resourceProps.keySet()) {
+        Resource result =
+                fileResource.getResourceResolver().create(fileResource, JcrConstants.JCR_CONTENT, resourceProps);
+        for (String key : resourceProps.keySet()) {
             changes.add(Modification.onModified(result.getPath() + '/' + key));
         }
         return result;
@@ -254,17 +259,15 @@ public class StreamedChunk {
                 throw new PersistenceException("Error while retrieving inputstream from request part.", e);
             }
             LOGGER.debug("Creating chunk at {} with properties {}  ", chunkResourceName, chunkProperties);
-            Resource chunkResource = contentResource.getResourceResolver().create(contentResource, chunkResourceName, chunkProperties);
-
+            Resource chunkResource =
+                    contentResource.getResourceResolver().create(contentResource, chunkResourceName, chunkProperties);
 
             for (String key : chunkProperties.keySet()) {
                 changes.add(Modification.onModified(chunkResource.getPath() + '/' + key));
             }
 
-
             processChunks(contentResource, changes);
         }
-
     }
 
     /**
@@ -292,7 +295,7 @@ public class StreamedChunk {
      * @throws PersistenceException
      */
     private void removeChunkData(Resource contentResource, ModifiableValueMap vm) throws PersistenceException {
-        for ( Resource r : contentResource.getChildren()) {
+        for (Resource r : contentResource.getChildren()) {
             if (r.isResourceType(SLING_CHUNK_NT)) {
                 r.getResourceResolver().delete(r);
             }
@@ -308,7 +311,7 @@ public class StreamedChunk {
      */
     private InputStream getChunksInputStream(Resource contentResource) {
         List<Resource> chunkResources = new ArrayList<>();
-        for ( Resource r : contentResource.getChildren()) {
+        for (Resource r : contentResource.getChildren()) {
             if (r.isResourceType(SLING_CHUNK_NT)) {
                 chunkResources.add(r);
             }
@@ -321,13 +324,12 @@ public class StreamedChunk {
                 return (int) (offset1 - offset2);
             }
         });
-        if ( LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Finishing Chunk upload at {} consolidating {} chunks into one file of  ",
-                    new Object[]{
-                            contentResource.getPath(),
-                            chunkResources.size(),
-                            contentResource.adaptTo(ValueMap.class).get(SLING_CHUNKS_LENGTH)
-                    });
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Finishing Chunk upload at {} consolidating {} chunks into one file of  ", new Object[] {
+                contentResource.getPath(),
+                chunkResources.size(),
+                contentResource.adaptTo(ValueMap.class).get(SLING_CHUNKS_LENGTH)
+            });
             LOGGER.debug("Content Resource Properties {} ", contentResource.adaptTo(ValueMap.class));
             for (Resource r : chunkResources) {
                 LOGGER.debug("Chunk {} properties {} ", r.getPath(), r.adaptTo(ValueMap.class));
@@ -387,32 +389,35 @@ public class StreamedChunk {
         public long offset;
         public long range;
 
-
         public ContentRange(String contentRangeHeader) {
             Matcher m = rangePattern.matcher(contentRangeHeader);
-            if ( m.find() ) {
+            if (m.find()) {
                 offset = Long.parseLong(m.group(1));
                 long end = Long.parseLong(m.group(2));
-                range = end-offset+1;
+                range = end - offset + 1;
                 if ("*".equals(m.group(4))) {
                     length = -1;
                 } else {
                     length = Long.parseLong(m.group(3));
-                    if ( offset > length ) {
-                        throw new IllegalArgumentException("Range header "+contentRangeHeader+" is invalid, offset beyond end.");
+                    if (offset > length) {
+                        throw new IllegalArgumentException(
+                                "Range header " + contentRangeHeader + " is invalid, offset beyond end.");
                     }
-                    if ( end > length ) {
-                        throw new IllegalArgumentException("Range header "+contentRangeHeader+" is invalid, range end beyond end.");
+                    if (end > length) {
+                        throw new IllegalArgumentException(
+                                "Range header " + contentRangeHeader + " is invalid, range end beyond end.");
                     }
-                    if ( range > length ) {
-                        throw new IllegalArgumentException("Range header "+contentRangeHeader+" is invalid, range greater than length.");
+                    if (range > length) {
+                        throw new IllegalArgumentException(
+                                "Range header " + contentRangeHeader + " is invalid, range greater than length.");
                     }
                 }
-                if ( offset > end ) {
-                    throw new IllegalArgumentException("Range header "+contentRangeHeader+" is invalid, offset beyond end of range.");
+                if (offset > end) {
+                    throw new IllegalArgumentException(
+                            "Range header " + contentRangeHeader + " is invalid, offset beyond end of range.");
                 }
             } else {
-                throw new IllegalArgumentException("Range header "+contentRangeHeader+" is invalid");
+                throw new IllegalArgumentException("Range header " + contentRangeHeader + " is invalid");
             }
         }
     }

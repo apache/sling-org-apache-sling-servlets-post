@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements. See the NOTICE file distributed with this
- * work for additional information regarding copyright ownership. The ASF
- * licenses this file to You under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.servlets.post.impl.helper;
 
@@ -59,7 +61,7 @@ public class ReferenceParser {
      */
     public static Value[] parse(Session session, String[] values, boolean weak) throws RepositoryException {
         Value ret[] = new Value[values.length];
-        for (int i=0; i< values.length; i++) {
+        for (int i = 0; i < values.length; i++) {
             Node n = parse(session, values[i]);
             if (n == null) {
                 return null;
@@ -69,7 +71,8 @@ public class ReferenceParser {
         return ret;
     }
 
-    private static Value createReferenceValue(Node node, ValueFactory factory, boolean weak) throws RepositoryException {
+    private static Value createReferenceValue(Node node, ValueFactory factory, boolean weak)
+            throws RepositoryException {
         if (weak) {
             return factory.createValue(node, true);
         } else {
@@ -92,5 +95,4 @@ public class ReferenceParser {
         }
         return null;
     }
-
 }

@@ -18,13 +18,12 @@
  */
 package org.apache.sling.servlets.post.impl.operations;
 
-import org.apache.sling.api.resource.ModifiableValueMap;
-
 import java.util.HashMap;
 
+import org.apache.sling.api.resource.ModifiableValueMap;
+
 public class MockValueMap extends HashMap<String, Object> implements ModifiableValueMap {
-    public MockValueMap() {
-    }
+    public MockValueMap() {}
 
     @Override
     public <T> T get(String s, Class<T> aClass) {

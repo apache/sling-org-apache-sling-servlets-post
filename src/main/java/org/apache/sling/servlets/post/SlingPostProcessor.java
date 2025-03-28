@@ -46,6 +46,5 @@ public interface SlingPostProcessor {
      * @param changes The list of changes for this request.
      * @throws Exception If an error occurs.
      */
-    void process(SlingHttpServletRequest request, List<Modification> changes)
-    throws Exception;
+    void process(SlingHttpServletRequest request, List<Modification> changes) throws Exception;
 }

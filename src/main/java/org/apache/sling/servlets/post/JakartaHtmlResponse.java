@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.servlets.post;
 
@@ -24,7 +26,6 @@ import java.io.Reader;
 import java.io.Writer;
 
 import jakarta.servlet.http.HttpServletResponse;
-
 import org.apache.sling.api.request.ResponseUtil;
 
 /**
@@ -105,8 +106,7 @@ public class JakartaHtmlResponse extends AbstractJakartaPostResponse {
      * @throws IOException if an i/o exception occurs
      */
     @Override
-    protected void doSend(HttpServletResponse response)
-            throws IOException {
+    protected void doSend(HttpServletResponse response) throws IOException {
 
         response.setContentType("text/html");
         response.setCharacterEncoding("UTF-8");
@@ -123,7 +123,7 @@ public class JakartaHtmlResponse extends AbstractJakartaPostResponse {
         Writer out = response.getWriter();
 
         String templateName;
-        if(isSafeReferer()) {
+        if (isSafeReferer()) {
             templateName = TEMPLATE_NAME;
         } else {
             templateName = NO_GO_BACK_TEMPLATE_NAME;
@@ -137,7 +137,7 @@ public class JakartaHtmlResponse extends AbstractJakartaPostResponse {
         while ((read = in.read()) >= 0) {
             char c = (char) read;
             switch (state) {
-                // initial
+                    // initial
                 case 0:
                     if (c == '$') {
                         state = 1;
@@ -145,7 +145,7 @@ public class JakartaHtmlResponse extends AbstractJakartaPostResponse {
                         out.write(c);
                     }
                     break;
-                // $ read
+                    // $ read
                 case 1:
                     if (c == '{') {
                         state = 2;
@@ -155,7 +155,7 @@ public class JakartaHtmlResponse extends AbstractJakartaPostResponse {
                         out.write(c);
                     }
                     break;
-                // { read
+                    // { read
                 case 2:
                     if (c == '}') {
                         state = 0;
@@ -172,5 +172,4 @@ public class JakartaHtmlResponse extends AbstractJakartaPostResponse {
         in.close();
         out.flush();
     }
-
 }

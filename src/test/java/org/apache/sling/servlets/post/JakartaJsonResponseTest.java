@@ -1,26 +1,27 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.sling.servlets.post;
+
+import javax.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.HashMap;
-import java.util.Map;
 
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
@@ -28,13 +29,9 @@ import jakarta.json.JsonNumber;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonString;
 import jakarta.json.JsonValue;
-import javax.servlet.http.HttpServletResponse;
-
 import junit.framework.TestCase;
-
 import org.apache.sling.api.request.builder.Builders;
 import org.apache.sling.api.request.builder.SlingJakartaHttpServletResponseResult;
-import org.apache.sling.commons.testing.sling.MockSlingHttpServletResponse;
 
 public class JakartaJsonResponseTest extends TestCase {
     protected JakartaJSONResponse res;
@@ -65,7 +62,8 @@ public class JakartaJsonResponseTest extends TestCase {
     public void testSetError() throws IOException {
         String errMsg = "Dummy error";
         res.setError(new Error(errMsg));
-        SlingJakartaHttpServletResponseResult resp = Builders.newResponseBuilder().buildJakartaResponseResult();
+        SlingJakartaHttpServletResponseResult resp =
+                Builders.newResponseBuilder().buildJakartaResponseResult();
         res.send(resp, true);
         JsonObject json = res.getJson();
         JsonValue error = assertProperty(json, "error");
@@ -75,11 +73,15 @@ public class JakartaJsonResponseTest extends TestCase {
 
     public void testSend() throws Exception {
         res.onChange("modified", "argument1");
-        SlingJakartaHttpServletResponseResult response = Builders.newResponseBuilder().buildJakartaResponseResult();
+        SlingJakartaHttpServletResponseResult response =
+                Builders.newResponseBuilder().buildJakartaResponseResult();
         res.send(response, true);
-        JsonObject result = Json.createReader(new StringReader(response.getOutputAsString())).readObject();
+        JsonObject result = Json.createReader(new StringReader(response.getOutputAsString()))
+                .readObject();
         assertProperty(result, JakartaHtmlResponse.PN_STATUS_CODE, HttpServletResponse.SC_OK);
-        assertEquals(JakartaJSONResponse.RESPONSE_CONTENT_TYPE + ";charset=" + JakartaJSONResponse.RESPONSE_CHARSET, response.getContentType());
+        assertEquals(
+                JakartaJSONResponse.RESPONSE_CONTENT_TYPE + ";charset=" + JakartaJSONResponse.RESPONSE_CHARSET,
+                response.getContentType());
         assertEquals(JakartaJSONResponse.RESPONSE_CHARSET, response.getCharacterEncoding());
     }
 
@@ -88,9 +90,11 @@ public class JakartaJsonResponseTest extends TestCase {
         res.onChange("modified", "argument1");
         res.setStatus(HttpServletResponse.SC_CREATED, "Created");
         res.setLocation(location);
-        SlingJakartaHttpServletResponseResult response = Builders.newResponseBuilder().buildJakartaResponseResult();
+        SlingJakartaHttpServletResponseResult response =
+                Builders.newResponseBuilder().buildJakartaResponseResult();
         res.send(response, true);
-        JsonObject result = Json.createReader(new StringReader(response.getOutputAsString())).readObject();
+        JsonObject result = Json.createReader(new StringReader(response.getOutputAsString()))
+                .readObject();
         assertProperty(result, JakartaHtmlResponse.PN_STATUS_CODE, HttpServletResponse.SC_CREATED);
         assertEquals(location, response.getHeader("Location"));
     }
@@ -102,9 +106,11 @@ public class JakartaJsonResponseTest extends TestCase {
         for (int status = 300; status < 308; status++) {
             res.setStatus(status, "3xx Status");
             res.setLocation(location);
-            SlingJakartaHttpServletResponseResult response = Builders.newResponseBuilder().buildJakartaResponseResult();
+            SlingJakartaHttpServletResponseResult response =
+                    Builders.newResponseBuilder().buildJakartaResponseResult();
             res.send(response, true);
-            JsonObject result = Json.createReader(new StringReader(response.getOutputAsString())).readObject();
+            JsonObject result = Json.createReader(new StringReader(response.getOutputAsString()))
+                    .readObject();
             assertProperty(result, JakartaHtmlResponse.PN_STATUS_CODE, status);
             assertEquals(location, response.getHeader("Location"));
         }
@@ -120,11 +126,14 @@ public class JakartaJsonResponseTest extends TestCase {
 
     public void testSendWithJsonAsPropertyValue() throws Exception {
         String testResponseJson = "{\"user\":\"testUser\",\"properties\":{\"id\":\"testId\", \"name\":\"test\"}}";
-        JsonObject customProperty = Json.createReader(new StringReader(testResponseJson)).readObject();
+        JsonObject customProperty =
+                Json.createReader(new StringReader(testResponseJson)).readObject();
         res.setProperty("response", customProperty);
-        SlingJakartaHttpServletResponseResult response = Builders.newResponseBuilder().buildJakartaResponseResult();
+        SlingJakartaHttpServletResponseResult response =
+                Builders.newResponseBuilder().buildJakartaResponseResult();
         res.send(response, true);
-        JsonObject result = Json.createReader(new StringReader(response.getOutputAsString())).readObject();
+        JsonObject result = Json.createReader(new StringReader(response.getOutputAsString()))
+                .readObject();
         assertProperty(result, "response", customProperty);
     }
 
@@ -156,7 +165,8 @@ public class JakartaJsonResponseTest extends TestCase {
         try {
             return (T) obj;
         } catch (ClassCastException e) {
-            TestCase.fail("Object is of unexpected type. Expected: " + clazz.getName() + ", actual: " + obj.getClass().getName());
+            TestCase.fail("Object is of unexpected type. Expected: " + clazz.getName() + ", actual: "
+                    + obj.getClass().getName());
             return null;
         }
     }

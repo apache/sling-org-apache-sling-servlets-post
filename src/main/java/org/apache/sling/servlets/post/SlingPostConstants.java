@@ -321,7 +321,7 @@ public interface SlingPostConstants {
      */
     public static final String RP_STATUS = RP_PREFIX + "status";
 
-	/**
+    /**
      * Optional request parameter: defines if to enable the error handling
      * also for POST request.
      * The parameter value is checked to see if it matches the case-insensitive
@@ -381,8 +381,7 @@ public interface SlingPostConstants {
      * Optional request parameter: if provided, added at the end of the computed
      * (or supplied) redirect URL
      */
-    public static final String RP_DISPLAY_EXTENSION = RP_PREFIX
-        + "displayExtension";
+    public static final String RP_DISPLAY_EXTENSION = RP_PREFIX + "displayExtension";
 
     /**
      * SLING-130, suffix that maps form field names to different JCR property
@@ -546,7 +545,7 @@ public interface SlingPostConstants {
      * to chunks.
      * @since 2.3.4
      */
-    public static final String RP_APPLY_TO_CHUNKS =  RP_PREFIX + "applyToChunks";
+    public static final String RP_APPLY_TO_CHUNKS = RP_PREFIX + "applyToChunks";
 
     /**
      * Constant for the sling:chunks mixin. Used to identify that node
@@ -588,5 +587,4 @@ public interface SlingPostConstants {
      * @since 2.3.4
      */
     public static final String CHUNK_NODE_NAME = "chunk";
-
 }

@@ -18,8 +18,6 @@
  */
 package org.apache.sling.servlets.post.impl.helper;
 
-import java.util.List;
-
 import javax.jcr.AccessDeniedException;
 import javax.jcr.InvalidItemStateException;
 import javax.jcr.Item;
@@ -44,6 +42,8 @@ import javax.jcr.nodetype.NodeTypeManager;
 import javax.jcr.nodetype.PropertyDefinition;
 import javax.jcr.version.VersionException;
 
+import java.util.List;
+
 import org.apache.jackrabbit.JcrConstants;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
@@ -63,13 +63,12 @@ public class JCRSupportImpl {
         try {
             final Node node = rsrc.adaptTo(Node.class);
             return node != null && isVersionable(node);
-        } catch ( final RepositoryException re) {
+        } catch (final RepositoryException re) {
             throw new PersistenceException(re.getMessage(), re, rsrc.getPath(), null);
         }
     }
 
-    public boolean checkin(final Resource rsrc)
-    throws PersistenceException {
+    public boolean checkin(final Resource rsrc) throws PersistenceException {
         final Node node = rsrc.adaptTo(Node.class);
         if (node != null) {
             try {
@@ -79,9 +78,9 @@ public class JCRSupportImpl {
                 }
             } catch (final AccessDeniedException e) {
                 throw new PreconditionViolatedPersistenceException(e.getMessage(), e, rsrc.getPath(), null);
-            } catch (final UnsupportedRepositoryOperationException|InvalidItemStateException|LockException e) { 
+            } catch (final UnsupportedRepositoryOperationException | InvalidItemStateException | LockException e) {
                 throw new TemporaryPersistenceException(e.getMessage(), e, rsrc.getPath(), null);
-            } catch ( final RepositoryException re) {
+            } catch (final RepositoryException re) {
                 throw new PersistenceException(re.getMessage(), re, rsrc.getPath(), null);
             }
         }
@@ -95,31 +94,36 @@ public class JCRSupportImpl {
         try {
             node = node.getParent();
             return findVersionableAncestor(node);
-        } catch (ItemNotFoundException | AccessDeniedException e ) {
+        } catch (ItemNotFoundException | AccessDeniedException e) {
             // top-level or parent not accessible, stop looking for a versionable ancestor
             return null;
         }
     }
 
-    public void checkoutIfNecessary(final Resource resource,
+    public void checkoutIfNecessary(
+            final Resource resource,
             final List<Modification> changes,
             final VersioningConfiguration versioningConfiguration)
-    throws PersistenceException {
+            throws PersistenceException {
         if (resource != null && versioningConfiguration.isAutoCheckout()) {
             final Node node = resource.adaptTo(Node.class);
-            if ( node != null ) {
+            if (node != null) {
                 try {
                     Node versionableNode = findVersionableAncestor(node);
                     if (versionableNode != null) {
                         if (!versionableNode.isCheckedOut()) {
-                            versionableNode.getSession().getWorkspace().getVersionManager().checkout(versionableNode.getPath());
+                            versionableNode
+                                    .getSession()
+                                    .getWorkspace()
+                                    .getVersionManager()
+                                    .checkout(versionableNode.getPath());
                             changes.add(Modification.onCheckout(versionableNode.getPath()));
                         }
                     }
                 } catch (final AccessDeniedException e) {
-                    throw new PreconditionViolatedPersistenceException(e.getMessage(),e);
-                } catch (final UnsupportedRepositoryOperationException e) { 
-                    throw new TemporaryPersistenceException(e.getMessage(),e);
+                    throw new PreconditionViolatedPersistenceException(e.getMessage(), e);
+                } catch (final UnsupportedRepositoryOperationException e) {
+                    throw new TemporaryPersistenceException(e.getMessage(), e);
                 } catch (final RepositoryException re) {
                     throw new PersistenceException(re.getMessage(), re);
                 }
@@ -133,10 +137,10 @@ public class JCRSupportImpl {
 
     public boolean isNodeType(final Resource rsrc, final String typeHint) {
         final Node node = rsrc.adaptTo(Node.class);
-        if ( node != null ) {
+        if (node != null) {
             try {
                 return node.isNodeType(typeHint);
-            } catch ( final RepositoryException re) {
+            } catch (final RepositoryException re) {
                 // ignore
             }
         }
@@ -145,7 +149,7 @@ public class JCRSupportImpl {
 
     public Boolean isFileNodeType(final ResourceResolver resolver, final String nodeType) {
         final Session session = resolver.adaptTo(Session.class);
-        if ( session != null ) {
+        if (session != null) {
             try {
                 final NodeTypeManager ntMgr = session.getWorkspace().getNodeTypeManager();
                 final NodeType nt = ntMgr.getNodeType(nodeType);
@@ -159,9 +163,9 @@ public class JCRSupportImpl {
     }
 
     private PropertyDefinition searchPropertyDefinition(final NodeType nodeType, final String name) {
-        if ( nodeType.getPropertyDefinitions() != null ) {
-            for(final PropertyDefinition pd : nodeType.getPropertyDefinitions()) {
-                if ( pd.getName().equals(name) ) {
+        if (nodeType.getPropertyDefinitions() != null) {
+            for (final PropertyDefinition pd : nodeType.getPropertyDefinitions()) {
+                if (pd.getName().equals(name)) {
                     return pd;
                 }
             }
@@ -172,14 +176,13 @@ public class JCRSupportImpl {
         return null;
     }
 
-    private PropertyDefinition searchPropertyDefinition(final Node node, final String name)
-    throws RepositoryException {
+    private PropertyDefinition searchPropertyDefinition(final Node node, final String name) throws RepositoryException {
         PropertyDefinition result = searchPropertyDefinition(node.getPrimaryNodeType(), name);
-        if ( result == null ) {
-            if ( node.getMixinNodeTypes() != null ) {
-                for(final NodeType mt : node.getMixinNodeTypes()) {
+        if (result == null) {
+            if (node.getMixinNodeTypes() != null) {
+                for (final NodeType mt : node.getMixinNodeTypes()) {
                     result = this.searchPropertyDefinition(mt, name);
-                    if ( result != null ) {
+                    if (result != null) {
                         return result;
                     }
                 }
@@ -188,61 +191,57 @@ public class JCRSupportImpl {
         return result;
     }
 
-    public boolean isPropertyProtectedOrNewAutoCreated(final Object n, final String name)
-    throws PersistenceException {
-        final Node node = (Node)n;
+    public boolean isPropertyProtectedOrNewAutoCreated(final Object n, final String name) throws PersistenceException {
+        final Node node = (Node) n;
         try {
             final PropertyDefinition pd = this.searchPropertyDefinition(node, name);
-            if ( pd != null ) {
+            if (pd != null) {
                 // SLING-2877 (autocreated check is only required for new nodes)
-                if ( (node.isNew() && pd.isAutoCreated()) || pd.isProtected() ) {
+                if ((node.isNew() && pd.isAutoCreated()) || pd.isProtected()) {
                     return true;
                 }
             }
-        } catch ( final RepositoryException re) {
+        } catch (final RepositoryException re) {
             throw new PersistenceException(re.getMessage(), re);
         }
         return false;
     }
 
     public boolean isNewNode(final Object node) {
-        return ((Node)node).isNew();
+        return ((Node) node).isNew();
     }
 
-    public boolean isPropertyMandatory(final Object node, final String name)
-    throws PersistenceException {
+    public boolean isPropertyMandatory(final Object node, final String name) throws PersistenceException {
         try {
-            final Property prop = ((Node)node).getProperty(name);
+            final Property prop = ((Node) node).getProperty(name);
             return prop.getDefinition().isMandatory();
         } catch (final PathNotFoundException e) {
-            throw new PreconditionViolatedPersistenceException(e.getMessage(),e);
-        } catch ( final RepositoryException re) {
+            throw new PreconditionViolatedPersistenceException(e.getMessage(), e);
+        } catch (final RepositoryException re) {
             throw new PersistenceException(re.getMessage(), re);
         }
     }
 
-    public boolean isPropertyMultiple(final Object node, final String name)
-    throws PersistenceException {
+    public boolean isPropertyMultiple(final Object node, final String name) throws PersistenceException {
         try {
-            final Property prop = ((Node)node).getProperty(name);
+            final Property prop = ((Node) node).getProperty(name);
             return prop.getDefinition().isMultiple();
         } catch (final PathNotFoundException e) {
-            throw new PreconditionViolatedPersistenceException(e.getMessage(),e);
-        } catch ( final RepositoryException re) {
+            throw new PreconditionViolatedPersistenceException(e.getMessage(), e);
+        } catch (final RepositoryException re) {
             throw new PersistenceException(re.getMessage(), re);
         }
     }
 
-    public Integer getPropertyType(final Object node, final String name)
-    throws PersistenceException {
+    public Integer getPropertyType(final Object node, final String name) throws PersistenceException {
         try {
-            if ( ((Node)node).hasProperty(name) ) {
-                return ((Node)node).getProperty(name).getType();
+            if (((Node) node).hasProperty(name)) {
+                return ((Node) node).getProperty(name).getType();
             }
-        } catch (final NoSuchNodeTypeException|ConstraintViolationException|PathNotFoundException e) {
-            throw new PreconditionViolatedPersistenceException(e.getMessage(),e);
-        } catch (final VersionException|LockException e) { 
-            throw new TemporaryPersistenceException(e.getMessage(),e);
+        } catch (final NoSuchNodeTypeException | ConstraintViolationException | PathNotFoundException e) {
+            throw new PreconditionViolatedPersistenceException(e.getMessage(), e);
+        } catch (final VersionException | LockException e) {
+            throw new TemporaryPersistenceException(e.getMessage(), e);
         } catch (final RepositoryException re) {
             throw new PersistenceException(re.getMessage(), re);
         }
@@ -257,34 +256,28 @@ public class JCRSupportImpl {
      * {@inheritDoc}
      */
     public Modification storeAsReference(
-            final Object n,
-            final String name,
-            final String[] values,
-            final int type,
-            final boolean multiValued)
-    throws PersistenceException {
+            final Object n, final String name, final String[] values, final int type, final boolean multiValued)
+            throws PersistenceException {
         try {
-            final Node node = (Node)n;
+            final Node node = (Node) n;
             if (multiValued) {
                 Value[] array = ReferenceParser.parse(node.getSession(), values, isWeakReference(type));
                 if (array != null) {
-                    return Modification.onModified(
-                            node.setProperty(name, array).getPath());
+                    return Modification.onModified(node.setProperty(name, array).getPath());
                 }
             } else {
                 if (values.length >= 1) {
                     Value v = ReferenceParser.parse(node.getSession(), values[0], isWeakReference(type));
                     if (v != null) {
-                        return Modification.onModified(
-                                node.setProperty(name, v).getPath());
+                        return Modification.onModified(node.setProperty(name, v).getPath());
                     }
                 }
             }
             return null;
-        } catch (final NoSuchNodeTypeException|ConstraintViolationException e) {
-            throw new PreconditionViolatedPersistenceException(e.getMessage(),e);
-        } catch (final VersionException|LockException e) { 
-            throw new TemporaryPersistenceException(e.getMessage(),e);
+        } catch (final NoSuchNodeTypeException | ConstraintViolationException e) {
+            throw new PreconditionViolatedPersistenceException(e.getMessage(), e);
+        } catch (final VersionException | LockException e) {
+            throw new TemporaryPersistenceException(e.getMessage(), e);
         } catch (final RepositoryException re) {
             throw new PersistenceException(re.getMessage(), re);
         }
@@ -294,22 +287,19 @@ public class JCRSupportImpl {
         return resolver.adaptTo(Session.class) != null;
     }
 
-    public void setTypedProperty(final Object n,
-            final String name,
-            final String[] values,
-            final int type,
-            final boolean multiValued)
-    throws PersistenceException {
+    public void setTypedProperty(
+            final Object n, final String name, final String[] values, final int type, final boolean multiValued)
+            throws PersistenceException {
         try {
             if (multiValued) {
-                ((Node)n).setProperty(name, values, type);
+                ((Node) n).setProperty(name, values, type);
             } else if (values.length >= 1) {
-                ((Node)n).setProperty(name, values[0], type);
+                ((Node) n).setProperty(name, values[0], type);
             }
-        } catch (final ValueFormatException|ConstraintViolationException e) {
-            throw new PreconditionViolatedPersistenceException(e.getMessage(),e);
-        } catch (final VersionException|LockException e) { 
-            throw new TemporaryPersistenceException(e.getMessage(),e);
+        } catch (final ValueFormatException | ConstraintViolationException e) {
+            throw new PreconditionViolatedPersistenceException(e.getMessage(), e);
+        } catch (final VersionException | LockException e) {
+            throw new TemporaryPersistenceException(e.getMessage(), e);
         } catch (final RepositoryException re) {
             throw new PersistenceException(re.getMessage(), re);
         }
@@ -323,31 +313,29 @@ public class JCRSupportImpl {
         return rsrc.adaptTo(Item.class);
     }
 
-    public void setPrimaryNodeType(final Object node, final String type)
-    throws PersistenceException {
+    public void setPrimaryNodeType(final Object node, final String type) throws PersistenceException {
         try {
-            ((Node)node).setPrimaryType(type);
-        } catch (final NoSuchNodeTypeException|ConstraintViolationException e) {
-            throw new PreconditionViolatedPersistenceException(e.getMessage(),e);
-        } catch (final VersionException|LockException e) { 
-            throw new TemporaryPersistenceException(e.getMessage(),e);
+            ((Node) node).setPrimaryType(type);
+        } catch (final NoSuchNodeTypeException | ConstraintViolationException e) {
+            throw new PreconditionViolatedPersistenceException(e.getMessage(), e);
+        } catch (final VersionException | LockException e) {
+            throw new TemporaryPersistenceException(e.getMessage(), e);
         } catch (final RepositoryException re) {
             throw new PersistenceException(re.getMessage(), re);
         }
     }
 
-    public void move(Object src, Object dstParent, String name)
-    throws PersistenceException {
+    public void move(Object src, Object dstParent, String name) throws PersistenceException {
         try {
-            final Session session = ((Item)src).getSession();
-            final Item source = ((Item)src);
-            final String targetParentPath = ((Node)dstParent).getPath();
+            final Session session = ((Item) src).getSession();
+            final Item source = ((Item) src);
+            final String targetParentPath = ((Node) dstParent).getPath();
             final String targetPath = (targetParentPath.equals("/") ? "" : targetParentPath) + '/' + name;
             session.move(source.getPath(), targetPath);
-        } catch (final PathNotFoundException|ConstraintViolationException|ItemExistsException e) {
-            throw new PreconditionViolatedPersistenceException(e.getMessage(),e);
-        } catch (final VersionException|LockException e) { 
-            throw new TemporaryPersistenceException(e.getMessage(),e);
+        } catch (final PathNotFoundException | ConstraintViolationException | ItemExistsException e) {
+            throw new PreconditionViolatedPersistenceException(e.getMessage(), e);
+        } catch (final VersionException | LockException e) {
+            throw new TemporaryPersistenceException(e.getMessage(), e);
         } catch (final RepositoryException re) {
             throw new PersistenceException(re.getMessage(), re);
         }
@@ -370,20 +358,19 @@ public class JCRSupportImpl {
      * @see #copy(Node, Node, String)
      * @see #copy(Property, Node, String)
      */
-    public String copy(Object src, Object dstParent, String name)
-    throws PersistenceException {
+    public String copy(Object src, Object dstParent, String name) throws PersistenceException {
         try {
             final Item result;
-            if (((Item)src).isNode()) {
-                result = copy((Node) src, (Node)dstParent, name);
+            if (((Item) src).isNode()) {
+                result = copy((Node) src, (Node) dstParent, name);
             } else {
-                result = copy((Property) src, (Node)dstParent, name);
+                result = copy((Property) src, (Node) dstParent, name);
             }
             return result.getPath();
-        } catch (final NoSuchNodeTypeException|ConstraintViolationException e) {
-            throw new PreconditionViolatedPersistenceException(e.getMessage(),e);
-        } catch (final VersionException|LockException e) { 
-            throw new TemporaryPersistenceException(e.getMessage(),e);
+        } catch (final NoSuchNodeTypeException | ConstraintViolationException e) {
+            throw new PreconditionViolatedPersistenceException(e.getMessage(), e);
+        } catch (final VersionException | LockException e) {
+            throw new TemporaryPersistenceException(e.getMessage(), e);
         } catch (final RepositoryException re) {
             throw new PersistenceException(re.getMessage(), re);
         }
@@ -406,10 +393,9 @@ public class JCRSupportImpl {
      * @throws RepositoryException May be thrown in case of any problem copying
      *             the content.
      */
-    private Item copy(Node src, Node dstParent, String name)
-            throws RepositoryException {
+    private Item copy(Node src, Node dstParent, String name) throws RepositoryException {
 
-        if(isAncestorOrSameNode(src, dstParent)) {
+        if (isAncestorOrSameNode(src, dstParent)) {
             throw new RepositoryException(
                     "Cannot copy ancestor " + src.getPath() + " to descendant " + dstParent.getPath());
         }
@@ -431,12 +417,12 @@ public class JCRSupportImpl {
         }
 
         // copy the properties
-        for (PropertyIterator iter = src.getProperties(); iter.hasNext();) {
+        for (PropertyIterator iter = src.getProperties(); iter.hasNext(); ) {
             copy(iter.nextProperty(), dst, null);
         }
 
         // copy the child nodes
-        for (NodeIterator iter = src.getNodes(); iter.hasNext();) {
+        for (NodeIterator iter = src.getNodes(); iter.hasNext(); ) {
             Node n = iter.nextNode();
             if (!n.getDefinition().isProtected()) {
                 copy(n, dst, null);
@@ -445,20 +431,20 @@ public class JCRSupportImpl {
         return dst;
     }
 
-    /** 
+    /**
      * determines if the 2 nodes are in ancestor relationship or identical
      * @param src one node
      * @param dest the other node
      * @return true if src is an ancestor node of dest, or if
-     *      both are the same node 
+     *      both are the same node
      * @throws RepositoryException if something goes wrong
      **/
     public static boolean isAncestorOrSameNode(Node src, Node dest) throws RepositoryException {
-        if(src.getPath().equals("/")) {
+        if (src.getPath().equals("/")) {
             return true;
-        } else if(src.getPath().equals(dest.getPath())) {
+        } else if (src.getPath().equals(dest.getPath())) {
             return true;
-        } else if(dest.getPath().startsWith(src.getPath() + "/")) {
+        } else if (dest.getPath().startsWith(src.getPath() + "/")) {
             return true;
         }
         return false;
@@ -479,8 +465,7 @@ public class JCRSupportImpl {
      * @throws RepositoryException May be thrown in case of any problem copying
      *             the content.
      */
-    private Item copy(Property src, Node dstParent, String name)
-            throws RepositoryException {
+    private Item copy(Property src, Node dstParent, String name) throws RepositoryException {
         if (!src.getDefinition().isProtected()) {
             if (name == null) {
                 name = src.getName();

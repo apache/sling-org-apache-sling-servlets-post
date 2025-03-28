@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.servlets.post.impl.operations;
 
@@ -79,9 +81,11 @@ public abstract class AbstractPostOperation implements JakartaPostOperation {
      * @param processors The array of processors
      */
     @Override
-    public void run(final SlingJakartaHttpServletRequest request,
-                    final JakartaPostResponse response,
-                    final SlingJakartaPostProcessor[] processors) throws PreconditionViolatedPersistenceException, TemporaryPersistenceException, PersistenceException {
+    public void run(
+            final SlingJakartaHttpServletRequest request,
+            final JakartaPostResponse response,
+            final SlingJakartaPostProcessor[] processors)
+            throws PreconditionViolatedPersistenceException, TemporaryPersistenceException, PersistenceException {
         final VersioningConfiguration versionableConfiguration = getVersioningConfiguration(request);
 
         try {
@@ -106,14 +110,17 @@ public abstract class AbstractPostOperation implements JakartaPostOperation {
             try {
                 if (processors != null) {
                     for (SlingJakartaPostProcessor processor : processors) {
-                        request.getRequestProgressTracker().log("Calling Sling Post Processor {0}", processor.getClass().getName());
+                        request.getRequestProgressTracker()
+                                .log(
+                                        "Calling Sling Post Processor {0}",
+                                        processor.getClass().getName());
                         processor.process(request, changes);
                     }
                 }
-            } catch (PreconditionViolatedPersistenceException|TemporaryPersistenceException e) {
+            } catch (PreconditionViolatedPersistenceException | TemporaryPersistenceException e) {
                 throw e;
             } catch (Exception e) {
-                throw new PersistenceException("Exception during response processing",e);
+                throw new PersistenceException("Exception during response processing", e);
             }
 
             // check modifications for remaining postfix and store the base path
@@ -130,12 +137,13 @@ public abstract class AbstractPostOperation implements JakartaPostOperation {
                 }
             }
 
-            // fail if any of the base paths (before the postfix) which had a postfix are contained in the modification set
+            // fail if any of the base paths (before the postfix) which had a postfix are contained in the modification
+            // set
             if (modificationSourcesContainingPostfix.size() > 0) {
                 for (final Map.Entry<String, String> sourceToCheck : modificationSourcesContainingPostfix.entrySet()) {
                     if (allModificationSources.contains(sourceToCheck.getKey())) {
-                        throw new PersistenceException("Postfix-containing path " + sourceToCheck.getValue() +
-                                " contained in the modification list. Check configuration.");
+                        throw new PersistenceException("Postfix-containing path " + sourceToCheck.getValue()
+                                + " contained in the modification list. Check configuration.");
                     }
                 }
             }
@@ -143,28 +151,39 @@ public abstract class AbstractPostOperation implements JakartaPostOperation {
             final Set<String> nodesToCheckin = new LinkedHashSet<>();
 
             // set changes on html response
-            for(Modification change : changes) {
-                switch ( change.getType() ) {
-                    case MODIFY : response.onModified(change.getSource()); break;
-                    case DELETE : response.onDeleted(change.getSource()); break;
-                    case MOVE   : response.onMoved(change.getSource(), change.getDestination()); break;
-                    case COPY   : response.onCopied(change.getSource(), change.getDestination()); break;
-                    case CREATE :
+            for (Modification change : changes) {
+                switch (change.getType()) {
+                    case MODIFY:
+                        response.onModified(change.getSource());
+                        break;
+                    case DELETE:
+                        response.onDeleted(change.getSource());
+                        break;
+                    case MOVE:
+                        response.onMoved(change.getSource(), change.getDestination());
+                        break;
+                    case COPY:
+                        response.onCopied(change.getSource(), change.getDestination());
+                        break;
+                    case CREATE:
                         response.onCreated(change.getSource());
                         if (versionableConfiguration.isCheckinOnNewVersionableNode()) {
                             nodesToCheckin.add(change.getSource());
                         }
                         break;
-                    case ORDER  : response.onChange("ordered", change.getSource(), change.getDestination()); break;
-                    case CHECKOUT :
+                    case ORDER:
+                        response.onChange("ordered", change.getSource(), change.getDestination());
+                        break;
+                    case CHECKOUT:
                         response.onChange("checkout", change.getSource());
                         nodesToCheckin.add(change.getSource());
                         break;
-                    case CHECKIN :
+                    case CHECKIN:
                         response.onChange("checkin", change.getSource());
                         nodesToCheckin.remove(change.getSource());
                         break;
-                    case RESTORE : response.onChange("restore", change.getSource());
+                    case RESTORE:
+                        response.onChange("restore", change.getSource());
                         break;
                 }
             }
@@ -175,7 +194,7 @@ public abstract class AbstractPostOperation implements JakartaPostOperation {
 
             if (!isSkipCheckin(request)) {
                 // now do the checkins
-                for(String checkinPath : nodesToCheckin) {
+                for (String checkinPath : nodesToCheckin) {
                     if (this.jcrSupport.checkin(request.getResourceResolver().getResource(checkinPath))) {
                         response.onChange("checkin", checkinPath);
                     }
@@ -208,9 +227,9 @@ public abstract class AbstractPostOperation implements JakartaPostOperation {
      * @throws PersistenceException Maybe thrown if any error occurs while
      *             accessing the repository.
      */
-    protected abstract void doRun(SlingJakartaHttpServletRequest request,
-            JakartaPostResponse response,
-            List<Modification> changes) throws PersistenceException;
+    protected abstract void doRun(
+            SlingJakartaHttpServletRequest request, JakartaPostResponse response, List<Modification> changes)
+            throws PersistenceException;
 
     /**
      * Get the versioning configuration.
@@ -219,7 +238,7 @@ public abstract class AbstractPostOperation implements JakartaPostOperation {
      */
     protected VersioningConfiguration getVersioningConfiguration(final SlingJakartaHttpServletRequest request) {
         VersioningConfiguration versionableConfiguration =
-            (VersioningConfiguration) request.getAttribute(VersioningConfiguration.class.getName());
+                (VersioningConfiguration) request.getAttribute(VersioningConfiguration.class.getName());
         return versionableConfiguration != null ? versionableConfiguration : new VersioningConfiguration();
     }
 
@@ -238,7 +257,8 @@ public abstract class AbstractPostOperation implements JakartaPostOperation {
      * @return {@code true} If committing be skipped
      */
     private boolean isSkipSessionHandling(SlingJakartaHttpServletRequest request) {
-        return Boolean.parseBoolean((String) request.getAttribute(SlingPostConstants.ATTR_SKIP_SESSION_HANDLING)) == true;
+        return Boolean.parseBoolean((String) request.getAttribute(SlingPostConstants.ATTR_SKIP_SESSION_HANDLING))
+                == true;
     }
 
     /**
@@ -263,8 +283,7 @@ public abstract class AbstractPostOperation implements JakartaPostOperation {
      * @return The iterator of resources listed in the parameter or
      *         <code>null</code> if the parameter is not set in the request.
      */
-    protected Iterator<Resource> getApplyToResources(
-            final SlingJakartaHttpServletRequest request) {
+    protected Iterator<Resource> getApplyToResources(final SlingJakartaHttpServletRequest request) {
 
         final String[] applyTo = request.getParameterValues(SlingPostConstants.RP_APPLY_TO);
         if (applyTo == null) {
@@ -282,8 +301,7 @@ public abstract class AbstractPostOperation implements JakartaPostOperation {
      * @param path the path to externalize
      * @return the url
      */
-    protected final String externalizePath(final SlingJakartaHttpServletRequest request,
-            final String path) {
+    protected final String externalizePath(final SlingJakartaHttpServletRequest request, final String path) {
         StringBuilder ret = new StringBuilder();
         ret.append(SlingRequestPaths.getContextPath(request));
         ret.append(request.getResourceResolver().map(path));
@@ -312,7 +330,6 @@ public abstract class AbstractPostOperation implements JakartaPostOperation {
         return request.getResource().getPath();
     }
 
-
     /**
      * Orders the given resource according to the specified command. The following
      * syntax is supported: &lt;xmp&gt; | first | before all child nodes | before A |
@@ -324,9 +341,9 @@ public abstract class AbstractPostOperation implements JakartaPostOperation {
      * @param changes the list of modifications
      * @throws PersistenceException in case the operation is not successful
      */
-    protected void orderResource(final SlingJakartaHttpServletRequest request,
-            final Resource resource,
-            final List<Modification> changes) throws PersistenceException {
+    protected void orderResource(
+            final SlingJakartaHttpServletRequest request, final Resource resource, final List<Modification> changes)
+            throws PersistenceException {
 
         final String command = request.getParameter(SlingPostConstants.RP_ORDER);
         if (command == null || command.length() == 0) {
@@ -388,8 +405,7 @@ public abstract class AbstractPostOperation implements JakartaPostOperation {
                     newPos--;
                 }
             } catch (NumberFormatException e) {
-                throw new IllegalArgumentException(
-                    "provided node ordering command is invalid: " + command);
+                throw new IllegalArgumentException("provided node ordering command is invalid: " + command);
             }
         }
 
@@ -403,8 +419,7 @@ public abstract class AbstractPostOperation implements JakartaPostOperation {
                 log.debug("Resource {} ordered '{}'", resource.getPath(), command);
             }
         } else {
-            throw new IllegalArgumentException(
-                "provided resource ordering command is invalid: " + command);
+            throw new IllegalArgumentException("provided resource ordering command is invalid: " + command);
         }
     }
 
@@ -452,41 +467,41 @@ public abstract class AbstractPostOperation implements JakartaPostOperation {
         }
 
         private Resource seek() {
-        	if (resourceIterator != null) {
-        		if (resourceIterator.hasNext()) {
-            		//return the next resource in the iterator
-        			Resource res = resourceIterator.next();
-        			return res;
+            if (resourceIterator != null) {
+                if (resourceIterator.hasNext()) {
+                    // return the next resource in the iterator
+                    Resource res = resourceIterator.next();
+                    return res;
                 }
-    			resourceIterator = null;
-        	}
+                resourceIterator = null;
+            }
             while (pathIndex < paths.length) {
                 String path = paths[pathIndex];
                 pathIndex++;
 
-                //SLING-2415 - support wildcard as the last segment of the applyTo path
+                // SLING-2415 - support wildcard as the last segment of the applyTo path
                 if (path.endsWith("*")) {
-                	if (path.length() == 1) {
-                		resourceIterator = baseResource.listChildren();
-                	} else if (path.endsWith("/*")) {
-                    	path = path.substring(0, path.length() - 2);
-                    	if (path.length() == 0) {
-                    		resourceIterator = baseResource.listChildren();
-                    	} else {
-                        	Resource res = resolver.getResource(baseResource, path);
+                    if (path.length() == 1) {
+                        resourceIterator = baseResource.listChildren();
+                    } else if (path.endsWith("/*")) {
+                        path = path.substring(0, path.length() - 2);
+                        if (path.length() == 0) {
+                            resourceIterator = baseResource.listChildren();
+                        } else {
+                            Resource res = resolver.getResource(baseResource, path);
                             if (res != null) {
-                            	resourceIterator = res.listChildren();
+                                resourceIterator = res.listChildren();
                             }
-                    	}
+                        }
                     }
-                	if (resourceIterator != null) {
-                		//return the first resource in the iterator
-                		if (resourceIterator.hasNext()) {
-                			Resource res = resourceIterator.next();
-                			return res;
-                		}
+                    if (resourceIterator != null) {
+                        // return the first resource in the iterator
+                        if (resourceIterator.hasNext()) {
+                            Resource res = resourceIterator.next();
+                            return res;
+                        }
                         resourceIterator = null;
-                	}
+                    }
                 } else {
                     Resource res = resolver.getResource(baseResource, path);
                     if (res != null) {

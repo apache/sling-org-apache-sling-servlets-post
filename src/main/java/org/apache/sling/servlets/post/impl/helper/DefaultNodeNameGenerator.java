@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.servlets.post.impl.helper;
 
@@ -48,9 +50,7 @@ public class DefaultNodeNameGenerator implements JakartaNodeNameGenerator {
             this.parameterNames = parameterNames;
         }
 
-        this.maxLength = (maxNameLength > 0)
-                ? maxNameLength
-                : DEFAULT_MAX_NAME_LENGTH;
+        this.maxLength = (maxNameLength > 0) ? maxNameLength : DEFAULT_MAX_NAME_LENGTH;
     }
 
     /**
@@ -93,7 +93,8 @@ public class DefaultNodeNameGenerator implements JakartaNodeNameGenerator {
                         // @ValueFrom params must have exactly one value, else ignored
                         if (refParams != null && refParams.length == 1) {
                             specialParam = refParams[0];
-                            if (specialParam != null && !specialParam.getString().isEmpty()) {
+                            if (specialParam != null
+                                    && !specialParam.getString().isEmpty()) {
                                 valueToUse = specialParam.getString();
                             }
                         }
@@ -124,21 +125,24 @@ public class DefaultNodeNameGenerator implements JakartaNodeNameGenerator {
      * @param defaultNodeNameGenerator a default generator
      * @return a nice node name
      */
-    public String getNodeName(SlingJakartaHttpServletRequest request, String basePath,
-            boolean requirePrefix, JakartaNodeNameGenerator defaultNodeNameGenerator) {
+    public String getNodeName(
+            SlingJakartaHttpServletRequest request,
+            String basePath,
+            boolean requirePrefix,
+            JakartaNodeNameGenerator defaultNodeNameGenerator) {
         RequestParameterMap parameters = request.getRequestParameterMap();
         String valueToUse = null;
         boolean doFilter = true;
 
         // find the first request parameter that matches one of
         // our parameterNames, in order, and has a value
-        if (parameters!=null) {
+        if (parameters != null) {
             // we first check for the special sling parameters
             valueToUse = getValueToUse(parameters, SlingPostConstants.RP_NODE_NAME);
             if (valueToUse != null) {
                 doFilter = false;
             }
-            if ( valueToUse == null ) {
+            if (valueToUse == null) {
                 valueToUse = getValueToUse(parameters, SlingPostConstants.RP_NODE_NAME_HINT);
             }
 
@@ -157,7 +161,7 @@ public class DefaultNodeNameGenerator implements JakartaNodeNameGenerator {
         String result;
         // should we filter?
         if (valueToUse != null) {
-            if ( doFilter ) {
+            if (doFilter) {
                 // filter value so that it works as a node name
                 result = filter.filter(valueToUse);
             } else {
@@ -168,10 +172,10 @@ public class DefaultNodeNameGenerator implements JakartaNodeNameGenerator {
             result = nextCounter() + "_" + System.currentTimeMillis();
         }
 
-        if ( doFilter ) {
+        if (doFilter) {
             // max length
             if (result.length() > maxLength) {
-                result = result.substring(0,maxLength);
+                result = result.substring(0, maxLength);
             }
         }
 

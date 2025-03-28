@@ -16,18 +16,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.apache.sling.servlets.post.impl.helper;
-
-import org.apache.sling.api.resource.Resource;
-import org.apache.sling.commons.testing.sling.MockResource;
-import org.junit.Assert;
-import org.junit.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.apache.sling.api.resource.Resource;
+import org.apache.sling.commons.testing.sling.MockResource;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * Created by ieb on 06/09/2016.
@@ -37,16 +36,17 @@ public class ResourceIteratorInputStreamTest {
     @Test
     public void test() throws IOException {
         List<Resource> resources = new ArrayList<Resource>();
-        for (int i = 0; i < 10; i++ ) {
+        for (int i = 0; i < 10; i++) {
             final int initialState = i;
             final InputStream in = new InputStream() {
                 private int state = initialState;
+
                 @Override
                 public int read() throws IOException {
                     return state--;
                 }
             };
-            resources.add(new MockResource(null,null,null){
+            resources.add(new MockResource(null, null, null) {
                 @Override
                 public <AdapterType> AdapterType adaptTo(Class<AdapterType> type) {
                     if (InputStream.class.equals(type)) {
@@ -57,22 +57,22 @@ public class ResourceIteratorInputStreamTest {
 
                 @Override
                 public String getName() {
-                    return "chunk-"+(initialState*100)+"-"+(((initialState+1)*100)-1);
+                    return "chunk-" + (initialState * 100) + "-" + (((initialState + 1) * 100) - 1);
                 }
             });
         }
         ResourceIteratorInputStream resourceIteratorInputStream = new ResourceIteratorInputStream(resources.iterator());
         int expected = 0;
         int cycle = 0;
-        for(int i = resourceIteratorInputStream.read(); i >= 0; i = resourceIteratorInputStream.read()) {
+        for (int i = resourceIteratorInputStream.read(); i >= 0; i = resourceIteratorInputStream.read()) {
             Assert.assertEquals(expected, i);
-            if ( expected == 0 ) {
+            if (expected == 0) {
                 cycle++;
-                expected=cycle;
+                expected = cycle;
             } else {
                 expected--;
             }
         }
-        Assert.assertEquals(10,cycle);
+        Assert.assertEquals(10, cycle);
     }
 }

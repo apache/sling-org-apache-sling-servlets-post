@@ -86,6 +86,6 @@ public interface SlingPostOperation {
      * @throws org.apache.sling.api.SlingException May be thrown if an error
      *             occurrs running the operation.
      */
-    void run(SlingHttpServletRequest request, HtmlResponse response,
-            SlingPostProcessor[] processors) throws PreconditionViolatedPersistenceException, TemporaryPersistenceException;
+    void run(SlingHttpServletRequest request, HtmlResponse response, SlingPostProcessor[] processors)
+            throws PreconditionViolatedPersistenceException, TemporaryPersistenceException;
 }

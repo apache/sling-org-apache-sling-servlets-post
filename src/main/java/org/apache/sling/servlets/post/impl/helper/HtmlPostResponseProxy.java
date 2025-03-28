@@ -18,9 +18,9 @@
  */
 package org.apache.sling.servlets.post.impl.helper;
 
-import java.io.IOException;
-
 import javax.servlet.http.HttpServletResponse;
+
+import java.io.IOException;
 
 import org.apache.sling.api.servlets.HtmlResponse;
 import org.apache.sling.servlets.post.PostResponse;
@@ -132,8 +132,7 @@ public class HtmlPostResponseProxy implements PostResponse {
     }
 
     @Override
-    public void send(HttpServletResponse response, boolean setStatus)
-            throws IOException {
+    public void send(HttpServletResponse response, boolean setStatus) throws IOException {
         apiHtmlResponse.send(response, setStatus);
     }
 

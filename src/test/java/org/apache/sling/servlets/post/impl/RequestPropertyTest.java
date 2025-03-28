@@ -1,25 +1,22 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements. See the NOTICE file distributed with this
- * work for additional information regarding copyright ownership. The ASF
- * licenses this file to You under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.servlets.post.impl;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +25,6 @@ import java.util.Set;
 import java.util.Vector;
 
 import junitx.util.PrivateAccessor;
-
 import org.apache.sling.api.SlingJakartaHttpServletRequest;
 import org.apache.sling.api.request.RequestParameter;
 import org.apache.sling.api.request.RequestParameterMap;
@@ -42,6 +38,11 @@ import org.jmock.integration.junit4.JMock;
 import org.jmock.integration.junit4.JUnit4Mockery;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * This is primary a series of tests of the hasValues(), providesValues(), and getStringValues() methods of
@@ -184,7 +185,8 @@ public class RequestPropertyTest {
 
     @Test
     public void testMultiValueWithBlanksIgnoringBlanks() throws Throwable {
-        Map<String, RequestProperty> props = collectContent(p("./param", "true", "", ""), p("./param@IgnoreBlanks", "true"));
+        Map<String, RequestProperty> props =
+                collectContent(p("./param", "true", "", ""), p("./param@IgnoreBlanks", "true"));
 
         assertEquals(1, props.size());
         RequestProperty prop = props.get("/test/path/param");
@@ -196,14 +198,16 @@ public class RequestPropertyTest {
 
     @Test
     public void testMultiValueWithAllBlanksIgnoringBlanks() throws Throwable {
-        Map<String, RequestProperty> props = collectContent(p("./param", "", "", ""), p("./param@IgnoreBlanks", "true"));
+        Map<String, RequestProperty> props =
+                collectContent(p("./param", "", "", ""), p("./param@IgnoreBlanks", "true"));
 
         assertEquals(1, props.size());
         RequestProperty prop = props.get("/test/path/param");
         assertFalse(prop.hasValues());
     }
 
-    private static final Class[] COLLECT_CLASSES = new Class[] { SlingJakartaHttpServletRequest.class, JakartaPostResponse.class };
+    private static final Class[] COLLECT_CLASSES =
+            new Class[] {SlingJakartaHttpServletRequest.class, JakartaPostResponse.class};
 
     private class Param {
         String key;
@@ -241,7 +245,6 @@ public class RequestPropertyTest {
                     will(returnValue(kv.key));
                     allowing(entry).getValue();
                     will(returnValue(param));
-
                 }
             });
             params.add(entry);
@@ -260,7 +263,6 @@ public class RequestPropertyTest {
             {
                 one(map).entrySet();
                 will(returnValue(set));
-
             }
         });
 
@@ -274,15 +276,13 @@ public class RequestPropertyTest {
                 will(returnValue(names.elements()));
                 one(request).getRequestParameterMap();
                 will(returnValue(map));
-
             }
         });
         final JakartaHtmlResponse response = new JakartaHtmlResponse();
         response.setPath("/test/path");
 
         Map<String, RequestProperty> props = (Map<String, RequestProperty>) PrivateAccessor.invoke(
-            new ModifyOperation(), "collectContent", COLLECT_CLASSES,
-            new Object[] { request, response });
+                new ModifyOperation(), "collectContent", COLLECT_CLASSES, new Object[] {request, response});
         return props;
     }
 }
