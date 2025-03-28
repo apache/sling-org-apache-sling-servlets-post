@@ -24,18 +24,18 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.Part;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.Part;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.util.Text;
-import org.apache.sling.api.SlingHttpServletRequest;
+import org.apache.sling.api.SlingJakartaHttpServletRequest;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceUtil;
+import org.apache.sling.servlets.post.JakartaPostResponse;
 import org.apache.sling.servlets.post.Modification;
-import org.apache.sling.servlets.post.PostResponse;
 import org.apache.sling.servlets.post.impl.helper.StreamedChunk;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,12 +70,12 @@ public class StreamedUploadOperation extends AbstractPostOperation {
      * @param request the request.
      * @return true if the request can be streamed.
      */
-    public boolean isRequestStreamed(SlingHttpServletRequest request) {
+    public boolean isRequestStreamed(SlingJakartaHttpServletRequest request) {
         return request.getAttribute("request-parts-iterator") != null;
     }
 
     @Override
-    protected void doRun(SlingHttpServletRequest request, PostResponse response, List<Modification> changes)
+    protected void doRun(SlingJakartaHttpServletRequest request, JakartaPostResponse response, List<Modification> changes)
     throws PersistenceException {
         @SuppressWarnings("unchecked")
         Iterator<Part> partsIterator = (Iterator<Part>) request.getAttribute("request-parts-iterator");
@@ -135,7 +135,7 @@ public class StreamedUploadOperation extends AbstractPostOperation {
     private void writeContent(final ResourceResolver resolver,
                               final Part part,
                               final Map<String, List<String>> formFields,
-                              final PostResponse response,
+                              final JakartaPostResponse response,
                               final List<Modification> changes)
             throws PersistenceException {
 

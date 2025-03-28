@@ -18,11 +18,11 @@
  */
 package org.apache.sling.servlets.post.impl.operations;
 
-import org.apache.sling.api.SlingHttpServletRequest;
-import org.apache.sling.servlets.post.PostOperation;
-import org.apache.sling.servlets.post.PostResponse;
+import org.apache.sling.api.SlingJakartaHttpServletRequest;
+import org.apache.sling.servlets.post.JakartaPostOperation;
+import org.apache.sling.servlets.post.JakartaPostResponse;
+import org.apache.sling.servlets.post.SlingJakartaPostProcessor;
 import org.apache.sling.servlets.post.SlingPostConstants;
-import org.apache.sling.servlets.post.SlingPostProcessor;
 import org.apache.sling.servlets.post.exceptions.PreconditionViolatedPersistenceException;
 import org.apache.sling.servlets.post.exceptions.TemporaryPersistenceException;
 
@@ -31,11 +31,11 @@ import org.apache.sling.servlets.post.exceptions.TemporaryPersistenceException;
  * sets the response status according to the <i>:nopstatus</i> parameter if
  * availables. Otherwise the status is set as 200/OK.
  */
-public class NopOperation implements PostOperation {
+public class NopOperation implements JakartaPostOperation {
 
     @Override
-    public void run(SlingHttpServletRequest request, PostResponse response,
-            SlingPostProcessor[] processors) throws PreconditionViolatedPersistenceException, TemporaryPersistenceException {
+    public void run(SlingJakartaHttpServletRequest request, JakartaPostResponse response,
+            SlingJakartaPostProcessor[] processors) throws PreconditionViolatedPersistenceException, TemporaryPersistenceException {
 
         // get the :nopstatus parameter for a specific code
         int status = SlingPostConstants.NOPSTATUS_VALUE_DEFAULT;

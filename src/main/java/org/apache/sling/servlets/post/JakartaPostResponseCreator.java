@@ -16,14 +16,15 @@
  */
 package org.apache.sling.servlets.post;
 
-import org.apache.sling.api.SlingHttpServletRequest;
+import org.apache.sling.api.SlingJakartaHttpServletRequest;
+import org.osgi.annotation.versioning.ConsumerType;
 
 /**
  * Service interface which allows for alternate implementations of the
- * PostResponse interface to be created as needed.
- * @deprecated Use {@link JakartaPostResponseCreator} instead.
+ * JakartaPostResponse interface to be created as needed.
+ * @since 2.5.0
  */
-@Deprecated
-public interface PostResponseCreator {
-    PostResponse createPostResponse(SlingHttpServletRequest req);
+@ConsumerType
+public interface JakartaPostResponseCreator {
+    JakartaPostResponse createPostResponse(SlingJakartaHttpServletRequest req);
 }

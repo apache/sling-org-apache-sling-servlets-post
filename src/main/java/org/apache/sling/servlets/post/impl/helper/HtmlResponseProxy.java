@@ -36,7 +36,9 @@ import org.apache.sling.servlets.post.PostResponse;
  * {@link org.apache.sling.servlets.post.AbstractSlingPostOperation} for
  * bridging into the new
  * {@link org.apache.sling.servlets.post.AbstractPostOperation}.
+ * @deprecated
  */
+@Deprecated
 public class HtmlResponseProxy extends HtmlResponse {
 
     private final PostResponse postResponse;

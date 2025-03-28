@@ -20,21 +20,20 @@ package org.apache.sling.servlets.post;
 
 import java.io.IOException;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * The <code>PostResponse</code> interface defines the API of a response
- * container which can (and should) be used by {@link PostOperation} services to
+ * container which can (and should) be used by {@link JakartaPostOperation} services to
  * prepare responses to be sent back to the client.
  * <p>
- * This bundle provides a preconfigured {@link HtmlResponse} and a
- * {@link JSONResponse} implementation of this interface. Clients may extend the
- * {@link AbstractPostResponse} class to provide their own response
+ * This bundle provides a preconfigured {@link JakartaHtmlResponse} and a
+ * {@link JakartaJSONResponse} implementation of this interface. Clients may extend the
+ * {@link AbstractJakartaPostResponse} class to provide their own response
  * implementations.
- * @deprecated Use {@link JakartaPostResponse} instead
+ * @since 2.5.0
  */
-@Deprecated
-public interface PostResponse {
+public interface JakartaPostResponse {
 
     /**
      * Sets the referer property

@@ -29,11 +29,11 @@ import java.util.Vector;
 
 import junitx.util.PrivateAccessor;
 
-import org.apache.sling.api.SlingHttpServletRequest;
+import org.apache.sling.api.SlingJakartaHttpServletRequest;
 import org.apache.sling.api.request.RequestParameter;
 import org.apache.sling.api.request.RequestParameterMap;
-import org.apache.sling.servlets.post.HtmlResponse;
-import org.apache.sling.servlets.post.PostResponse;
+import org.apache.sling.servlets.post.JakartaHtmlResponse;
+import org.apache.sling.servlets.post.JakartaPostResponse;
 import org.apache.sling.servlets.post.impl.helper.RequestProperty;
 import org.apache.sling.servlets.post.impl.operations.ModifyOperation;
 import org.jmock.Expectations;
@@ -203,7 +203,7 @@ public class RequestPropertyTest {
         assertFalse(prop.hasValues());
     }
 
-    private static final Class[] COLLECT_CLASSES = new Class[] { SlingHttpServletRequest.class, PostResponse.class };
+    private static final Class[] COLLECT_CLASSES = new Class[] { SlingJakartaHttpServletRequest.class, JakartaPostResponse.class };
 
     private class Param {
         String key;
@@ -264,7 +264,7 @@ public class RequestPropertyTest {
             }
         });
 
-        final SlingHttpServletRequest request = context.mock(SlingHttpServletRequest.class);
+        final SlingJakartaHttpServletRequest request = context.mock(SlingJakartaHttpServletRequest.class);
         context.checking(new Expectations() {
             {
                 Vector names = new Vector();
@@ -277,7 +277,7 @@ public class RequestPropertyTest {
 
             }
         });
-        final HtmlResponse response = new HtmlResponse();
+        final JakartaHtmlResponse response = new JakartaHtmlResponse();
         response.setPath("/test/path");
 
         Map<String, RequestProperty> props = (Map<String, RequestProperty>) PrivateAccessor.invoke(

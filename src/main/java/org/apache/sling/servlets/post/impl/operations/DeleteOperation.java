@@ -19,14 +19,14 @@ package org.apache.sling.servlets.post.impl.operations;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
-import org.apache.sling.api.SlingHttpServletRequest;
+import org.apache.sling.api.SlingJakartaHttpServletRequest;
 import org.apache.sling.api.request.RequestPathInfo;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
+import org.apache.sling.servlets.post.JakartaPostResponse;
 import org.apache.sling.servlets.post.Modification;
-import org.apache.sling.servlets.post.PostResponse;
 import org.apache.sling.servlets.post.SlingPostConstants;
 import org.apache.sling.servlets.post.VersioningConfiguration;
 import org.apache.sling.servlets.post.impl.helper.SlingFileUploadHandler;
@@ -48,8 +48,8 @@ public class DeleteOperation extends AbstractPostOperation {
     }
 
     @Override
-    protected void doRun(final SlingHttpServletRequest request,
-            final PostResponse response, final List<Modification> changes)
+    protected void doRun(final SlingJakartaHttpServletRequest request,
+            final JakartaPostResponse response, final List<Modification> changes)
     throws PersistenceException {
 
         // SLING-3203: selectors, extension and suffix make no sense here and
@@ -83,7 +83,7 @@ public class DeleteOperation extends AbstractPostOperation {
 
     /**
      * Delete chunks if
-     * {@link DeleteOperation#isDeleteChunkRequest(SlingHttpServletRequest)} is
+     * {@link DeleteOperation#isDeleteChunkRequest(SlingJakartaHttpServletRequest)} is
      * true otherwise delete resource.
      */
     private void deleteResource(final Resource resource,
@@ -109,7 +109,7 @@ public class DeleteOperation extends AbstractPostOperation {
      * @param request the request
      * @return is the request is to delete chunks
      */
-    protected boolean isDeleteChunkRequest(SlingHttpServletRequest request) {
+    protected boolean isDeleteChunkRequest(SlingJakartaHttpServletRequest request) {
 
         return Boolean.parseBoolean(request.getParameter(SlingPostConstants.RP_APPLY_TO_CHUNKS));
     }

@@ -20,16 +20,15 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * The <code>AbstractPostResponse</code> class provides a basic implementation
  * of the {@link PostResponse} interface maintaining properties to be
  * prepared for sending the response in an internal map.
- * @deprecated Use {@link AbstractJakartaPostResponse} instead.
+ * @since 2.5.0
  */
-@Deprecated
-public abstract class AbstractPostResponse implements PostResponse {
+public abstract class AbstractJakartaPostResponse implements JakartaPostResponse {
 
     /**
      * Name of the title property set by {@link #setTitle(String)}

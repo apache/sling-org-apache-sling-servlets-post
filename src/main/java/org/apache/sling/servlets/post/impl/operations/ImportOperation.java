@@ -24,17 +24,17 @@ import java.util.Map;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
-import org.apache.sling.api.SlingHttpServletRequest;
+import org.apache.sling.api.SlingJakartaHttpServletRequest;
 import org.apache.sling.api.request.RequestParameter;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.jcr.contentloader.ContentImportListener;
 import org.apache.sling.jcr.contentloader.ContentImporter;
 import org.apache.sling.jcr.contentloader.ImportOptions;
+import org.apache.sling.servlets.post.JakartaPostResponse;
 import org.apache.sling.servlets.post.Modification;
 import org.apache.sling.servlets.post.ModificationType;
-import org.apache.sling.servlets.post.PostResponse;
 import org.apache.sling.servlets.post.SlingPostConstants;
 import org.apache.sling.servlets.post.VersioningConfiguration;
 import org.apache.sling.servlets.post.impl.helper.RequestProperty;
@@ -61,7 +61,7 @@ public class ImportOperation extends AbstractCreateOperation {
         }
     }
 
-    private String getRequestParamAsString(SlingHttpServletRequest request, String key) {
+    private String getRequestParamAsString(SlingJakartaHttpServletRequest request, String key) {
     	RequestParameter requestParameter = request.getRequestParameter(key);
     	if (requestParameter == null) {
     		return null;
@@ -70,7 +70,7 @@ public class ImportOperation extends AbstractCreateOperation {
     }
 
     @Override
-    protected void doRun(SlingHttpServletRequest request, PostResponse response, final List<Modification> changes)
+    protected void doRun(SlingJakartaHttpServletRequest request, JakartaPostResponse response, final List<Modification> changes)
             throws PersistenceException {
         try {
             Object importer = contentImporter;

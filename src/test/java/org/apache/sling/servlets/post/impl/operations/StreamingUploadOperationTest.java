@@ -32,11 +32,12 @@ import java.util.List;
 import java.util.Map;
 
 import javax.jcr.RepositoryException;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.Part;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.Part;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.sling.api.SlingHttpServletRequest;
+import org.apache.sling.api.SlingJakartaHttpServletRequest;
+import org.apache.sling.api.request.builder.Builders;
 import org.apache.sling.api.resource.ModifiableValueMap;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
@@ -44,10 +45,9 @@ import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceUtil;
 import org.apache.sling.api.resource.ValueMap;
 import org.apache.sling.commons.testing.sling.MockResourceResolver;
-import org.apache.sling.servlets.post.AbstractPostResponse;
+import org.apache.sling.servlets.post.AbstractJakartaPostResponse;
+import org.apache.sling.servlets.post.JakartaPostResponse;
 import org.apache.sling.servlets.post.Modification;
-import org.apache.sling.servlets.post.PostResponse;
-import org.apache.sling.servlets.post.impl.helper.MockSlingHttpServlet3Request;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -75,7 +75,7 @@ public class StreamingUploadOperationTest {
     @Test
     public void test() throws PersistenceException, RepositoryException, UnsupportedEncodingException {
         List<Modification> changes = new ArrayList<>();
-        PostResponse response = new AbstractPostResponse() {
+        JakartaPostResponse response = new AbstractJakartaPostResponse() {
             @Override
             protected void doSend(HttpServletResponse response) throws IOException {
 
@@ -117,9 +117,6 @@ public class StreamingUploadOperationTest {
                 LOG.debug("Resource {} is {} {}", path, resource, ResourceUtil.isSyntheticResource(resource));
                 return resource;
             }
-
-
-
 
             @Override
             public Iterable<Resource> getChildren(Resource resource) {
@@ -179,20 +176,10 @@ public class StreamingUploadOperationTest {
             }
         };
 
-        SlingHttpServletRequest request = new MockSlingHttpServlet3Request(null, null, null, null, null) {
-            @Override
-            public Object getAttribute(String name) {
-                if ( "request-parts-iterator".equals(name)) {
-                    return partsIterator;
-                }
-                return super.getAttribute(name);
-            }
-
-            @Override
-            public ResourceResolver getResourceResolver() {
-                return resourceResolver;
-            }
-        };
+        SlingJakartaHttpServletRequest request = Builders
+            .newRequestBuilder(resourceResolver.getResource("/test/upload/location"))
+            .buildJakartaRequest();
+        request.setAttribute("request-parts-iterator", partsIterator);
         streamedUplodOperation.doRun(request, response, changes);
 
 
@@ -247,7 +234,7 @@ public class StreamingUploadOperationTest {
     @Test
     public void testParts() throws PersistenceException, RepositoryException, UnsupportedEncodingException {
         List<Modification> changes = new ArrayList<>();
-        PostResponse response = new AbstractPostResponse() {
+        JakartaPostResponse response = new AbstractJakartaPostResponse() {
             @Override
             protected void doSend(HttpServletResponse response) throws IOException {
 
@@ -304,9 +291,6 @@ public class StreamingUploadOperationTest {
                 return resource;
             }
 
-
-
-
             @Override
             public Iterable<Resource> getChildren(Resource resource) {
 
@@ -392,20 +376,11 @@ public class StreamingUploadOperationTest {
             }
         };
 
-        SlingHttpServletRequest request = new MockSlingHttpServlet3Request(null, null, null, null, null) {
-            @Override
-            public Object getAttribute(String name) {
-                if ( "request-parts-iterator".equals(name)) {
-                    return partsIterator;
-                }
-                return super.getAttribute(name);
-            }
+        SlingJakartaHttpServletRequest request = Builders
+            .newRequestBuilder(resourceResolver.getResource("/test/upload/location"))
+            .buildJakartaRequest();
+        request.setAttribute("request-parts-iterator", partsIterator);
 
-            @Override
-            public ResourceResolver getResourceResolver() {
-                return resourceResolver;
-            }
-        };
         streamedUplodOperation.doRun(request, response, changes);
 
 
@@ -460,7 +435,7 @@ public class StreamingUploadOperationTest {
     @Test
     public void testPartsContentRange() throws PersistenceException, RepositoryException, UnsupportedEncodingException {
         List<Modification> changes = new ArrayList<>();
-        PostResponse response = new AbstractPostResponse() {
+        JakartaPostResponse response = new AbstractJakartaPostResponse() {
             @Override
             protected void doSend(HttpServletResponse response) throws IOException {
 
@@ -516,9 +491,6 @@ public class StreamingUploadOperationTest {
                 return resource;
             }
 
-
-
-
             @Override
             public Iterable<Resource> getChildren(Resource resource) {
 
@@ -604,20 +576,10 @@ public class StreamingUploadOperationTest {
             }
         };
 
-        SlingHttpServletRequest request = new MockSlingHttpServlet3Request(null, null, null, null, null) {
-            @Override
-            public Object getAttribute(String name) {
-                if ( "request-parts-iterator".equals(name)) {
-                    return partsIterator;
-                }
-                return super.getAttribute(name);
-            }
-
-            @Override
-            public ResourceResolver getResourceResolver() {
-                return resourceResolver;
-            }
-        };
+        SlingJakartaHttpServletRequest request = Builders
+            .newRequestBuilder(resourceResolver.getResource("/test/upload/location"))
+            .buildJakartaRequest();
+        request.setAttribute("request-parts-iterator", partsIterator);
         streamedUplodOperation.doRun(request, response, changes);
 
 

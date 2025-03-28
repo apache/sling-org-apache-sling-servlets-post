@@ -18,24 +18,24 @@ package org.apache.sling.servlets.post.impl;
 
 import java.io.IOException;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
-import org.apache.sling.servlets.post.AbstractPostResponseWrapper;
-import org.apache.sling.servlets.post.PostResponse;
+import org.apache.sling.servlets.post.AbstractJakartaPostResponseWrapper;
+import org.apache.sling.servlets.post.JakartaPostResponse;
 
 /**
  * SLING-10006 Wrap another PostResponse impl to change the error handling behavior
  */
-public class ErrorHandlingPostResponseWrapper extends AbstractPostResponseWrapper {
+public class ErrorHandlingPostResponseWrapper extends AbstractJakartaPostResponseWrapper {
 
-    private final PostResponse wrapped;
+    private final JakartaPostResponse wrapped;
 
-    public ErrorHandlingPostResponseWrapper(PostResponse wrapped) {
+    public ErrorHandlingPostResponseWrapper(JakartaPostResponse wrapped) {
         this.wrapped = wrapped;
     }
 
     @Override
-    public PostResponse getWrapped() {
+    public JakartaPostResponse getWrapped() {
         return this.wrapped;
     }
 

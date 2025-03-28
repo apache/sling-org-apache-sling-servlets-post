@@ -16,10 +16,10 @@
  */
 package org.apache.sling.servlets.post.impl.helper;
 
-import org.apache.sling.api.SlingHttpServletRequest;
+import org.apache.sling.api.SlingJakartaHttpServletRequest;
 import org.apache.sling.api.request.RequestParameter;
 import org.apache.sling.api.request.RequestParameterMap;
-import org.apache.sling.servlets.post.NodeNameGenerator;
+import org.apache.sling.servlets.post.JakartaNodeNameGenerator;
 import org.apache.sling.servlets.post.SlingPostConstants;
 
 /**
@@ -27,7 +27,7 @@ import org.apache.sling.servlets.post.SlingPostConstants;
  * like title, description, etc.
  * See SLING-128.
  */
-public class DefaultNodeNameGenerator implements NodeNameGenerator {
+public class DefaultNodeNameGenerator implements JakartaNodeNameGenerator {
 
     private final String[] parameterNames;
     private final NodeNameFilter filter = new NodeNameFilter();
@@ -124,8 +124,8 @@ public class DefaultNodeNameGenerator implements NodeNameGenerator {
      * @param defaultNodeNameGenerator a default generator
      * @return a nice node name
      */
-    public String getNodeName(SlingHttpServletRequest request, String basePath,
-            boolean requirePrefix, NodeNameGenerator defaultNodeNameGenerator) {
+    public String getNodeName(SlingJakartaHttpServletRequest request, String basePath,
+            boolean requirePrefix, JakartaNodeNameGenerator defaultNodeNameGenerator) {
         RequestParameterMap parameters = request.getRequestParameterMap();
         String valueToUse = null;
         boolean doFilter = true;
