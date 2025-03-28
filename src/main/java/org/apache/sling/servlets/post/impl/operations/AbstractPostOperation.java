@@ -220,7 +220,7 @@ public abstract class AbstractPostOperation implements JakartaPostOperation {
      * @param request The <code>SlingJakartaHttpServletRequest</code> providing the
      *            input, mostly in terms of request parameters, to the
      *            operation.
-     * @param response The {@link PostResponse} to fill with response
+     * @param response The {@link org.apache.sling.servlets.post.PostResponse} to fill with response
      *            information
      * @param changes A container to add {@link Modification} instances
      *            representing the operations done.
