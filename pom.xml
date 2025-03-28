@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.apache.sling</groupId>
         <artifactId>sling-bundle-parent</artifactId>
-        <version>52</version>
+        <version>62</version>
         <relativePath />
     </parent>
 
@@ -231,4 +231,3 @@
     </dependencies>
 
 </project>
-
