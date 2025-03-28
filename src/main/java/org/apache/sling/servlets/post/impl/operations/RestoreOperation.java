@@ -1,31 +1,33 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements. See the NOTICE file distributed with this
- * work for additional information regarding copyright ownership. The ASF
- * licenses this file to You under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.servlets.post.impl.operations;
-
-import java.util.Iterator;
-import java.util.List;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.version.Version;
 import javax.jcr.version.VersionHistory;
 import javax.jcr.version.VersionManager;
-import jakarta.servlet.http.HttpServletResponse;
 
+import java.util.Iterator;
+import java.util.List;
+
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.sling.api.SlingJakartaHttpServletRequest;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
@@ -42,7 +44,8 @@ import org.apache.sling.servlets.post.SlingPostConstants;
 public class RestoreOperation extends AbstractPostOperation {
 
     @Override
-    protected void doRun(SlingJakartaHttpServletRequest request, JakartaPostResponse response, List<Modification> changes)
+    protected void doRun(
+            SlingJakartaHttpServletRequest request, JakartaPostResponse response, List<Modification> changes)
             throws PersistenceException {
         try {
             final String version = request.getParameter(SlingPostConstants.RP_VERSION);
@@ -57,8 +60,7 @@ public class RestoreOperation extends AbstractPostOperation {
                 Resource resource = request.getResource();
                 Node node = resource.adaptTo(Node.class);
                 if (node == null) {
-                    response.setStatus(HttpServletResponse.SC_NOT_FOUND,
-                        "Missing source " + resource + " for restore");
+                    response.setStatus(HttpServletResponse.SC_NOT_FOUND, "Missing source " + resource + " for restore");
                     return;
                 }
                 restore(node, version, removeExisting);
@@ -73,13 +75,12 @@ public class RestoreOperation extends AbstractPostOperation {
                     }
                 }
             }
-        } catch ( final RepositoryException re) {
+        } catch (final RepositoryException re) {
             throw new PersistenceException(re.getMessage(), re);
         }
     }
 
-    private void restore(Node node, String versionSpecifier, boolean removeExisting)
-            throws RepositoryException {
+    private void restore(Node node, String versionSpecifier, boolean removeExisting) throws RepositoryException {
         final VersionManager vm = node.getSession().getWorkspace().getVersionManager();
         final VersionHistory history = vm.getVersionHistory(node.getPath());
         final Version version;
@@ -88,8 +89,7 @@ public class RestoreOperation extends AbstractPostOperation {
         } else if (history.hasNode(versionSpecifier)) {
             version = history.getVersion(versionSpecifier);
         } else {
-            throw new IllegalArgumentException("Unable to process restore. Invalid version: "
-                    + versionSpecifier);
+            throw new IllegalArgumentException("Unable to process restore. Invalid version: " + versionSpecifier);
         }
         vm.restore(version, removeExisting);
     }

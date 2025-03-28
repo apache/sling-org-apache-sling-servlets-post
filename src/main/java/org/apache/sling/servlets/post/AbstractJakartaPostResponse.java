@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.servlets.post;
 
@@ -114,11 +116,8 @@ public abstract class AbstractJakartaPostResponse implements JakartaPostResponse
      * {@inheritDoc}
      */
     public boolean isCreateRequest() {
-        final Boolean isCreateRequest = getProperty(PN_IS_CREATED,
-            Boolean.class);
-        return (isCreateRequest != null)
-                ? isCreateRequest.booleanValue()
-                : false;
+        final Boolean isCreateRequest = getProperty(PN_IS_CREATED, Boolean.class);
+        return (isCreateRequest != null) ? isCreateRequest.booleanValue() : false;
     }
 
     /**
@@ -276,7 +275,6 @@ public abstract class AbstractJakartaPostResponse implements JakartaPostResponse
         onChange("copied", srcPath, dstPath);
     }
 
-
     /**
      * prepares the response properties
      */
@@ -315,7 +313,6 @@ public abstract class AbstractJakartaPostResponse implements JakartaPostResponse
                 }
             }
         }
-
     }
 
     /**
@@ -362,7 +359,7 @@ public abstract class AbstractJakartaPostResponse implements JakartaPostResponse
      * determines if the referer has a proper referer including protocol
      * @return true if HTTP or HTTPS protocol information is available in the referer
      */
-    protected boolean isSafeReferer(){
+    protected boolean isSafeReferer() {
         String referer = getReferer();
         if (referer.startsWith("http://") || referer.startsWith("https://")) {
             return true;
@@ -382,10 +379,8 @@ public abstract class AbstractJakartaPostResponse implements JakartaPostResponse
      * @param setStatus whether to set the status code on the response
      * @throws IOException if an i/o exception occurs
      */
-    public final void send(HttpServletResponse response, boolean setStatus)
-            throws IOException {
+    public final void send(HttpServletResponse response, boolean setStatus) throws IOException {
         prepare(response, setStatus);
         doSend(response);
     }
-
 }

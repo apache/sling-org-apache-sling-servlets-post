@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.servlets.post.impl.operations;
 
@@ -20,7 +22,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import jakarta.servlet.http.HttpServletResponse;
-
 import org.apache.sling.api.SlingJakartaHttpServletRequest;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
@@ -38,10 +39,11 @@ import org.apache.sling.servlets.post.VersioningConfiguration;
 abstract class AbstractCopyMoveOperation extends AbstractPostOperation {
 
     @Override
-    protected final void doRun(final SlingJakartaHttpServletRequest request,
+    protected final void doRun(
+            final SlingJakartaHttpServletRequest request,
             final JakartaPostResponse response,
             final List<Modification> changes)
-    throws PersistenceException {
+            throws PersistenceException {
         final VersioningConfiguration versioningConfiguration = getVersioningConfiguration(request);
 
         final Resource resource = request.getResource();
@@ -50,8 +52,7 @@ abstract class AbstractCopyMoveOperation extends AbstractPostOperation {
         // ensure dest is not empty/null and is absolute
         String dest = request.getParameter(SlingPostConstants.RP_DEST);
         if (dest == null || dest.length() == 0) {
-            throw new IllegalArgumentException("Unable to process "
-                    + getOperationName() + ". Missing destination");
+            throw new IllegalArgumentException("Unable to process " + getOperationName() + ". Missing destination");
         }
 
         // register whether the path ends with a trailing slash
@@ -67,18 +68,18 @@ abstract class AbstractCopyMoveOperation extends AbstractPostOperation {
         final String dstParent = trailingSlash ? dest : ResourceUtil.getParent(dest);
 
         // delete destination if already exists
-        if (!trailingSlash && request.getResourceResolver().getResource(dest) != null ) {
+        if (!trailingSlash && request.getResourceResolver().getResource(dest) != null) {
 
             final String replaceString = request.getParameter(SlingPostConstants.RP_REPLACE);
             final boolean isReplace = "true".equalsIgnoreCase(replaceString);
             if (!isReplace) {
-                response.setStatus(HttpServletResponse.SC_PRECONDITION_FAILED,
-                    "Cannot " + getOperationName() + " " + resource + " to "
-                        + dest + ": destination exists");
+                response.setStatus(
+                        HttpServletResponse.SC_PRECONDITION_FAILED,
+                        "Cannot " + getOperationName() + " " + resource + " to " + dest + ": destination exists");
                 return;
             } else {
-                this.jcrSupport.checkoutIfNecessary(request.getResourceResolver().getResource(dstParent),
-                        changes, versioningConfiguration);
+                this.jcrSupport.checkoutIfNecessary(
+                        request.getResourceResolver().getResource(dstParent), changes, versioningConfiguration);
             }
 
         } else {
@@ -87,12 +88,13 @@ abstract class AbstractCopyMoveOperation extends AbstractPostOperation {
             // if it's a descendant of the current node
             if (!dstParent.equals("")) {
                 final Resource parentResource = request.getResourceResolver().getResource(dstParent);
-                if (parentResource != null ) {
+                if (parentResource != null) {
                     this.jcrSupport.checkoutIfNecessary(parentResource, changes, versioningConfiguration);
                 } else {
-                    response.setStatus(HttpServletResponse.SC_PRECONDITION_FAILED,
-                        "Cannot " + getOperationName() + " " + resource + " to "
-                            + dest + ": parent of destination does not exist");
+                    response.setStatus(
+                            HttpServletResponse.SC_PRECONDITION_FAILED,
+                            "Cannot " + getOperationName() + " " + resource + " to " + dest
+                                    + ": parent of destination does not exist");
                     return;
                 }
             }
@@ -112,8 +114,7 @@ abstract class AbstractCopyMoveOperation extends AbstractPostOperation {
 
             // multiple applyTo requires trailing slash on destination
             if (!trailingSlash) {
-                throw new IllegalArgumentException(
-                    "Applying "
+                throw new IllegalArgumentException("Applying "
                         + getOperationName()
                         + " to multiple resources requires a trailing slash on the destination");
             }
@@ -126,12 +127,11 @@ abstract class AbstractCopyMoveOperation extends AbstractPostOperation {
                 execute(changes, applyTo, dstParent, null, versioningConfiguration);
             }
             destResource = request.getResourceResolver().getResource(dest);
-
         }
 
-        if ( destResource == null ) {
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND,
-                    "Missing source " + resource + " for " + getOperationName());
+        if (destResource == null) {
+            response.setStatus(
+                    HttpServletResponse.SC_NOT_FOUND, "Missing source " + resource + " for " + getOperationName());
             return;
         }
         // finally apply the ordering parameter
@@ -158,11 +158,11 @@ abstract class AbstractCopyMoveOperation extends AbstractPostOperation {
      * @throws PersistenceException May be thrown if an error occurs executing
      *             the operation.
      */
-    protected abstract Resource execute(List<Modification> changes,
+    protected abstract Resource execute(
+            List<Modification> changes,
             Resource source,
             String destParent,
             String destName,
             VersioningConfiguration versioningConfiguration)
-    throws PersistenceException;
-
+            throws PersistenceException;
 }

@@ -20,7 +20,6 @@ package org.apache.sling.servlets.post.exceptions;
 
 import org.apache.sling.api.resource.PersistenceException;
 
-
 /**
  * This exceptions indicates errors, which might be temporary and for which a retry
  * with the same parameters could work.
@@ -28,20 +27,14 @@ import org.apache.sling.api.resource.PersistenceException;
  */
 public class TemporaryPersistenceException extends PersistenceException {
 
-
     private static final long serialVersionUID = 8922639484264855481L;
 
     public TemporaryPersistenceException(String message, Exception e) {
         super(message, e);
     }
-  
-    public TemporaryPersistenceException(final String msg,
-          final Throwable cause,
-          final String resourcePath,
-          final String propertyName) {
-            super(msg,cause,resourcePath,propertyName);
-            
-            }
 
-
+    public TemporaryPersistenceException(
+            final String msg, final Throwable cause, final String resourcePath, final String propertyName) {
+        super(msg, cause, resourcePath, propertyName);
+    }
 }

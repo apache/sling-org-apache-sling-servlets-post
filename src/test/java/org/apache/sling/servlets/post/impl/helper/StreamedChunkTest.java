@@ -16,9 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.apache.sling.servlets.post.impl.helper;
-
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -31,8 +29,8 @@ public class StreamedChunkTest {
     @Test
     public void testContentRange() {
         checkRange("bytes 0-1234/1235", 0, 1235, 1235);
-        checkRange("bytes 10-123/1235", 10,123-10+1,1235);
-        checkRange("bytes 12-123/*", 12, 123 - 12+1, -1);
+        checkRange("bytes 10-123/1235", 10, 123 - 10 + 1, 1235);
+        checkRange("bytes 12-123/*", 12, 123 - 12 + 1, -1);
         checkInvalidRange("byte 10-123/1234"); // byte is not valid.
         checkInvalidRange("bytes 1000-123/1234"); // offset before end
         checkInvalidRange("bytes 1000-12300/1234"); // end before length
@@ -44,7 +42,7 @@ public class StreamedChunkTest {
     private void checkInvalidRange(String rangeHeader) {
         try {
             StreamedChunk.ContentRange cr = new StreamedChunk.ContentRange(rangeHeader);
-            Assert.fail("Should have rejected "+rangeHeader);
+            Assert.fail("Should have rejected " + rangeHeader);
         } catch (IllegalArgumentException e) {
             // ok
         }
@@ -52,10 +50,8 @@ public class StreamedChunkTest {
 
     private void checkRange(String rangeHeader, long offset, long range, long length) {
         StreamedChunk.ContentRange cr = new StreamedChunk.ContentRange(rangeHeader);
-        Assert.assertEquals(offset,cr.offset);
-        Assert.assertEquals(range,cr.range);
-        Assert.assertEquals(length,cr.length);
-
+        Assert.assertEquals(offset, cr.offset);
+        Assert.assertEquals(range, cr.range);
+        Assert.assertEquals(length, cr.length);
     }
-
 }

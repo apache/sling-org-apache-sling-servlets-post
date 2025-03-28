@@ -18,15 +18,6 @@
  */
 package org.apache.sling.servlets.post;
 
-
-import org.apache.sling.jcr.contentparser.impl.JsonTicksConverter;
-
-import jakarta.json.Json;
-import jakarta.json.JsonArrayBuilder;
-import jakarta.json.JsonObject;
-import jakarta.json.JsonObjectBuilder;
-import jakarta.json.JsonStructure;
-import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.StringReader;
 import java.math.BigDecimal;
@@ -36,6 +27,14 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonStructure;
+import jakarta.servlet.http.HttpServletResponse;
+import org.apache.sling.jcr.contentparser.impl.JsonTicksConverter;
 
 /**
  * The <code>JSONResponse</code> is an {@link AbstractJakartaPostResponse} preparing
@@ -66,13 +65,12 @@ public class JakartaJSONResponse extends AbstractJakartaPostResponse {
     private Throwable error;
 
     public void onChange(String type, String... arguments) {
-        Map<String,Object> change = new HashMap<>();
+        Map<String, Object> change = new HashMap<>();
         change.put(PROP_TYPE, type);
 
         if (arguments.length > 1) {
             change.put(PROP_ARGUMENT, Arrays.asList(arguments));
-        }
-        else if (arguments.length == 1) {
+        } else if (arguments.length == 1) {
             change.put(PROP_ARGUMENT, arguments[0]);
         }
         changes.add(change);
@@ -103,11 +101,11 @@ public class JakartaJSONResponse extends AbstractJakartaPostResponse {
     public void setProperty(String name, Object value) {
         if (value instanceof String || value instanceof Boolean || value instanceof Number || value == null) {
             json.put(name, value);
-        }
-        else {
+        } else {
             try {
                 String valueString = JsonTicksConverter.tickToDoubleQuote(value.toString());
-                jsonCached.put(name, Json.createReader(new StringReader(valueString)).read());
+                jsonCached.put(
+                        name, Json.createReader(new StringReader(valueString)).read());
                 json.put(name, value);
             } catch (Exception ex) {
                 throw new JSONResponseException(ex);
@@ -117,11 +115,12 @@ public class JakartaJSONResponse extends AbstractJakartaPostResponse {
 
     @Override
     public Object getProperty(String name) {
-        return PROP_CHANGES.equals(name) ? getJson().getJsonArray(PROP_CHANGES) :
-            "error".equals(name) && this.error != null ? getJson().get("error") : json.get(name);
+        return PROP_CHANGES.equals(name)
+                ? getJson().getJsonArray(PROP_CHANGES)
+                : "error".equals(name) && this.error != null ? getJson().get("error") : json.get(name);
     }
 
-    @SuppressWarnings({ "ThrowableResultOfMethodCallIgnored" })
+    @SuppressWarnings({"ThrowableResultOfMethodCallIgnored"})
     @Override
     protected void doSend(HttpServletResponse response) throws IOException {
 
@@ -137,46 +136,36 @@ public class JakartaJSONResponse extends AbstractJakartaPostResponse {
             Object value = entry.getValue();
             if (value instanceof String) {
                 jsonBuilder.add(entry.getKey(), (String) entry.getValue());
-            }
-            else if (value instanceof Boolean) {
+            } else if (value instanceof Boolean) {
                 jsonBuilder.add(entry.getKey(), (Boolean) value);
-            }
-            else if (value instanceof BigInteger) {
+            } else if (value instanceof BigInteger) {
                 jsonBuilder.add(entry.getKey(), (BigInteger) value);
-            }
-            else if (value instanceof BigDecimal) {
+            } else if (value instanceof BigDecimal) {
                 jsonBuilder.add(entry.getKey(), (BigDecimal) value);
-            }
-            else if (value instanceof Byte) {
+            } else if (value instanceof Byte) {
                 jsonBuilder.add(entry.getKey(), (Byte) value);
-            }
-            else if (value instanceof Short) {
+            } else if (value instanceof Short) {
                 jsonBuilder.add(entry.getKey(), (Short) value);
-            }
-            else if (value instanceof Integer) {
+            } else if (value instanceof Integer) {
                 jsonBuilder.add(entry.getKey(), (Integer) value);
-            }
-            else if (value instanceof Long) {
+            } else if (value instanceof Long) {
                 jsonBuilder.add(entry.getKey(), (Long) value);
-            }
-            else if (value instanceof Double) {
+            } else if (value instanceof Double) {
                 jsonBuilder.add(entry.getKey(), (Double) value);
-            }
-            else if (value instanceof Float) {
+            } else if (value instanceof Float) {
                 jsonBuilder.add(entry.getKey(), (Float) value);
-            }
-            else if (value == null) {
+            } else if (value == null) {
                 jsonBuilder.addNull(entry.getKey());
-            }
-            else {
+            } else {
                 jsonBuilder.add(entry.getKey(), jsonCached.get(entry.getKey()));
             }
         }
         if (this.error != null) {
-            jsonBuilder
-                .add("error", Json.createObjectBuilder()
-                    .add("class", error.getClass().getName())
-                    .add("message", error.getMessage()));
+            jsonBuilder.add(
+                    "error",
+                    Json.createObjectBuilder()
+                            .add("class", error.getClass().getName())
+                            .add("message", error.getMessage()));
         }
         JsonArrayBuilder changesBuilder = Json.createArrayBuilder();
         if (this.error == null) {
@@ -191,9 +180,9 @@ public class JakartaJSONResponse extends AbstractJakartaPostResponse {
                         JsonArrayBuilder argumentsBuilder = Json.createArrayBuilder();
 
                         for (String argument : ((List<String>) arguments)) {
-                        	if(argument != null) {
+                            if (argument != null) {
                                 argumentsBuilder.add(argument);
-                        	}
+                            }
                         }
 
                         entryBuilder.add(PROP_ARGUMENT, argumentsBuilder);
@@ -210,10 +199,11 @@ public class JakartaJSONResponse extends AbstractJakartaPostResponse {
 
     public class JSONResponseException extends RuntimeException {
         public JSONResponseException(String message, Throwable exception) {
-           super(message, exception);
+            super(message, exception);
         }
+
         public JSONResponseException(Throwable e) {
-           super("Error building JSON response", e);
+            super("Error building JSON response", e);
         }
     }
 }

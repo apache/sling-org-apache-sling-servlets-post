@@ -90,6 +90,6 @@ public interface PostOperation {
      * @throws TemporaryPersistenceException when a commit failed, but a retry could make
      *             the operation work successfully.
      */
-    void run(SlingHttpServletRequest request, PostResponse response,
-            SlingPostProcessor[] processors) throws PreconditionViolatedPersistenceException, TemporaryPersistenceException, PersistenceException;
+    void run(SlingHttpServletRequest request, PostResponse response, SlingPostProcessor[] processors)
+            throws PreconditionViolatedPersistenceException, TemporaryPersistenceException, PersistenceException;
 }

@@ -26,8 +26,7 @@ public class Modification {
 
     private final String destination;
 
-    public Modification(final ModificationType type, final String source,
-            final String destination) {
+    public Modification(final ModificationType type, final String source, final String destination) {
         this.type = type;
         this.source = source;
         this.destination = destination;
@@ -119,8 +118,7 @@ public class Modification {
         return onChange(type, source, null);
     }
 
-    protected static Modification onChange(ModificationType type,
-            final String source, final String dest) {
+    protected static Modification onChange(ModificationType type, final String source, final String dest) {
         return new Modification(type, source, dest);
     }
 

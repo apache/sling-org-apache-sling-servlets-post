@@ -58,8 +58,8 @@ public class PostOperationProxyProvider implements ServiceListener {
     /**
      * The service listener filter to listen for SlingPostOperation services
      */
-    private static final String REFERENCE_FILTER = "(" + Constants.OBJECTCLASS
-        + "=" + SlingPostOperation.SERVICE_NAME + ")";
+    private static final String REFERENCE_FILTER =
+            "(" + Constants.OBJECTCLASS + "=" + SlingPostOperation.SERVICE_NAME + ")";
 
     // maps references to the SlingPostOperation services to the registrations
     // of the PostOperation proxies for unregistration purposes
@@ -85,8 +85,8 @@ public class PostOperationProxyProvider implements ServiceListener {
 
         try {
             bundleContext.addServiceListener(this, REFERENCE_FILTER);
-            final ServiceReference[] serviceReferences = bundleContext.getServiceReferences(
-                SlingPostOperation.SERVICE_NAME, null);
+            final ServiceReference[] serviceReferences =
+                    bundleContext.getServiceReferences(SlingPostOperation.SERVICE_NAME, null);
             if (serviceReferences != null) {
                 for (ServiceReference serviceReference : serviceReferences) {
                     register(serviceReference);
@@ -114,8 +114,7 @@ public class PostOperationProxyProvider implements ServiceListener {
 
         final ServiceReference[] serviceReferences;
         synchronized (this.proxies) {
-            serviceReferences = this.proxies.keySet().toArray(
-                new ServiceReference[this.proxies.size()]);
+            serviceReferences = this.proxies.keySet().toArray(new ServiceReference[this.proxies.size()]);
         }
 
         for (ServiceReference serviceReference : serviceReferences) {
@@ -165,8 +164,7 @@ public class PostOperationProxyProvider implements ServiceListener {
 
         final BundleContext bundleContext = serviceReference.getBundle().getBundleContext();
         final Dictionary<String, Object> props = copyServiceProperties(serviceReference);
-        final ServiceRegistration reg = bundleContext.registerService(
-            PostOperation.SERVICE_NAME, proxy, props);
+        final ServiceRegistration reg = bundleContext.registerService(PostOperation.SERVICE_NAME, proxy, props);
 
         log.debug("Registering {}", proxy);
         synchronized (this.proxies) {
@@ -215,16 +213,15 @@ public class PostOperationProxyProvider implements ServiceListener {
      * Creates a Dictionary for use as the service registration properties of
      * the PostOperation proxy.
      */
-    private Dictionary<String, Object> copyServiceProperties(
-            final ServiceReference serviceReference) {
+    private Dictionary<String, Object> copyServiceProperties(final ServiceReference serviceReference) {
         final Dictionary<String, Object> props = new Hashtable<>();
         for (String key : serviceReference.getPropertyKeys()) {
             props.put(key, serviceReference.getProperty(key));
         }
-        props.put(PostOperation.PROP_OPERATION_NAME,
-            serviceReference.getProperty(SlingPostOperation.PROP_OPERATION_NAME));
-        props.put(Constants.SERVICE_DESCRIPTION, "Proxy for "
-            + serviceReference);
+        props.put(
+                PostOperation.PROP_OPERATION_NAME,
+                serviceReference.getProperty(SlingPostOperation.PROP_OPERATION_NAME));
+        props.put(Constants.SERVICE_DESCRIPTION, "Proxy for " + serviceReference);
         return props;
     }
 
@@ -247,8 +244,8 @@ public class PostOperationProxyProvider implements ServiceListener {
         }
 
         @Override
-        public void run(SlingHttpServletRequest request, PostResponse response,
-                SlingPostProcessor[] processors) throws PreconditionViolatedPersistenceException, TemporaryPersistenceException {
+        public void run(SlingHttpServletRequest request, PostResponse response, SlingPostProcessor[] processors)
+                throws PreconditionViolatedPersistenceException, TemporaryPersistenceException {
             HtmlResponse apiResponse = new HtmlResponseProxy(response);
             delegatee.run(request, apiResponse, processors);
         }

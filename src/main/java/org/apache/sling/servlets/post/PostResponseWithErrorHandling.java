@@ -18,9 +18,9 @@
  */
 package org.apache.sling.servlets.post;
 
-import java.io.IOException;
-
 import javax.servlet.http.HttpServletResponse;
+
+import java.io.IOException;
 
 import org.apache.sling.api.SlingHttpServletRequest;
 
@@ -28,34 +28,34 @@ import org.apache.sling.api.SlingHttpServletRequest;
  * @deprecated
  */
 @Deprecated
-public class PostResponseWithErrorHandling implements PostResponseCreator{
+public class PostResponseWithErrorHandling implements PostResponseCreator {
 
-	@Override
+    @Override
     public PostResponse createPostResponse(SlingHttpServletRequest request) {
-		if (isSendError(request)) {
-			return new HtmlResponse() {
+        if (isSendError(request)) {
+            return new HtmlResponse() {
 
-				@Override
-				protected void doSend(HttpServletResponse response) throws IOException {
-					if (!this.isSuccessful()) {
-						response.sendError(this.getStatusCode(), this.getError().toString());
-						return;
-					}else{
-						super.doSend(response);
-					}
-				}
-			};
-		}else{
-			return null;
-		}
-	}
+                @Override
+                protected void doSend(HttpServletResponse response) throws IOException {
+                    if (!this.isSuccessful()) {
+                        response.sendError(this.getStatusCode(), this.getError().toString());
+                        return;
+                    } else {
+                        super.doSend(response);
+                    }
+                }
+            };
+        } else {
+            return null;
+        }
+    }
 
-	protected boolean isSendError(SlingHttpServletRequest request){
-		boolean sendError=false;
-		String sendErrorParam=request.getParameter(SlingPostConstants.RP_SEND_ERROR);
-		if (sendErrorParam!=null && "true".equalsIgnoreCase(sendErrorParam)){
-			sendError=true;
-		}
-		return sendError;
-	}
+    protected boolean isSendError(SlingHttpServletRequest request) {
+        boolean sendError = false;
+        String sendErrorParam = request.getParameter(SlingPostConstants.RP_SEND_ERROR);
+        if (sendErrorParam != null && "true".equalsIgnoreCase(sendErrorParam)) {
+            sendError = true;
+        }
+        return sendError;
+    }
 }

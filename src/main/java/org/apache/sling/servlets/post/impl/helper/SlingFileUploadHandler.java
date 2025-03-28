@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.servlets.post.impl.helper;
 
@@ -36,7 +38,6 @@ import java.util.Map;
 import java.util.Set;
 
 import jakarta.servlet.ServletContext;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.JcrConstants;
 import org.apache.jackrabbit.util.Text;
@@ -115,20 +116,23 @@ public class SlingFileUploadHandler {
      * @param prop the assembled property info
      * @throws PersistenceException if an error occurs
      */
-    private void setFile(final Resource parentResource,
+    private void setFile(
+            final Resource parentResource,
             final RequestProperty prop,
             final RequestParameter value,
-            final List<Modification> changes, String name,
+            final List<Modification> changes,
+            String name,
             final String contentType)
-    throws PersistenceException {
+            throws PersistenceException {
         // check type hint. if the type is ok and extends from nt:file,
         // create an nt:file with that type. if it's invalid, drop it and let
         // the parent node type decide.
-        boolean createNtFile = parentResource.isResourceType(JcrConstants.NT_FOLDER) || this.jcrSupport.isNodeType(parentResource, JcrConstants.NT_FOLDER);
+        boolean createNtFile = parentResource.isResourceType(JcrConstants.NT_FOLDER)
+                || this.jcrSupport.isNodeType(parentResource, JcrConstants.NT_FOLDER);
         String typeHint = prop.getTypeHint();
         if (typeHint != null) {
             Boolean isFileNodeType = this.jcrSupport.isFileNodeType(parentResource.getResourceResolver(), typeHint);
-            if ( isFileNodeType == null ) {
+            if (isFileNodeType == null) {
                 // assuming type not valid.
                 createNtFile = false;
                 typeHint = null;
@@ -189,12 +193,13 @@ public class SlingFileUploadHandler {
      * merge all previous chunks and last chunk and replace binary at
      * destination.
      */
-    private void processChunk(final Resource resParent,
+    private void processChunk(
+            final Resource resParent,
             final Resource res,
             final RequestProperty prop,
             final RequestParameter value,
             final List<Modification> changes)
-    throws PersistenceException {
+            throws PersistenceException {
         try {
             final ModifiableValueMap mvm = res.adaptTo(ModifiableValueMap.class);
             long chunkOffset = prop.getChunk().getOffset();
@@ -202,58 +207,51 @@ public class SlingFileUploadHandler {
                 // first chunk
                 // check if another chunk upload is already in progress. throw
                 // exception
-                final Iterator<Resource> itr = new FilteringResourceIterator(res.listChildren(), SlingPostConstants.CHUNK_NODE_NAME);
+                final Iterator<Resource> itr =
+                        new FilteringResourceIterator(res.listChildren(), SlingPostConstants.CHUNK_NODE_NAME);
                 if (itr.hasNext()) {
-                    throw new PersistenceException(
-                        "Chunk upload already in progress at {" + res.getPath()
-                            + "}");
+                    throw new PersistenceException("Chunk upload already in progress at {" + res.getPath() + "}");
                 }
                 addChunkMixin(mvm);
                 mvm.put(SlingPostConstants.NT_SLING_CHUNKS_LENGTH, 0);
                 changes.add(Modification.onModified(res.getPath() + "/" + SlingPostConstants.NT_SLING_CHUNKS_LENGTH));
-                if (mvm.get(JcrConstants.JCR_DATA) == null ) {
+                if (mvm.get(JcrConstants.JCR_DATA) == null) {
                     // create a empty jcr:data property
-                    mvm.put(JcrConstants.JCR_DATA,
-                        new ByteArrayInputStream("".getBytes()));
+                    mvm.put(JcrConstants.JCR_DATA, new ByteArrayInputStream("".getBytes()));
                 }
             }
             if (mvm.get(SlingPostConstants.NT_SLING_CHUNKS_LENGTH) == null) {
-                throw new PersistenceException("no chunk upload found at {"
-                    + res.getPath() + "}");
+                throw new PersistenceException("no chunk upload found at {" + res.getPath() + "}");
             }
             long currentLength = mvm.get(SlingPostConstants.NT_SLING_CHUNKS_LENGTH, Long.class);
             long totalLength = prop.getChunk().getLength();
             if (chunkOffset != currentLength) {
-                throw new PersistenceException("Chunk's offset {"
-                    + chunkOffset
-                    + "} doesn't match expected offset {"
-                    + currentLength
-                    + "}");
+                throw new PersistenceException(
+                        "Chunk's offset {" + chunkOffset + "} doesn't match expected offset {" + currentLength + "}");
             }
             if (totalLength != 0) {
-                if (mvm.get(SlingPostConstants.NT_SLING_FILE_LENGTH) != null ) {
-                    long expectedLength = mvm.get(
-                        SlingPostConstants.NT_SLING_FILE_LENGTH, Long.class);
+                if (mvm.get(SlingPostConstants.NT_SLING_FILE_LENGTH) != null) {
+                    long expectedLength = mvm.get(SlingPostConstants.NT_SLING_FILE_LENGTH, Long.class);
                     if (totalLength != expectedLength) {
                         throw new PersistenceException("File length {"
-                            + totalLength + "} doesn't match expected length {"
-                            + expectedLength + "}");
+                                + totalLength + "} doesn't match expected length {"
+                                + expectedLength + "}");
                     }
                 } else {
-                    mvm.put(SlingPostConstants.NT_SLING_FILE_LENGTH,
-                        totalLength);
+                    mvm.put(SlingPostConstants.NT_SLING_FILE_LENGTH, totalLength);
                 }
             }
-            final Iterator<Resource> itr = new FilteringResourceIterator(res.listChildren(), SlingPostConstants.CHUNK_NODE_NAME + "_" + String.valueOf(chunkOffset));
+            final Iterator<Resource> itr = new FilteringResourceIterator(
+                    res.listChildren(), SlingPostConstants.CHUNK_NODE_NAME + "_" + String.valueOf(chunkOffset));
             if (itr.hasNext()) {
-                throw new PersistenceException("Chunk already present at {"
-                    + itr.next().getPath() + "}");
+                throw new PersistenceException(
+                        "Chunk already present at {" + itr.next().getPath() + "}");
             }
             String nodeName = SlingPostConstants.CHUNK_NODE_NAME + "_"
-                + String.valueOf(chunkOffset) + "_"
-                + String.valueOf(chunkOffset + value.getSize() - 1);
+                    + String.valueOf(chunkOffset) + "_"
+                    + String.valueOf(chunkOffset + value.getSize() - 1);
             if (totalLength == (currentLength + value.getSize())
-                || prop.getChunk().isCompleted()) {
+                    || prop.getChunk().isCompleted()) {
                 File file = null;
                 InputStream fileIns = null;
                 try {
@@ -261,18 +259,21 @@ public class SlingFileUploadHandler {
                     fileIns = new FileInputStream(file);
                     mvm.put(JcrConstants.JCR_DATA, fileIns);
                     changes.add(Modification.onModified(res.getPath() + "/" + JcrConstants.JCR_DATA));
-                    final Iterator<Resource> rsrcItr = new FilteringResourceIterator(res.listChildren(), SlingPostConstants.CHUNK_NODE_NAME);
+                    final Iterator<Resource> rsrcItr =
+                            new FilteringResourceIterator(res.listChildren(), SlingPostConstants.CHUNK_NODE_NAME);
                     while (rsrcItr.hasNext()) {
                         Resource rsrcRange = rsrcItr.next();
                         changes.add(Modification.onDeleted(rsrcRange.getPath()));
                         rsrcRange.getResourceResolver().delete(rsrcRange);
                     }
                     if (mvm.get(SlingPostConstants.NT_SLING_FILE_LENGTH) != null) {
-                        changes.add(Modification.onDeleted(res.getPath() + "/" + SlingPostConstants.NT_SLING_FILE_LENGTH));
+                        changes.add(
+                                Modification.onDeleted(res.getPath() + "/" + SlingPostConstants.NT_SLING_FILE_LENGTH));
                         mvm.remove(SlingPostConstants.NT_SLING_FILE_LENGTH);
                     }
                     if (mvm.get(SlingPostConstants.NT_SLING_CHUNKS_LENGTH) != null) {
-                        changes.add(Modification.onDeleted(res.getPath() + "/" + SlingPostConstants.NT_SLING_CHUNKS_LENGTH));
+                        changes.add(Modification.onDeleted(
+                                res.getPath() + "/" + SlingPostConstants.NT_SLING_CHUNKS_LENGTH));
                         mvm.remove(SlingPostConstants.NT_SLING_CHUNKS_LENGTH);
                     }
                     removeChunkMixin(mvm);
@@ -283,25 +284,22 @@ public class SlingFileUploadHandler {
                     } catch (IOException ign) {
 
                     }
-
                 }
             } else {
-                final Map<String,Object> props = new HashMap<>();
+                final Map<String, Object> props = new HashMap<>();
                 props.put(JcrConstants.JCR_DATA, value.getInputStream());
                 props.put(SlingPostConstants.NT_SLING_CHUNK_OFFSET, chunkOffset);
                 props.put(SlingPostConstants.NT_SLING_CHUNKS_LENGTH, currentLength + value.getSize());
-                for(final String key : props.keySet()) {
+                for (final String key : props.keySet()) {
                     changes.add(Modification.onModified(res.getPath() + "/" + nodeName + "/" + key));
                 }
-                props.put(ResourceResolver.PROPERTY_RESOURCE_TYPE,
-                        SlingPostConstants.NT_SLING_CHUNK_NODETYPE);
+                props.put(ResourceResolver.PROPERTY_RESOURCE_TYPE, SlingPostConstants.NT_SLING_CHUNK_NODETYPE);
                 final Resource rangeRsrc = res.getResourceResolver().create(res, nodeName, props);
 
                 changes.add(Modification.onCreated(rangeRsrc.getPath()));
             }
         } catch (IOException e) {
-            throw new PersistenceException(
-                "Error while retrieving inputstream from parameter value.", e);
+            throw new PersistenceException("Error while retrieving inputstream from parameter value.", e);
         }
     }
 
@@ -321,9 +319,9 @@ public class SlingFileUploadHandler {
 
         private Resource seek() {
             Resource result = null;
-            while ( iter.hasNext() && result == null ) {
+            while (iter.hasNext() && result == null) {
                 final Resource c = iter.next();
-                if ( c.getName().startsWith(prefix) ) {
+                if (c.getName().startsWith(prefix)) {
                     result = c;
                 }
             }
@@ -345,7 +343,6 @@ public class SlingFileUploadHandler {
         @Override
         public void remove() {
             throw new UnsupportedOperationException();
-
         }
 
         @Override
@@ -358,11 +355,10 @@ public class SlingFileUploadHandler {
      * Merge all previous chunks with last chunk's stream into a temporary file
      * and return it.
      */
-    private File mergeChunks(final Resource parentResource,
-            final InputStream lastChunkStream)
-    throws PersistenceException {
+    private File mergeChunks(final Resource parentResource, final InputStream lastChunkStream)
+            throws PersistenceException {
         OutputStream out = null;
-        SequenceInputStream  mergeStrm = null;
+        SequenceInputStream mergeStrm = null;
         File file = null;
         try {
             file = File.createTempFile("tmp-", "-mergechunk");
@@ -372,18 +368,18 @@ public class SlingFileUploadHandler {
             final Set<InputStream> inpStrmSet = new LinkedHashSet<>();
             while (itr.hasNext()) {
                 final Resource rangeResource = itr.next();
-                if (itr.hasNext() ) {
-                    throw new PersistenceException(
-                        "more than one resource found for pattern: " + startPattern + "*");
+                if (itr.hasNext()) {
+                    throw new PersistenceException("more than one resource found for pattern: " + startPattern + "*");
                 }
 
                 inpStrmSet.add(rangeResource.adaptTo(InputStream.class));
                 log.debug("added chunk {} to merge stream", rangeResource.getName());
-                String[] indexBounds = rangeResource.getName().substring(
-                    (SlingPostConstants.CHUNK_NODE_NAME + "_").length()).split(
-                    "_");
+                String[] indexBounds = rangeResource
+                        .getName()
+                        .substring((SlingPostConstants.CHUNK_NODE_NAME + "_").length())
+                        .split("_");
                 startPattern = SlingPostConstants.CHUNK_NODE_NAME + "_"
-                    + String.valueOf(Long.valueOf(indexBounds[1]) + 1) + "_";
+                        + String.valueOf(Long.valueOf(indexBounds[1]) + 1) + "_";
                 itr = new FilteringResourceIterator(parentResource.listChildren(), startPattern);
             }
 
@@ -395,7 +391,6 @@ public class SlingFileUploadHandler {
         } finally {
             IOUtils.closeQuietly(out);
             IOUtils.closeQuietly(mergeStrm);
-
         }
         return file;
     }
@@ -409,7 +404,7 @@ public class SlingFileUploadHandler {
             chunkParent = rsrc;
         } else {
             jcrContentNode = rsrc.getChild(JcrConstants.JCR_CONTENT);
-            if ( hasChunks(jcrContentNode)) {
+            if (hasChunks(jcrContentNode)) {
                 chunkParent = jcrContentNode;
             }
         }
@@ -425,7 +420,8 @@ public class SlingFileUploadHandler {
         final Resource chunkParent = getChunkParent(rsrc);
 
         if (chunkParent != null) {
-            for(final Resource c : new FilteringResourceIterator(rsrc.listChildren(), SlingPostConstants.CHUNK_NODE_NAME) ) {
+            for (final Resource c :
+                    new FilteringResourceIterator(rsrc.listChildren(), SlingPostConstants.CHUNK_NODE_NAME)) {
                 c.getResourceResolver().delete(c);
             }
             final ModifiableValueMap vm = chunkParent.adaptTo(ModifiableValueMap.class);
@@ -437,11 +433,11 @@ public class SlingFileUploadHandler {
 
     private final void addChunkMixin(final ModifiableValueMap vm) {
         final String[] mixins = vm.get(JcrConstants.JCR_MIXINTYPES, String[].class);
-        if ( mixins == null ) {
+        if (mixins == null) {
             vm.put(JcrConstants.JCR_MIXINTYPES, new String[] {SlingPostConstants.NT_SLING_CHUNK_MIXIN});
         } else {
             final Set<String> types = new HashSet<>(Arrays.asList(mixins));
-            if ( !types.contains(SlingPostConstants.NT_SLING_CHUNK_MIXIN) ) {
+            if (!types.contains(SlingPostConstants.NT_SLING_CHUNK_MIXIN)) {
                 types.add(SlingPostConstants.NT_SLING_CHUNK_MIXIN);
                 vm.put(JcrConstants.JCR_MIXINTYPES, types.toArray(new String[types.size()]));
             }
@@ -450,9 +446,9 @@ public class SlingFileUploadHandler {
 
     private final void removeChunkMixin(final ModifiableValueMap vm) {
         final String[] mixins = vm.get(JcrConstants.JCR_MIXINTYPES, String[].class);
-        if ( mixins != null ) {
+        if (mixins != null) {
             final Set<String> types = new HashSet<>(Arrays.asList(mixins));
-            if ( types.remove(SlingPostConstants.NT_SLING_CHUNK_MIXIN) ) {
+            if (types.remove(SlingPostConstants.NT_SLING_CHUNK_MIXIN)) {
                 vm.put(JcrConstants.JCR_MIXINTYPES, types.toArray(new String[types.size()]));
             }
         }
@@ -468,16 +464,19 @@ public class SlingFileUploadHandler {
      * @return the {@link SlingPostConstants#NT_SLING_CHUNK_NODETYPE} chunk
      *         resource.
      */
-    public Resource getLastChunk(Resource rsrc)  {
+    public Resource getLastChunk(Resource rsrc) {
         final Resource chunkParent = getChunkParent(rsrc);
         if (chunkParent == null) {
             return null;
         }
         Resource lastChunkRsrc = null;
         long lastChunkStartIndex = -1;
-        for(final Resource chunkRsrc : new FilteringResourceIterator(rsrc.listChildren(), SlingPostConstants.CHUNK_NODE_NAME + "_") ) {
-            final String[] indexBounds = chunkRsrc.getName().substring(
-                     (SlingPostConstants.CHUNK_NODE_NAME + "_").length()).split("_");
+        for (final Resource chunkRsrc :
+                new FilteringResourceIterator(rsrc.listChildren(), SlingPostConstants.CHUNK_NODE_NAME + "_")) {
+            final String[] indexBounds = chunkRsrc
+                    .getName()
+                    .substring((SlingPostConstants.CHUNK_NODE_NAME + "_").length())
+                    .split("_");
             long chunkStartIndex = Long.valueOf(indexBounds[0]);
             if (chunkStartIndex > lastChunkStartIndex) {
                 lastChunkRsrc = chunkRsrc;
@@ -494,7 +493,7 @@ public class SlingFileUploadHandler {
     private boolean hasChunks(final Resource rsrc) {
         final ValueMap vm = rsrc.getValueMap();
         final String[] mixinTypes = vm.get(JcrConstants.JCR_MIXINTYPES, String[].class);
-        if ( mixinTypes != null ) {
+        if (mixinTypes != null) {
             for (final String nodeType : mixinTypes) {
                 if (nodeType.equals(SlingPostConstants.NT_SLING_CHUNK_MIXIN)) {
                     return true;
@@ -518,7 +517,7 @@ public class SlingFileUploadHandler {
      * @throws PersistenceException if an error occurs
      */
     public void setFile(final Resource parent, final RequestProperty prop, final List<Modification> changes)
-    throws PersistenceException {
+            throws PersistenceException {
         for (final RequestParameter value : prop.getValues()) {
 
             // ignore if a plain form field or empty
@@ -550,7 +549,7 @@ public class SlingFileUploadHandler {
                 if (ctx != null) {
                     contentType = ctx.getMimeType(value.getFileName());
                 }
-                if ( contentType == null ) {
+                if (contentType == null) {
                     contentType = MT_APP_OCTET;
                 }
             }
@@ -559,14 +558,14 @@ public class SlingFileUploadHandler {
         }
     }
 
-    private Resource getOrCreateChildResource(final Resource parent,
-            final String name,
-            final String typeHint,
-            final List<Modification> changes)
-    throws PersistenceException {
+    private Resource getOrCreateChildResource(
+            final Resource parent, final String name, final String typeHint, final List<Modification> changes)
+            throws PersistenceException {
         Resource result = parent.getChild(name);
-        if ( result != null ) {
-            if ( !result.isResourceType(typeHint) && jcrSupport.isNode(result) && !jcrSupport.isNodeType(result, typeHint) ) {
+        if (result != null) {
+            if (!result.isResourceType(typeHint)
+                    && jcrSupport.isNode(result)
+                    && !jcrSupport.isNodeType(result, typeHint)) {
                 parent.getResourceResolver().delete(result);
                 result = createWithChanges(parent, name, typeHint, changes);
             }
@@ -576,23 +575,21 @@ public class SlingFileUploadHandler {
         return result;
     }
 
-    private Resource createWithChanges(final Resource parent, final String name,
-            final String typeHint,
-            final List<Modification> changes)
-    throws PersistenceException {
+    private Resource createWithChanges(
+            final Resource parent, final String name, final String typeHint, final List<Modification> changes)
+            throws PersistenceException {
         Map<String, Object> properties = null;
-        if ( typeHint != null ) {
+        if (typeHint != null) {
             // sling resource type not allowed for nt:file nor nt:resource
-            if ( !jcrSupport.isNode(parent)
-                 || (!JcrConstants.NT_FILE.equals(typeHint) && !JcrConstants.NT_RESOURCE.equals(typeHint)) ) {
-                properties = Collections.singletonMap(ResourceResolver.PROPERTY_RESOURCE_TYPE, (Object)typeHint);
+            if (!jcrSupport.isNode(parent)
+                    || (!JcrConstants.NT_FILE.equals(typeHint) && !JcrConstants.NT_RESOURCE.equals(typeHint))) {
+                properties = Collections.singletonMap(ResourceResolver.PROPERTY_RESOURCE_TYPE, (Object) typeHint);
             } else {
-                properties = Collections.singletonMap(JcrConstants.JCR_PRIMARYTYPE, (Object)typeHint);
+                properties = Collections.singletonMap(JcrConstants.JCR_PRIMARYTYPE, (Object) typeHint);
             }
         }
         final Resource result = parent.getResourceResolver().create(parent, name, properties);
         changes.add(Modification.onCreated(result.getPath()));
         return result;
     }
-
 }

@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.servlets.post.impl.helper;
 
@@ -31,11 +33,9 @@ public class RequestProperty {
 
     private static final RequestParameter[] EMPTY_PARAM_ARRAY = new RequestParameter[0];
 
-    public static final String DEFAULT_IGNORE = SlingPostConstants.RP_PREFIX
-        + "ignore";
+    public static final String DEFAULT_IGNORE = SlingPostConstants.RP_PREFIX + "ignore";
 
-    public static final String DEFAULT_NULL = SlingPostConstants.RP_PREFIX
-        + "null";
+    public static final String DEFAULT_NULL = SlingPostConstants.RP_PREFIX + "null";
 
     private final String path;
 
@@ -83,7 +83,7 @@ public class RequestProperty {
     }
 
     public void setTypeHintValue(String typeHint) {
-        if ( typeHint != null && typeHint.endsWith("[]") ) {
+        if (typeHint != null && typeHint.endsWith("[]")) {
             this.typeHint = typeHint.substring(0, typeHint.length() - 2);
             this.hasMultiValueTypeHint = true;
         } else {
@@ -172,7 +172,7 @@ public class RequestProperty {
     public String[] getStringValues() {
         if (stringValues == null) {
             if (values == null && useDefaultWhenMissing) {
-                stringValues = new String[] { defaultValues[0].getString() };
+                stringValues = new String[] {defaultValues[0].getString()};
             } else if (values.length > 1) {
                 // TODO: how the default values work for MV props is not very
                 // clear
@@ -203,7 +203,7 @@ public class RequestProperty {
                         }
                     }
                 }
-                stringValues = new String[] { value };
+                stringValues = new String[] {value};
             }
         }
         return stringValues;

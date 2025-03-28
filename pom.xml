@@ -27,19 +27,17 @@
     </parent>
 
     <artifactId>org.apache.sling.servlets.post</artifactId>
-    <packaging>jar</packaging>
     <version>3.0.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
 
     <name>Apache Sling Servlets POST</name>
-    <description>
-        Provides default POST servlets.
-    </description>
+    <description>Provides default POST servlets.</description>
 
     <scm>
         <connection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-servlets-post.git</connection>
         <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-servlets-post.git</developerConnection>
-        <url>https://github.com/apache/sling-org-apache-sling-servlets-post.git</url>
         <tag>HEAD</tag>
+        <url>https://github.com/apache/sling-org-apache-sling-servlets-post.git</url>
     </scm>
 
     <properties>
@@ -47,67 +45,6 @@
         <project.build.outputTimestamp>2023-10-05T11:03:56Z</project.build.outputTimestamp>
         <sling.java.version>17</sling.java.version>
     </properties>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>biz.aQute.bnd</groupId>
-                <artifactId>bnd-maven-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>biz.aQute.bnd</groupId>
-                <artifactId>bnd-baseline-maven-plugin</artifactId>
-            </plugin>
-           <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>3.6.0</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                        <configuration>
-                            <createSourcesJar>true</createSourcesJar>
-                            <shadeSourcesContent>true</shadeSourcesContent>
-                            <relocations>
-                                <relocation>
-                                    <pattern>org.apache.jackrabbit.util</pattern>
-                                    <shadedPattern>org.apache.sling.servlets.post.impl.jackrabbit</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>org.apache.sling.jcr.contentparser</pattern>
-                                    <shadedPattern>org.apache.sling.servlets.post.impl.contentparser</shadedPattern>
-                                </relocation>
-                            </relocations>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-              <groupId>org.apache.rat</groupId>
-              <artifactId>apache-rat-plugin</artifactId>
-              <configuration>
-                <excludes>
-                  <exclude>src/main/resources/org/apache/sling/servlets/post/HtmlResponse.html</exclude>
-                  <exclude>src/main/resources/org/apache/sling/servlets/post/HtmlNoGoBackResponse.html</exclude>
-                  <exclude>developer-tests/README.md</exclude>
-                  <exclude>Protocols.md</exclude>
-                </excludes>
-              </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <configuration>
-                    <excludePackageNames>
-                        org.apache.sling.servlets.post.impl
-                    </excludePackageNames>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
     <dependencies>
         <dependency>
             <groupId>org.osgi</groupId>
@@ -229,5 +166,64 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>biz.aQute.bnd</groupId>
+                <artifactId>bnd-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>biz.aQute.bnd</groupId>
+                <artifactId>bnd-baseline-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.6.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <createSourcesJar>true</createSourcesJar>
+                            <shadeSourcesContent>true</shadeSourcesContent>
+                            <relocations>
+                                <relocation>
+                                    <pattern>org.apache.jackrabbit.util</pattern>
+                                    <shadedPattern>org.apache.sling.servlets.post.impl.jackrabbit</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.apache.sling.jcr.contentparser</pattern>
+                                    <shadedPattern>org.apache.sling.servlets.post.impl.contentparser</shadedPattern>
+                                </relocation>
+                            </relocations>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.rat</groupId>
+                <artifactId>apache-rat-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>src/main/resources/org/apache/sling/servlets/post/HtmlResponse.html</exclude>
+                        <exclude>src/main/resources/org/apache/sling/servlets/post/HtmlNoGoBackResponse.html</exclude>
+                        <exclude>developer-tests/README.md</exclude>
+                        <exclude>Protocols.md</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <excludePackageNames>org.apache.sling.servlets.post.impl</excludePackageNames>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>

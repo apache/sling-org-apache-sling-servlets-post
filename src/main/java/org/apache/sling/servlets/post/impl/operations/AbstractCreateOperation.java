@@ -1,20 +1,21 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.sling.servlets.post.impl.operations;
 
 import java.util.Enumeration;
@@ -62,22 +63,19 @@ abstract class AbstractCreateOperation extends AbstractPostOperation {
     private Pattern ignoredParameterNamePattern;
 
     protected AbstractCreateOperation() {
-		this.defaultNodeNameGenerator = new DefaultNodeNameGenerator();
-		this.ignoredParameterNamePattern = null;
+        this.defaultNodeNameGenerator = new DefaultNodeNameGenerator();
+        this.ignoredParameterNamePattern = null;
     }
 
-    public void setDefaultNodeNameGenerator(
-            JakartaNodeNameGenerator defaultNodeNameGenerator) {
+    public void setDefaultNodeNameGenerator(JakartaNodeNameGenerator defaultNodeNameGenerator) {
         this.defaultNodeNameGenerator = defaultNodeNameGenerator;
     }
 
-    public void setExtraNodeNameGenerators(
-            JakartaNodeNameGenerator[] extraNodeNameGenerators) {
+    public void setExtraNodeNameGenerators(JakartaNodeNameGenerator[] extraNodeNameGenerators) {
         this.extraNodeNameGenerators = extraNodeNameGenerators;
     }
 
-    public void setIgnoredParameterNamePattern(
-            final Pattern ignoredParameterNamePattern) {
+    public void setIgnoredParameterNamePattern(final Pattern ignoredParameterNamePattern) {
         this.ignoredParameterNamePattern = ignoredParameterNamePattern;
     }
 
@@ -95,8 +93,7 @@ abstract class AbstractCreateOperation extends AbstractPostOperation {
      * @param request The http request
      * @return If a prefix is required.
      */
-    private final boolean requireItemPathPrefix(
-            SlingJakartaHttpServletRequest request) {
+    private final boolean requireItemPathPrefix(SlingJakartaHttpServletRequest request) {
 
         boolean requirePrefix = false;
 
@@ -108,8 +105,6 @@ abstract class AbstractCreateOperation extends AbstractPostOperation {
 
         return requirePrefix;
     }
-
-
 
     /**
      * Returns <code>true</code> if the <code>name</code> starts with either
@@ -123,8 +118,8 @@ abstract class AbstractCreateOperation extends AbstractPostOperation {
      */
     private boolean hasItemPathPrefix(String name) {
         return name.startsWith(SlingPostConstants.ITEM_PREFIX_ABSOLUTE)
-            || name.startsWith(SlingPostConstants.ITEM_PREFIX_RELATIVE_CURRENT)
-            || name.startsWith(SlingPostConstants.ITEM_PREFIX_RELATIVE_PARENT);
+                || name.startsWith(SlingPostConstants.ITEM_PREFIX_RELATIVE_CURRENT)
+                || name.startsWith(SlingPostConstants.ITEM_PREFIX_RELATIVE_PARENT);
     }
 
     /**
@@ -137,17 +132,18 @@ abstract class AbstractCreateOperation extends AbstractPostOperation {
      * @param versioningConfiguration versioning configuration
      * @throws PersistenceException if a resource error occurs
      */
-    protected void processCreate(final ResourceResolver resolver,
+    protected void processCreate(
+            final ResourceResolver resolver,
             final Map<String, RequestProperty> reqProperties,
             final JakartaPostResponse response,
             final List<Modification> changes,
             final VersioningConfiguration versioningConfiguration)
-    throws PersistenceException {
+            throws PersistenceException {
 
         final String path = response.getPath();
         final Resource resource = resolver.getResource(path);
 
-        if ( resource == null || ResourceUtil.isSyntheticResource(resource) ) {
+        if (resource == null || ResourceUtil.isSyntheticResource(resource)) {
             deepGetOrCreateResource(resolver, path, reqProperties, changes, versioningConfiguration);
             response.setCreateRequest(true);
 
@@ -157,33 +153,34 @@ abstract class AbstractCreateOperation extends AbstractPostOperation {
         }
     }
 
-    protected void updateNodeType(final ResourceResolver resolver,
-                    final String path,
-                    final Map<String, RequestProperty> reqProperties,
-                    final List<Modification> changes,
-                    final VersioningConfiguration versioningConfiguration)
-    throws PersistenceException {
+    protected void updateNodeType(
+            final ResourceResolver resolver,
+            final String path,
+            final Map<String, RequestProperty> reqProperties,
+            final List<Modification> changes,
+            final VersioningConfiguration versioningConfiguration)
+            throws PersistenceException {
         final String nodeType = getPrimaryType(reqProperties, path);
         if (nodeType != null) {
             final Resource rsrc = resolver.getResource(path);
             final ModifiableValueMap mvm = rsrc.adaptTo(ModifiableValueMap.class);
-            if ( mvm != null ) {
+            if (mvm != null) {
                 final Object node = this.jcrSupport.getNode(rsrc);
                 final boolean wasVersionable = (node == null ? false : this.jcrSupport.isVersionable(rsrc));
 
-                if ( node != null ) {
+                if (node != null) {
                     this.jcrSupport.checkoutIfNecessary(rsrc, changes, versioningConfiguration);
                     this.jcrSupport.setPrimaryNodeType(node, nodeType);
                 } else {
                     mvm.put(JcrConstants.JCR_PRIMARYTYPE, nodeType);
                 }
 
-                if ( node != null ) {
+                if (node != null) {
                     // this is a bit of a cheat; there isn't a formal checkout, but assigning
                     // the mix:versionable mixin does an implicit checkout
-                    if (!wasVersionable &&
-                            versioningConfiguration.isCheckinOnNewVersionableNode() &&
-                            this.jcrSupport.isVersionable(rsrc)) {
+                    if (!wasVersionable
+                            && versioningConfiguration.isCheckinOnNewVersionableNode()
+                            && this.jcrSupport.isVersionable(rsrc)) {
                         changes.add(Modification.onCheckout(path));
                     }
                 }
@@ -191,26 +188,27 @@ abstract class AbstractCreateOperation extends AbstractPostOperation {
         }
     }
 
-    protected void updateMixins(final ResourceResolver resolver,
-                    final String path,
-                    final Map<String, RequestProperty> reqProperties,
-                    final List<Modification> changes,
-                    final VersioningConfiguration versioningConfiguration)
-    throws PersistenceException {
+    protected void updateMixins(
+            final ResourceResolver resolver,
+            final String path,
+            final Map<String, RequestProperty> reqProperties,
+            final List<Modification> changes,
+            final VersioningConfiguration versioningConfiguration)
+            throws PersistenceException {
         final String[] mixins = getMixinTypes(reqProperties, path);
         if (mixins != null) {
 
             final Resource rsrc = resolver.getResource(path);
             final ModifiableValueMap mvm = rsrc.adaptTo(ModifiableValueMap.class);
-            if ( mvm != null ) {
+            if (mvm != null) {
                 this.jcrSupport.checkoutIfNecessary(rsrc, changes, versioningConfiguration);
                 mvm.put(JcrConstants.JCR_MIXINTYPES, mixins);
 
-                for(final String mixin : mixins) {
+                for (final String mixin : mixins) {
                     // this is a bit of a cheat; there isn't a formal checkout, but assigning
                     // the mix:versionable mixin does an implicit checkout
-                    if (mixin.equals(JcrConstants.MIX_VERSIONABLE) &&
-                            versioningConfiguration.isCheckinOnNewVersionableNode()) {
+                    if (mixin.equals(JcrConstants.MIX_VERSIONABLE)
+                            && versioningConfiguration.isCheckinOnNewVersionableNode()) {
                         changes.add(Modification.onCheckout(path));
                     }
                 }
@@ -226,14 +224,14 @@ abstract class AbstractCreateOperation extends AbstractPostOperation {
      * @return the collected properties
      */
     protected Map<String, RequestProperty> collectContent(
-            final SlingJakartaHttpServletRequest request,
-            final JakartaPostResponse response) {
+            final SlingJakartaHttpServletRequest request, final JakartaPostResponse response) {
 
         final boolean requireItemPrefix = requireItemPathPrefix(request);
 
         // walk the request parameters and collect the properties
         final LinkedHashMap<String, RequestProperty> reqProperties = new LinkedHashMap<>();
-        for (final Map.Entry<String, RequestParameter[]> e : request.getRequestParameterMap().entrySet()) {
+        for (final Map.Entry<String, RequestParameter[]> e :
+                request.getRequestParameterMap().entrySet()) {
             final String paramName = e.getKey();
 
             if (ignoreParameter(paramName)) {
@@ -253,9 +251,8 @@ abstract class AbstractCreateOperation extends AbstractPostOperation {
             // <input type="hidden" name="./age@TypeHint" value="long" />
             // causes the setProperty using the 'long' property type
             if (propPath.endsWith(SlingPostConstants.TYPE_HINT_SUFFIX)) {
-                final RequestProperty prop = getOrCreateRequestProperty(
-                    reqProperties, propPath,
-                    SlingPostConstants.TYPE_HINT_SUFFIX);
+                final RequestProperty prop =
+                        getOrCreateRequestProperty(reqProperties, propPath, SlingPostConstants.TYPE_HINT_SUFFIX);
 
                 final RequestParameter[] rp = e.getValue();
                 if (rp.length > 0) {
@@ -267,9 +264,8 @@ abstract class AbstractCreateOperation extends AbstractPostOperation {
 
             // @DefaultValue
             if (propPath.endsWith(SlingPostConstants.DEFAULT_VALUE_SUFFIX)) {
-                final RequestProperty prop = getOrCreateRequestProperty(
-                    reqProperties, propPath,
-                    SlingPostConstants.DEFAULT_VALUE_SUFFIX);
+                final RequestProperty prop =
+                        getOrCreateRequestProperty(reqProperties, propPath, SlingPostConstants.DEFAULT_VALUE_SUFFIX);
 
                 prop.setDefaultValues(e.getValue());
 
@@ -283,9 +279,8 @@ abstract class AbstractCreateOperation extends AbstractPostOperation {
             // causes the JCR Text property to be set to the value of the
             // fulltext form field.
             if (propPath.endsWith(SlingPostConstants.VALUE_FROM_SUFFIX)) {
-                final RequestProperty prop = getOrCreateRequestProperty(
-                    reqProperties, propPath,
-                    SlingPostConstants.VALUE_FROM_SUFFIX);
+                final RequestProperty prop =
+                        getOrCreateRequestProperty(reqProperties, propPath, SlingPostConstants.VALUE_FROM_SUFFIX);
 
                 // @ValueFrom params must have exactly one value, else ignored
                 if (e.getValue().length == 1) {
@@ -304,8 +299,8 @@ abstract class AbstractCreateOperation extends AbstractPostOperation {
             // <input name="./Text@Delete" type="hidden" />
             // causes the JCR Text property to be deleted before update
             if (propPath.endsWith(SlingPostConstants.SUFFIX_DELETE)) {
-                final RequestProperty prop = getOrCreateRequestProperty(
-                    reqProperties, propPath, SlingPostConstants.SUFFIX_DELETE);
+                final RequestProperty prop =
+                        getOrCreateRequestProperty(reqProperties, propPath, SlingPostConstants.SUFFIX_DELETE);
 
                 prop.setDelete(true);
 
@@ -318,9 +313,8 @@ abstract class AbstractCreateOperation extends AbstractPostOperation {
             // causes the JCR Text property to be set by moving the /tmp/path
             // property to Text.
             if (propPath.endsWith(SlingPostConstants.SUFFIX_MOVE_FROM)) {
-                final RequestProperty prop = getOrCreateRequestProperty(
-                    reqProperties, propPath,
-                    SlingPostConstants.SUFFIX_MOVE_FROM);
+                final RequestProperty prop =
+                        getOrCreateRequestProperty(reqProperties, propPath, SlingPostConstants.SUFFIX_MOVE_FROM);
 
                 // @MoveFrom params must have exactly one value, else ignored
                 if (e.getValue().length == 1) {
@@ -337,9 +331,8 @@ abstract class AbstractCreateOperation extends AbstractPostOperation {
             // causes the JCR Text property to be set by copying the /tmp/path
             // property to Text.
             if (propPath.endsWith(SlingPostConstants.SUFFIX_COPY_FROM)) {
-                final RequestProperty prop = getOrCreateRequestProperty(
-                    reqProperties, propPath,
-                    SlingPostConstants.SUFFIX_COPY_FROM);
+                final RequestProperty prop =
+                        getOrCreateRequestProperty(reqProperties, propPath, SlingPostConstants.SUFFIX_COPY_FROM);
 
                 // @MoveFrom params must have exactly one value, else ignored
                 if (e.getValue().length == 1) {
@@ -359,9 +352,8 @@ abstract class AbstractCreateOperation extends AbstractPostOperation {
             // causes the JCR Text property to be set by copying the /tmp/path
             // property to Text.
             if (propPath.endsWith(SlingPostConstants.SUFFIX_IGNORE_BLANKS)) {
-                final RequestProperty prop = getOrCreateRequestProperty(
-                    reqProperties, propPath,
-                    SlingPostConstants.SUFFIX_IGNORE_BLANKS);
+                final RequestProperty prop =
+                        getOrCreateRequestProperty(reqProperties, propPath, SlingPostConstants.SUFFIX_IGNORE_BLANKS);
 
                 if (e.getValue().length == 1) {
                     prop.setIgnoreBlanks(true);
@@ -372,8 +364,7 @@ abstract class AbstractCreateOperation extends AbstractPostOperation {
 
             if (propPath.endsWith(SlingPostConstants.SUFFIX_USE_DEFAULT_WHEN_MISSING)) {
                 final RequestProperty prop = getOrCreateRequestProperty(
-                    reqProperties, propPath,
-                    SlingPostConstants.SUFFIX_USE_DEFAULT_WHEN_MISSING);
+                        reqProperties, propPath, SlingPostConstants.SUFFIX_USE_DEFAULT_WHEN_MISSING);
 
                 if (e.getValue().length == 1) {
                     prop.setUseDefaultWhenMissing(true);
@@ -388,21 +379,19 @@ abstract class AbstractCreateOperation extends AbstractPostOperation {
             // <input name="tags"          value="+apple" type="hidden" />
             // <input name="tags"          value="-orange" type="hidden" />
             if (propPath.endsWith(SlingPostConstants.SUFFIX_PATCH)) {
-                final RequestProperty prop = getOrCreateRequestProperty(
-                        reqProperties, propPath,
-                        SlingPostConstants.SUFFIX_PATCH);
+                final RequestProperty prop =
+                        getOrCreateRequestProperty(reqProperties, propPath, SlingPostConstants.SUFFIX_PATCH);
 
                 prop.setPatch(true);
 
                 continue;
             }
             if (propPath.endsWith(SlingPostConstants.SUFFIX_OFFSET)) {
-                final RequestProperty prop = getOrCreateRequestProperty(
-                        reqProperties, propPath,
-                        SlingPostConstants.SUFFIX_OFFSET);
+                final RequestProperty prop =
+                        getOrCreateRequestProperty(reqProperties, propPath, SlingPostConstants.SUFFIX_OFFSET);
                 if (e.getValue().length == 1) {
                     Chunk chunk = prop.getChunk();
-                    if(chunk == null){
+                    if (chunk == null) {
                         chunk = new Chunk();
                     }
                     chunk.setOffsetValue(Long.parseLong(e.getValue()[0].toString()));
@@ -412,12 +401,11 @@ abstract class AbstractCreateOperation extends AbstractPostOperation {
             }
 
             if (propPath.endsWith(SlingPostConstants.SUFFIX_COMPLETED)) {
-                final RequestProperty prop = getOrCreateRequestProperty(
-                        reqProperties, propPath,
-                        SlingPostConstants.SUFFIX_COMPLETED);
+                final RequestProperty prop =
+                        getOrCreateRequestProperty(reqProperties, propPath, SlingPostConstants.SUFFIX_COMPLETED);
                 if (e.getValue().length == 1) {
                     Chunk chunk = prop.getChunk();
-                    if(chunk == null){
+                    if (chunk == null) {
                         chunk = new Chunk();
                     }
                     chunk.setCompleted(Boolean.parseBoolean((e.getValue()[0].toString())));
@@ -427,12 +415,11 @@ abstract class AbstractCreateOperation extends AbstractPostOperation {
             }
 
             if (propPath.endsWith(SlingPostConstants.SUFFIX_LENGTH)) {
-                final RequestProperty prop = getOrCreateRequestProperty(
-                        reqProperties, propPath,
-                        SlingPostConstants.SUFFIX_LENGTH);
+                final RequestProperty prop =
+                        getOrCreateRequestProperty(reqProperties, propPath, SlingPostConstants.SUFFIX_LENGTH);
                 if (e.getValue().length == 1) {
                     Chunk chunk = prop.getChunk();
-                    if(chunk == null){
+                    if (chunk == null) {
                         chunk = new Chunk();
                     }
                     chunk.setLength(Long.parseLong(e.getValue()[0].toString()));
@@ -442,8 +429,7 @@ abstract class AbstractCreateOperation extends AbstractPostOperation {
             }
 
             // plain property, create from values
-            final RequestProperty prop = getOrCreateRequestProperty(reqProperties,
-                propPath, null);
+            final RequestProperty prop = getOrCreateRequestProperty(reqProperties, propPath, null);
             prop.setValues(e.getValue());
         }
 
@@ -467,7 +453,7 @@ abstract class AbstractCreateOperation extends AbstractPostOperation {
 
         // SLING-2120: ignore parameter match ignoredParameterNamePattern
         if (this.ignoredParameterNamePattern != null
-            && this.ignoredParameterNamePattern.matcher(paramName).matches()) {
+                && this.ignoredParameterNamePattern.matcher(paramName).matches()) {
             return true;
         }
 
@@ -502,8 +488,7 @@ abstract class AbstractCreateOperation extends AbstractPostOperation {
     private RequestProperty getOrCreateRequestProperty(
             Map<String, RequestProperty> props, String paramName, String suffix) {
         if (suffix != null && paramName.endsWith(suffix)) {
-            paramName = paramName.substring(0, paramName.length()
-                - suffix.length());
+            paramName = paramName.substring(0, paramName.length() - suffix.length());
         }
 
         RequestProperty prop = props.get(paramName);
@@ -514,7 +499,6 @@ abstract class AbstractCreateOperation extends AbstractPostOperation {
 
         return prop;
     }
-
 
     /**
      * Deep gets or creates a resource, parent-padding with default resources. If
@@ -530,12 +514,13 @@ abstract class AbstractCreateOperation extends AbstractPostOperation {
      * @throws IllegalArgumentException if the path is relative and parent is
      *             <code>null</code>
      */
-    protected Resource deepGetOrCreateResource(final ResourceResolver resolver,
-                    final String path,
-                    final Map<String, RequestProperty> reqProperties,
-                    final List<Modification> changes,
-                    final VersioningConfiguration versioningConfiguration)
-    throws PersistenceException {
+    protected Resource deepGetOrCreateResource(
+            final ResourceResolver resolver,
+            final String path,
+            final Map<String, RequestProperty> reqProperties,
+            final List<Modification> changes,
+            final VersioningConfiguration versioningConfiguration)
+            throws PersistenceException {
         if (log.isDebugEnabled()) {
             log.debug("Deep-creating resource '{}'", path);
         }
@@ -548,12 +533,13 @@ abstract class AbstractCreateOperation extends AbstractPostOperation {
         while (startingResource == null) {
             if (startingResourcePath.equals("/")) {
                 startingResource = resolver.getResource("/");
-                if (startingResource == null){
-                	throw new PersistenceException("Access denied for root resource, resource can't be created: " + path);
+                if (startingResource == null) {
+                    throw new PersistenceException(
+                            "Access denied for root resource, resource can't be created: " + path);
                 }
             } else {
                 final Resource r = resolver.getResource(startingResourcePath);
-                if ( r != null && !ResourceUtil.isSyntheticResource(r)) {
+                if (r != null && !ResourceUtil.isSyntheticResource(r)) {
                     startingResource = resolver.getResource(startingResourcePath);
                     updateNodeType(resolver, startingResourcePath, reqProperties, changes, versioningConfiguration);
                     updateMixins(resolver, startingResourcePath, reqProperties, changes, versioningConfiguration);
@@ -572,14 +558,11 @@ abstract class AbstractCreateOperation extends AbstractPostOperation {
             return startingResource;
         }
         // create nodes
-        int from = (startingResourcePath.length() == 1
-                ? 1
-                : startingResourcePath.length() + 1);
+        int from = (startingResourcePath.length() == 1 ? 1 : startingResourcePath.length() + 1);
         Resource resource = startingResource;
         while (from > 0) {
             final int to = path.indexOf('/', from);
-            final String name = to < 0 ? path.substring(from) : path.substring(
-                from, to);
+            final String name = to < 0 ? path.substring(from) : path.substring(from, to);
             // although the resource should not exist (according to the first test
             // above)
             // we do a sanety check.
@@ -601,8 +584,7 @@ abstract class AbstractCreateOperation extends AbstractPostOperation {
                         props.put("jcr:primaryType", nodeType);
                     }
                     // check for mixin types
-                    final String[] mixinTypes = getMixinTypes(reqProperties,
-                        tmpPath);
+                    final String[] mixinTypes = getMixinTypes(reqProperties, tmpPath);
                     if (mixinTypes != null) {
                         props.put("jcr:mixinTypes", mixinTypes);
                     }
@@ -626,8 +608,7 @@ abstract class AbstractCreateOperation extends AbstractPostOperation {
      * @param path path to check
      * @return the primary type or <code>null</code>
      */
-    private String getPrimaryType(Map<String, RequestProperty> reqProperties,
-            String path) {
+    private String getPrimaryType(Map<String, RequestProperty> reqProperties, String path) {
         RequestProperty prop = reqProperties.get(path + "/jcr:primaryType");
         return prop == null ? null : prop.getStringValues()[0];
     }
@@ -639,90 +620,91 @@ abstract class AbstractCreateOperation extends AbstractPostOperation {
      * @param path path to check
      * @return the mixin types or <code>null</code>
      */
-    private String[] getMixinTypes(Map<String, RequestProperty> reqProperties,
-            String path) {
+    private String[] getMixinTypes(Map<String, RequestProperty> reqProperties, String path) {
         RequestProperty prop = reqProperties.get(path + "/jcr:mixinTypes");
         return (prop == null) || !prop.hasValues() ? null : prop.getStringValues();
     }
 
+    protected String generateName(SlingJakartaHttpServletRequest request, String basePath) throws PersistenceException {
 
-    protected String generateName(SlingJakartaHttpServletRequest request, String basePath)
-    	throws PersistenceException {
+        // SLING-1091: If a :name parameter is supplied, the (first) value of this parameter is used unmodified as the
+        // name
+        //    for the new node. If the name is illegally formed with respect to JCR name requirements, an exception will
+        // be
+        //    thrown when trying to create the node. The assumption with the :name parameter is, that the caller knows
+        // what
+        //    he (or she) is supplying and should get the exact result if possible.
+        RequestParameterMap parameters = request.getRequestParameterMap();
+        RequestParameter specialParam = parameters.getValue(SlingPostConstants.RP_NODE_NAME);
+        if (specialParam != null) {
+            if (specialParam.getString() != null && specialParam.getString().length() > 0) {
+                // If the path ends with a *, create a node under its parent, with
+                // a generated node name
+                basePath = basePath += "/" + specialParam.getString();
 
-		// SLING-1091: If a :name parameter is supplied, the (first) value of this parameter is used unmodified as the name
-		//    for the new node. If the name is illegally formed with respect to JCR name requirements, an exception will be
-		//    thrown when trying to create the node. The assumption with the :name parameter is, that the caller knows what
-		//    he (or she) is supplying and should get the exact result if possible.
-		RequestParameterMap parameters = request.getRequestParameterMap();
-		RequestParameter specialParam = parameters.getValue(SlingPostConstants.RP_NODE_NAME);
-		if ( specialParam != null ) {
-		    if ( specialParam.getString() != null && specialParam.getString().length() > 0 ) {
-		        // If the path ends with a *, create a node under its parent, with
-		        // a generated node name
-		        basePath = basePath += "/" + specialParam.getString();
+                // if the resulting path already exists then report an error
+                if (request.getResourceResolver().getResource(basePath) != null) {
+                    throw new PersistenceException("Collision in node names for path=" + basePath);
+                }
 
-		        // if the resulting path already exists then report an error
-	            if (request.getResourceResolver().getResource(basePath) != null) {
-	    		    throw new PersistenceException(
-	    			        "Collision in node names for path=" + basePath);
-	            }
+                return basePath;
+            }
+        }
 
-		        return basePath;
-		    }
-		}
+        // no :name value was supplied, so generate a name
+        boolean requirePrefix = requireItemPathPrefix(request);
 
-		// no :name value was supplied, so generate a name
-		boolean requirePrefix = requireItemPathPrefix(request);
+        String generatedName = null;
+        if (extraNodeNameGenerators != null) {
+            for (JakartaNodeNameGenerator generator : extraNodeNameGenerators) {
+                generatedName = generator.getNodeName(request, basePath, requirePrefix, defaultNodeNameGenerator);
+                if (generatedName != null) {
+                    break;
+                }
+            }
+        }
+        if (generatedName == null) {
+            generatedName =
+                    defaultNodeNameGenerator.getNodeName(request, basePath, requirePrefix, defaultNodeNameGenerator);
+        }
 
-		String generatedName = null;
-		if (extraNodeNameGenerators != null) {
-		    for (JakartaNodeNameGenerator generator : extraNodeNameGenerators) {
-		        generatedName = generator.getNodeName(request, basePath, requirePrefix, defaultNodeNameGenerator);
-		        if (generatedName != null) {
-		            break;
-		        }
-		    }
-		}
-		if (generatedName == null) {
-		    generatedName = defaultNodeNameGenerator.getNodeName(request, basePath, requirePrefix, defaultNodeNameGenerator);
-		}
+        // If the path ends with a *, create a node under its parent, with
+        // a generated node name
+        basePath += "/" + generatedName;
 
-		// If the path ends with a *, create a node under its parent, with
-		// a generated node name
-		basePath += "/" + generatedName;
+        basePath = ensureUniquePath(request, basePath);
 
-		basePath = ensureUniquePath(request, basePath);
-
-		return basePath;
+        return basePath;
     }
 
     /** Generate a unique path in case the node name generator didn't */
-    private String ensureUniquePath(SlingJakartaHttpServletRequest request, String basePath) throws PersistenceException {
-		// if resulting path exists, add a suffix until it's not the case
-		// anymore
+    private String ensureUniquePath(SlingJakartaHttpServletRequest request, String basePath)
+            throws PersistenceException {
+        // if resulting path exists, add a suffix until it's not the case
+        // anymore
         final ResourceResolver resolver = request.getResourceResolver();
 
-		// if resulting path exists, add a random suffix until it's not the case
-		// anymore
-		final int MAX_TRIES = 1000;
-		if (resolver.getResource(basePath) != null ) {
-		    for(int i=0; i < MAX_TRIES; i++) {
-		        final int uniqueIndex = Math.abs(randomCollisionIndex.nextInt());
-		        String newPath = basePath + "_" + uniqueIndex;
-		        if (resolver.getResource(newPath) == null) {
-		            basePath = basePath + "_" + uniqueIndex;
-		            basePath = newPath;
-		            break;
-		        }
-		    }
+        // if resulting path exists, add a random suffix until it's not the case
+        // anymore
+        final int MAX_TRIES = 1000;
+        if (resolver.getResource(basePath) != null) {
+            for (int i = 0; i < MAX_TRIES; i++) {
+                final int uniqueIndex = Math.abs(randomCollisionIndex.nextInt());
+                String newPath = basePath + "_" + uniqueIndex;
+                if (resolver.getResource(newPath) == null) {
+                    basePath = basePath + "_" + uniqueIndex;
+                    basePath = newPath;
+                    break;
+                }
+            }
 
-	        // Give up after MAX_TRIES
-	        if (resolver.getResource(basePath) != null ) {
-	            throw new PersistenceException(
-	                "Collision in generated node names under " + basePath + ", generated path " + basePath + " already exists");
-	        }
-		}
+            // Give up after MAX_TRIES
+            if (resolver.getResource(basePath) != null) {
+                throw new PersistenceException("Collision in generated node names under " + basePath
+                        + ", generated path " + basePath + " already exists");
+            }
+        }
 
-		return basePath;
+        return basePath;
     }
 }

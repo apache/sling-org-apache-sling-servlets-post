@@ -20,33 +20,25 @@ package org.apache.sling.servlets.post.exceptions;
 
 import org.apache.sling.api.resource.PersistenceException;
 
-
 /**
  *  Indicates that the input does not meet necessary precondition.
  *  In that case the client should redo the request with a changed input.
  *
  */
-
 public class PreconditionViolatedPersistenceException extends PersistenceException {
 
+    private static final long serialVersionUID = 1L;
 
-  private static final long serialVersionUID = 1L;
-  
-  public PreconditionViolatedPersistenceException(String message, Exception e) {
-    super(message, e);
-  }
-  
-  public PreconditionViolatedPersistenceException(final String msg,
-          final Throwable cause,
-          final String resourcePath,
-          final String propertyName) {
-            super(msg,cause,resourcePath,propertyName);
-            
-            }
+    public PreconditionViolatedPersistenceException(String message, Exception e) {
+        super(message, e);
+    }
 
-public PreconditionViolatedPersistenceException(String msg) {
-    super(msg);
-}
-  
+    public PreconditionViolatedPersistenceException(
+            final String msg, final Throwable cause, final String resourcePath, final String propertyName) {
+        super(msg, cause, resourcePath, propertyName);
+    }
 
+    public PreconditionViolatedPersistenceException(String msg) {
+        super(msg);
+    }
 }

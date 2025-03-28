@@ -224,7 +224,5 @@ public interface JakartaPostResponse {
      * @param setStatus whether to set the status code on the response
      * @throws IOException if an i/o exception occurs
      */
-    void send(HttpServletResponse response, boolean setStatus)
-            throws IOException;
-
+    void send(HttpServletResponse response, boolean setStatus) throws IOException;
 }

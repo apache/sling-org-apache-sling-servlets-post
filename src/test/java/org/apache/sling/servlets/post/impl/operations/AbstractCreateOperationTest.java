@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import junit.framework.TestCase;
-
 import org.apache.sling.api.SlingJakartaHttpServletRequest;
 import org.apache.sling.servlets.post.JakartaPostResponse;
 import org.apache.sling.servlets.post.Modification;
@@ -33,8 +32,8 @@ public class AbstractCreateOperationTest extends TestCase {
     private AbstractCreateOperation op = new AbstractCreateOperation() {
 
         @Override
-        protected void doRun(SlingJakartaHttpServletRequest request,
-                JakartaPostResponse response, List<Modification> changes) {
+        protected void doRun(
+                SlingJakartaHttpServletRequest request, JakartaPostResponse response, List<Modification> changes) {
             // none here
         }
     };
@@ -76,8 +75,7 @@ public class AbstractCreateOperationTest extends TestCase {
 
     private Method getMethod(String name, Class... parameterTypes) {
         try {
-            Method m = AbstractCreateOperation.class.getDeclaredMethod(name,
-                parameterTypes);
+            Method m = AbstractCreateOperation.class.getDeclaredMethod(name, parameterTypes);
             m.setAccessible(true);
             return m;
         } catch (Throwable t) {
@@ -85,5 +83,4 @@ public class AbstractCreateOperationTest extends TestCase {
             return null; // compiler wants this
         }
     }
-
 }

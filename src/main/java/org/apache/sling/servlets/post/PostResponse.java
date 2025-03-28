@@ -18,9 +18,9 @@
  */
 package org.apache.sling.servlets.post;
 
-import java.io.IOException;
-
 import javax.servlet.http.HttpServletResponse;
+
+import java.io.IOException;
 
 /**
  * The <code>PostResponse</code> interface defines the API of a response
@@ -225,7 +225,5 @@ public interface PostResponse {
      * @param setStatus whether to set the status code on the response
      * @throws IOException if an i/o exception occurs
      */
-    void send(HttpServletResponse response, boolean setStatus)
-            throws IOException;
-
+    void send(HttpServletResponse response, boolean setStatus) throws IOException;
 }

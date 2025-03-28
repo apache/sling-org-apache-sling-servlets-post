@@ -1,20 +1,21 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.sling.servlets.post.impl.operations;
 
 import java.io.IOException;
@@ -26,7 +27,6 @@ import java.util.Map;
 
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.Part;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.util.Text;
 import org.apache.sling.api.SlingJakartaHttpServletRequest;
@@ -62,7 +62,6 @@ public class StreamedUploadOperation extends AbstractPostOperation {
         this.servletContext = servletContext;
     }
 
-
     /**
      * Check the request and return true if there is a parts iterator attribute present. This attribute
      * will have been put there by the Sling Engine ParameterSupport class. If its not present, the request
@@ -75,8 +74,9 @@ public class StreamedUploadOperation extends AbstractPostOperation {
     }
 
     @Override
-    protected void doRun(SlingJakartaHttpServletRequest request, JakartaPostResponse response, List<Modification> changes)
-    throws PersistenceException {
+    protected void doRun(
+            SlingJakartaHttpServletRequest request, JakartaPostResponse response, List<Modification> changes)
+            throws PersistenceException {
         @SuppressWarnings("unchecked")
         Iterator<Part> partsIterator = (Iterator<Part>) request.getAttribute("request-parts-iterator");
         Map<String, List<String>> formFields = new HashMap<>();
@@ -88,15 +88,16 @@ public class StreamedUploadOperation extends AbstractPostOperation {
             if (isFormField(part)) {
                 addField(formFields, name, part);
                 if (streamingBodies) {
-                    LOG.warn("Form field {} was sent after the bodies started to be streamed. " +
-                            "Will not have been available to all streamed bodies. " +
-                            "It is recommended to send all form fields before streamed bodies in the POST ", name);
+                    LOG.warn(
+                            "Form field {} was sent after the bodies started to be streamed. "
+                                    + "Will not have been available to all streamed bodies. "
+                                    + "It is recommended to send all form fields before streamed bodies in the POST ",
+                            name);
                 }
             } else {
                 streamingBodies = true;
                 // process the file body and commit.
                 writeContent(request.getResourceResolver(), part, formFields, response, changes);
-
             }
         }
     }
@@ -109,17 +110,16 @@ public class StreamedUploadOperation extends AbstractPostOperation {
      */
     private void addField(Map<String, List<String>> formFields, String name, Part part) {
         List<String> values = formFields.get(name);
-        if ( values == null ) {
+        if (values == null) {
             values = new ArrayList<>();
             formFields.put(name, values);
         }
         try {
-            values.add(IOUtils.toString(part.getInputStream(),"UTF-8"));
+            values.add(IOUtils.toString(part.getInputStream(), "UTF-8"));
         } catch (IOException e) {
-            LOG.error("Failed to read form field "+name,e);
+            LOG.error("Failed to read form field " + name, e);
         }
     }
-
 
     /**
      * Write content to the resource API creating a standard JCR structure of nt:file - nt:resource - jcr:data.
@@ -132,17 +132,19 @@ public class StreamedUploadOperation extends AbstractPostOperation {
      * @param changes changes made to the repo.
      * @throws PersistenceException
      */
-    private void writeContent(final ResourceResolver resolver,
-                              final Part part,
-                              final Map<String, List<String>> formFields,
-                              final JakartaPostResponse response,
-                              final List<Modification> changes)
+    private void writeContent(
+            final ResourceResolver resolver,
+            final Part part,
+            final Map<String, List<String>> formFields,
+            final JakartaPostResponse response,
+            final List<Modification> changes)
             throws PersistenceException {
 
         final String path = response.getPath();
         final Resource parentResource = resolver.getResource(path);
-        if ( !resourceExists(parentResource)) {
-            throw new IllegalArgumentException("Parent resource must already exist to be able to stream upload content. Please create first ");
+        if (!resourceExists(parentResource)) {
+            throw new IllegalArgumentException(
+                    "Parent resource must already exist to be able to stream upload content. Please create first ");
         }
         String name = getUploadName(part);
         Resource fileResource = parentResource.getChild(name);
@@ -152,11 +154,9 @@ public class StreamedUploadOperation extends AbstractPostOperation {
             fileResource = parentResource.getResourceResolver().create(parentResource, name, fileProps);
         }
 
-
         StreamedChunk chunk = new StreamedChunk(part, formFields, servletContext);
         Resource result = chunk.store(fileResource, changes);
         result.getResourceResolver().commit();
-
     }
 
     /**
@@ -194,11 +194,6 @@ public class StreamedUploadOperation extends AbstractPostOperation {
      * @return
      */
     private boolean resourceExists(final Resource resource) {
-        return  (resource != null && !ResourceUtil.isSyntheticResource(resource));
+        return (resource != null && !ResourceUtil.isSyntheticResource(resource));
     }
-
-
-
-
-
 }

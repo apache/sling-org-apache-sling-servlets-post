@@ -16,14 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.apache.sling.servlets.post.impl.operations;
 
-import jakarta.servlet.http.Part;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.Map;
+
+import jakarta.servlet.http.Part;
 
 public class MockPart implements Part {
 
@@ -34,7 +34,13 @@ public class MockPart implements Part {
     private String contentType;
     private InputStream inputStream;
 
-    public MockPart(String name, String contentType, String submittedFileName, long size, InputStream inputStream, Map<String, Object> headers) {
+    public MockPart(
+            String name,
+            String contentType,
+            String submittedFileName,
+            long size,
+            InputStream inputStream,
+            Map<String, Object> headers) {
         this.name = name;
         this.contentType = contentType;
         this.submittedFileName = submittedFileName;
@@ -72,13 +78,10 @@ public class MockPart implements Part {
     @Override
     public void write(String s) throws IOException {
         throw new UnsupportedOperationException("Writing a part to disk is not supported.");
-
     }
 
     @Override
-    public void delete() throws IOException {
-
-    }
+    public void delete() throws IOException {}
 
     @Override
     public String getHeader(String s) {
