@@ -45,8 +45,8 @@ import org.apache.sling.servlets.post.exceptions.TemporaryPersistenceException;
  * interface as well as operation postprocessing.
  * <p>
  * Implementors of this interface are advised to extend the
- * {@link AbstractJakartaPostOperation} class to benefit from various processings
- * implemented by that abstract class.
+ * {@link org.apache.sling.servlets.post.impl.operations.AbstractPostOperation}
+ * class to benefit from various processings implemented by that abstract class.
  * @since 2.5.0
  */
 public interface JakartaPostOperation {
