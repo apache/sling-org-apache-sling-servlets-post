@@ -37,6 +37,9 @@ public class JavaxToJakartaPostResponseCreator implements JakartaPostResponseCre
     @Override
     public JakartaPostResponse createPostResponse(SlingJakartaHttpServletRequest request) {
         final PostResponse p = this.delegate.createPostResponse(JakartaToJavaxRequestWrapper.toJavaxRequest(request));
+        if (p == null) {
+            return null;
+        }
         return new JavaxToJakartaPostResponse(p);
     }
 
