@@ -27,7 +27,7 @@
     </parent>
 
     <artifactId>org.apache.sling.servlets.post</artifactId>
-    <version>3.0.0-SNAPSHOT</version>
+    <version>3.0.0</version>
     <packaging>jar</packaging>
 
     <name>Apache Sling Servlets POST</name>
@@ -36,13 +36,13 @@
     <scm>
         <connection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-servlets-post.git</connection>
         <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-servlets-post.git</developerConnection>
-        <tag>HEAD</tag>
+        <tag>org.apache.sling.servlets.post-3.0.0</tag>
         <url>https://github.com/apache/sling-org-apache-sling-servlets-post.git</url>
     </scm>
 
     <properties>
         <site.jira.version.id>12314180</site.jira.version.id>
-        <project.build.outputTimestamp>2023-10-05T11:03:56Z</project.build.outputTimestamp>
+        <project.build.outputTimestamp>2025-06-25T07:10:27Z</project.build.outputTimestamp>
         <sling.java.version>17</sling.java.version>
     </properties>
     <dependencies>
