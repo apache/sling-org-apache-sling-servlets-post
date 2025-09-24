@@ -213,8 +213,11 @@ public class JCRSupportImpl {
 
     public boolean isPropertyMandatory(final Object node, final String name) throws PersistenceException {
         try {
-            final Property prop = ((Node) node).getProperty(name);
-            return prop.getDefinition().isMandatory();
+            if (((Node) node).hasProperty(name)) {
+                final Property prop = ((Node) node).getProperty(name);
+                return prop.getDefinition().isMandatory();
+            }
+            return false;
         } catch (final PathNotFoundException e) {
             throw new PreconditionViolatedPersistenceException(e.getMessage(), e);
         } catch (final RepositoryException re) {
@@ -224,8 +227,11 @@ public class JCRSupportImpl {
 
     public boolean isPropertyMultiple(final Object node, final String name) throws PersistenceException {
         try {
-            final Property prop = ((Node) node).getProperty(name);
-            return prop.getDefinition().isMultiple();
+            if (((Node) node).hasProperty(name)) {
+                final Property prop = ((Node) node).getProperty(name);
+                return prop.getDefinition().isMultiple();
+            }
+            return false;
         } catch (final PathNotFoundException e) {
             throw new PreconditionViolatedPersistenceException(e.getMessage(), e);
         } catch (final RepositoryException re) {
