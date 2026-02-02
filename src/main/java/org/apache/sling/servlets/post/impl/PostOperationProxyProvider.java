@@ -18,13 +18,16 @@
  */
 package org.apache.sling.servlets.post.impl;
 
+import java.util.Arrays;
 import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.servlets.HtmlResponse;
+import org.apache.sling.servlets.post.JakartaPostOperation;
 import org.apache.sling.servlets.post.PostOperation;
 import org.apache.sling.servlets.post.PostResponse;
 import org.apache.sling.servlets.post.SlingPostOperation;
@@ -32,6 +35,8 @@ import org.apache.sling.servlets.post.SlingPostProcessor;
 import org.apache.sling.servlets.post.exceptions.PreconditionViolatedPersistenceException;
 import org.apache.sling.servlets.post.exceptions.TemporaryPersistenceException;
 import org.apache.sling.servlets.post.impl.helper.HtmlResponseProxy;
+import org.apache.sling.servlets.post.impl.wrapper.JakartaToJavaxPostOperation;
+import org.apache.sling.servlets.post.impl.wrapper.JavaxToJakartaPostOperation;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
 import org.osgi.framework.InvalidSyntaxException;
@@ -46,20 +51,23 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The <code>PostOperationProxyProvider</code> listens for legacy
- * {@link SlingPostOperation} services being registered and wraps them with a
- * proxy for the new {@link PostOperation} API and registers the procies.
+ * <p>Adapter bridge for various PostOperation APIs.</p>
+ *
+ * <p>The <code>PostOperationProxyProvider</code> listens for legacy
+ * {@link SlingPostOperation} services and for {@link JakartaPostOperation} services
+ * being registered, adapts them to the {@link PostOperation} API, and registers the proxies</p>
  */
 @Component(service = {})
+@SuppressWarnings("deprecation")
 public class PostOperationProxyProvider implements ServiceListener {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
     /**
-     * The service listener filter to listen for SlingPostOperation services
+     * The service listener filter to listen for SlingPostOperation and JakartaPostOperation services
      */
-    private static final String REFERENCE_FILTER =
-            "(" + Constants.OBJECTCLASS + "=" + SlingPostOperation.SERVICE_NAME + ")";
+    private static final String REFERENCE_FILTER = "(|(" + Constants.OBJECTCLASS + "=" + SlingPostOperation.SERVICE_NAME
+            + ")(" + Constants.OBJECTCLASS + "=" + JakartaPostOperation.class.getName() + "))";
 
     // maps references to the SlingPostOperation services to the registrations
     // of the PostOperation proxies for unregistration purposes
@@ -159,8 +167,24 @@ public class PostOperationProxyProvider implements ServiceListener {
      * Called by serviceChanged
      */
     private void register(final ServiceReference serviceReference) {
-        final SlingPostOperation service = (SlingPostOperation) this.bundleContext.getService(serviceReference);
-        final PostOperationProxy proxy = new PostOperationProxy(service);
+        List<String> objectClass =
+                Arrays.asList((String[]) serviceReference.getProperties().get(Constants.OBJECTCLASS));
+        final Object proxy;
+        if (objectClass.contains(SlingPostOperation.SERVICE_NAME)) {
+            SlingPostOperation service = (SlingPostOperation) this.bundleContext.getService(serviceReference);
+            proxy = new PostOperationProxy(service);
+        } else if (objectClass.contains(JakartaPostOperation.class.getName())) {
+            JakartaPostOperation service = (JakartaPostOperation) this.bundleContext.getService(serviceReference);
+            if (service instanceof JavaxToJakartaPostOperation) {
+                // registered by the SlingPostServlet because a PostOperation service was bound, do not do anything
+                return;
+            } else {
+                proxy = new JakartaToJavaxPostOperation(service);
+            }
+        } else {
+            // should not happen, log
+            return;
+        }
 
         final BundleContext bundleContext = serviceReference.getBundle().getBundleContext();
         final Dictionary<String, Object> props = copyServiceProperties(serviceReference);
