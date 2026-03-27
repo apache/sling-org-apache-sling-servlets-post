@@ -343,7 +343,19 @@ public class SlingPostServlet extends SlingJakartaAllMethodsServlet {
             final JakartaPostResponse htmlResponse,
             final SlingJakartaHttpServletResponse response)
             throws IOException {
-        final String redirectURL = getRedirectUrl(request, htmlResponse);
+        final String redirectURL = getRedirectUrl(request, htmlResponse, response);
+        if (redirectURL != null) {
+            log.debug("redirecting to URL [{}]", redirectURL);
+            response.sendRedirect(redirectURL);
+            return true;
+        }
+        return false;
+    }
+
+    private String encodeRedirectUrl(
+            final String redirectURL,
+            final SlingJakartaHttpServletResponse response,
+            final SlingJakartaHttpServletRequest request) {
         if (redirectURL != null) {
             final Matcher m = REDIRECT_WITH_SCHEME_PATTERN.matcher(redirectURL);
             final boolean hasScheme = m.matches();
@@ -356,11 +368,9 @@ public class SlingPostServlet extends SlingJakartaAllMethodsServlet {
                 log.debug("Request path is [{}]", request.getPathInfo());
                 encodedURL = response.encodeRedirectURL(redirectURL);
             }
-            log.debug("redirecting to URL [{}] - encoded as [{}]", redirectURL, encodedURL);
-            response.sendRedirect(encodedURL);
-            return true;
+            return encodedURL;
         }
-        return false;
+        return null;
     }
 
     private static final Pattern REDIRECT_WITH_SCHEME_PATTERN = Pattern.compile("^(https?://[^/]+)(.*)$");
@@ -441,12 +451,16 @@ public class SlingPostServlet extends SlingJakartaAllMethodsServlet {
      * @param ctx the post processor
      * @return the redirect location or <code>null</code>
      */
-    protected String getRedirectUrl(final SlingJakartaHttpServletRequest request, final JakartaPostResponse ctx) {
+    private String getRedirectUrl(
+            final SlingJakartaHttpServletRequest request,
+            final JakartaPostResponse ctx,
+            SlingJakartaHttpServletResponse response) {
         // redirect param has priority (but see below, magic star)
         String result = request.getParameter(SlingPostConstants.RP_REDIRECT_TO);
         if (result != null) {
             try {
-                URI redirectUri = new URI(result);
+                String encodedURL = encodeRedirectUrl(result, response, request);
+                URI redirectUri = new URI(encodedURL);
                 if (redirectUri.getAuthority() != null) {
                     // if it has a host information
                     log.warn(
@@ -499,7 +513,8 @@ public class SlingPostServlet extends SlingJakartaAllMethodsServlet {
 
             log.debug("Will redirect to {}", result);
         }
-        return result;
+        String encodedResult = encodeRedirectUrl(result, response, request);
+        return encodedResult;
     }
 
     protected boolean isSetStatus(final SlingJakartaHttpServletRequest request) {
