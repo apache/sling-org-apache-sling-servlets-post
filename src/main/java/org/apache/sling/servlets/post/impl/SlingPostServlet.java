@@ -476,45 +476,50 @@ public class SlingPostServlet extends SlingJakartaAllMethodsServlet {
 
             log.debug("redirect requested as [{}] for path [{}]", result, ctx.getPath());
 
-            // redirect to created/modified Resource
-            final int star = result.indexOf('*');
-            if (star >= 0 && ctx.getPath() != null) {
-                final StringBuilder buf = new StringBuilder();
-
-                // anything before the star
-                if (star > 0) {
-                    buf.append(result.substring(0, star));
-                }
-
-                // append the name of the manipulated node
-                buf.append(ResourceUtil.getName(ctx.getPath()));
-
-                // anything after the star
-                if (star < result.length() - 1) {
-                    buf.append(result.substring(star + 1));
-                }
-
-                // Prepend request path if it ends with create suffix and result isn't absolute
-                final String requestPath = request.getPathInfo();
-                if (requestPath.endsWith(SlingPostConstants.DEFAULT_CREATE_SUFFIX)
-                        && buf.charAt(0) != '/'
-                        && !REDIRECT_WITH_SCHEME_PATTERN.matcher(buf).matches()) {
-                    buf.insert(0, requestPath);
-                }
-
-                // use the created path as the redirect result
-                result = buf.toString();
-
-            } else if (result.endsWith(SlingPostConstants.DEFAULT_CREATE_SUFFIX)) {
-                // if the redirect has a trailing slash, append modified node
-                // name
-                result = result.concat(ResourceUtil.getName(ctx.getPath()));
-            }
+            result = handleStarResource(result, ctx, request);
 
             log.debug("Will redirect to {}", result);
         }
-        String encodedResult = encodeRedirectUrl(result, response, request);
-        return encodedResult;
+        return encodeRedirectUrl(result, response, request);
+    }
+
+    private String handleStarResource(
+            String result, final JakartaPostResponse ctx, final SlingJakartaHttpServletRequest request) {
+        // redirect to created/modified Resource
+        final int star = result.indexOf('*');
+        if (star >= 0 && ctx.getPath() != null) {
+            final StringBuilder buf = new StringBuilder();
+
+            // anything before the star
+            if (star > 0) {
+                buf.append(result.substring(0, star));
+            }
+
+            // append the name of the manipulated node
+            buf.append(ResourceUtil.getName(ctx.getPath()));
+
+            // anything after the star
+            if (star < result.length() - 1) {
+                buf.append(result.substring(star + 1));
+            }
+
+            // Prepend request path if it ends with create suffix and result isn't absolute
+            final String requestPath = request.getPathInfo();
+            if (requestPath.endsWith(SlingPostConstants.DEFAULT_CREATE_SUFFIX)
+                    && buf.charAt(0) != '/'
+                    && !REDIRECT_WITH_SCHEME_PATTERN.matcher(buf).matches()) {
+                buf.insert(0, requestPath);
+            }
+
+            // use the created path as the redirect result
+            result = buf.toString();
+
+        } else if (result.endsWith(SlingPostConstants.DEFAULT_CREATE_SUFFIX)) {
+            // if the redirect has a trailing slash, append modified node
+            // name
+            result = result.concat(ResourceUtil.getName(ctx.getPath()));
+        }
+        return result;
     }
 
     protected boolean isSetStatus(final SlingJakartaHttpServletRequest request) {
