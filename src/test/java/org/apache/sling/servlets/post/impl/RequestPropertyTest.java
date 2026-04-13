@@ -18,13 +18,13 @@
  */
 package org.apache.sling.servlets.post.impl;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
-import junitx.util.PrivateAccessor;
 import org.apache.sling.api.SlingJakartaHttpServletRequest;
 import org.apache.sling.api.request.RequestParameter;
 import org.apache.sling.api.request.RequestParameterMap;
@@ -281,8 +281,12 @@ public class RequestPropertyTest {
         final JakartaHtmlResponse response = new JakartaHtmlResponse();
         response.setPath("/test/path");
 
-        Map<String, RequestProperty> props = (Map<String, RequestProperty>) PrivateAccessor.invoke(
-                new ModifyOperation(), "collectContent", COLLECT_CLASSES, new Object[] {request, response});
+        ModifyOperation modifyOperation = new ModifyOperation();
+        Method collectContentMethod =
+                modifyOperation.getClass().getSuperclass().getDeclaredMethod("collectContent", COLLECT_CLASSES);
+        collectContentMethod.setAccessible(true);
+        Map<String, RequestProperty> props = (Map<String, RequestProperty>)
+                collectContentMethod.invoke(modifyOperation, new Object[] {request, response});
         return props;
     }
 }
