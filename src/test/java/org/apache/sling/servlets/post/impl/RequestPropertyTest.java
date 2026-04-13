@@ -285,8 +285,7 @@ public class RequestPropertyTest {
         Method collectContentMethod =
                 modifyOperation.getClass().getSuperclass().getDeclaredMethod("collectContent", COLLECT_CLASSES);
         collectContentMethod.setAccessible(true);
-        Map<String, RequestProperty> props = (Map<String, RequestProperty>)
+        return (Map<String, RequestProperty>)
                 collectContentMethod.invoke(modifyOperation, new Object[] {request, response});
-        return props;
     }
 }
