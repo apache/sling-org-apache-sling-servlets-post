@@ -343,7 +343,19 @@ public class SlingPostServlet extends SlingJakartaAllMethodsServlet {
             final JakartaPostResponse htmlResponse,
             final SlingJakartaHttpServletResponse response)
             throws IOException {
-        final String redirectURL = getRedirectUrl(request, htmlResponse);
+        final String redirectURL = getRedirectUrl(request, htmlResponse, response);
+        if (redirectURL != null) {
+            log.debug("redirecting to URL [{}]", redirectURL);
+            response.sendRedirect(redirectURL);
+            return true;
+        }
+        return false;
+    }
+
+    private String encodeRedirectUrl(
+            final String redirectURL,
+            final SlingJakartaHttpServletResponse response,
+            final SlingJakartaHttpServletRequest request) {
         if (redirectURL != null) {
             final Matcher m = REDIRECT_WITH_SCHEME_PATTERN.matcher(redirectURL);
             final boolean hasScheme = m.matches();
@@ -356,11 +368,9 @@ public class SlingPostServlet extends SlingJakartaAllMethodsServlet {
                 log.debug("Request path is [{}]", request.getPathInfo());
                 encodedURL = response.encodeRedirectURL(redirectURL);
             }
-            log.debug("redirecting to URL [{}] - encoded as [{}]", redirectURL, encodedURL);
-            response.sendRedirect(encodedURL);
-            return true;
+            return encodedURL;
         }
-        return false;
+        return null;
     }
 
     private static final Pattern REDIRECT_WITH_SCHEME_PATTERN = Pattern.compile("^(https?://[^/]+)(.*)$");
@@ -441,12 +451,16 @@ public class SlingPostServlet extends SlingJakartaAllMethodsServlet {
      * @param ctx the post processor
      * @return the redirect location or <code>null</code>
      */
-    protected String getRedirectUrl(final SlingJakartaHttpServletRequest request, final JakartaPostResponse ctx) {
+    private String getRedirectUrl(
+            final SlingJakartaHttpServletRequest request,
+            final JakartaPostResponse ctx,
+            SlingJakartaHttpServletResponse response) {
         // redirect param has priority (but see below, magic star)
         String result = request.getParameter(SlingPostConstants.RP_REDIRECT_TO);
         if (result != null) {
             try {
-                URI redirectUri = new URI(result);
+                String encodedURL = encodeRedirectUrl(result, response, request);
+                URI redirectUri = new URI(encodedURL);
                 if (redirectUri.getAuthority() != null) {
                     // if it has a host information
                     log.warn(
@@ -462,42 +476,48 @@ public class SlingPostServlet extends SlingJakartaAllMethodsServlet {
 
             log.debug("redirect requested as [{}] for path [{}]", result, ctx.getPath());
 
-            // redirect to created/modified Resource
-            final int star = result.indexOf('*');
-            if (star >= 0 && ctx.getPath() != null) {
-                final StringBuilder buf = new StringBuilder();
-
-                // anything before the star
-                if (star > 0) {
-                    buf.append(result.substring(0, star));
-                }
-
-                // append the name of the manipulated node
-                buf.append(ResourceUtil.getName(ctx.getPath()));
-
-                // anything after the star
-                if (star < result.length() - 1) {
-                    buf.append(result.substring(star + 1));
-                }
-
-                // Prepend request path if it ends with create suffix and result isn't absolute
-                final String requestPath = request.getPathInfo();
-                if (requestPath.endsWith(SlingPostConstants.DEFAULT_CREATE_SUFFIX)
-                        && buf.charAt(0) != '/'
-                        && !REDIRECT_WITH_SCHEME_PATTERN.matcher(buf).matches()) {
-                    buf.insert(0, requestPath);
-                }
-
-                // use the created path as the redirect result
-                result = buf.toString();
-
-            } else if (result.endsWith(SlingPostConstants.DEFAULT_CREATE_SUFFIX)) {
-                // if the redirect has a trailing slash, append modified node
-                // name
-                result = result.concat(ResourceUtil.getName(ctx.getPath()));
-            }
+            result = handleStarResource(result, ctx, request);
 
             log.debug("Will redirect to {}", result);
+        }
+        return encodeRedirectUrl(result, response, request);
+    }
+
+    private String handleStarResource(
+            String result, final JakartaPostResponse ctx, final SlingJakartaHttpServletRequest request) {
+        // redirect to created/modified Resource
+        final int star = result.indexOf('*');
+        if (star >= 0 && ctx.getPath() != null) {
+            final StringBuilder buf = new StringBuilder();
+
+            // anything before the star
+            if (star > 0) {
+                buf.append(result.substring(0, star));
+            }
+
+            // append the name of the manipulated node
+            buf.append(ResourceUtil.getName(ctx.getPath()));
+
+            // anything after the star
+            if (star < result.length() - 1) {
+                buf.append(result.substring(star + 1));
+            }
+
+            // Prepend request path if it ends with create suffix and result isn't absolute
+            final String requestPath = request.getPathInfo();
+            if (requestPath.endsWith(SlingPostConstants.DEFAULT_CREATE_SUFFIX)
+                    && buf.charAt(0) != '/'
+                    && !REDIRECT_WITH_SCHEME_PATTERN.matcher(buf).matches()) {
+                buf.insert(0, requestPath);
+            }
+
+            // use the created path as the redirect result
+            result = buf.toString();
+
+        } else if (result.endsWith(SlingPostConstants.DEFAULT_CREATE_SUFFIX)) {
+            // if the redirect has a trailing slash, append modified node
+            // name
+            result = result.concat(ResourceUtil.getName(ctx.getPath()));
         }
         return result;
     }

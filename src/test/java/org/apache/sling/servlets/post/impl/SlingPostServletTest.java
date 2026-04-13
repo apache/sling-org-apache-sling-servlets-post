@@ -19,11 +19,12 @@
 package org.apache.sling.servlets.post.impl;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.StringTokenizer;
 
 import junit.framework.TestCase;
+import org.apache.commons.httpclient.URIException;
+import org.apache.commons.httpclient.util.URIUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.SlingJakartaHttpServletRequest;
 import org.apache.sling.api.request.builder.Builders;
 import org.apache.sling.api.request.header.JakartaMediaRangeList;
@@ -190,6 +191,9 @@ public class SlingPostServletTest extends TestCase {
         testRedirection("/", "/fred/abc", "https://forced.com/test", null);
         // invalid URI
         testRedirection("/", "/fred/abc", "file://c:\\Users\\workspace\\test.java", null);
+
+        // test redirect with spaces in path
+        testRedirection("/", "/", "/my space.html?q=hello+space", "/my%20space.html?q=hello+space");
     }
 
     private void testRedirection(String requestPath, String resourcePath, String redirect, String expected)
@@ -236,7 +240,9 @@ public class SlingPostServletTest extends TestCase {
 
         @Override
         public String encodeRedirectURL(String s) {
-            StringTokenizer st = new StringTokenizer(s, "/", true);
+
+            String pathPart = StringUtils.substringBefore(s, "?");
+            StringTokenizer st = new StringTokenizer(pathPart, "/", true);
             StringBuilder sb = new StringBuilder();
             try {
                 while (st.hasMoreTokens()) {
@@ -244,12 +250,17 @@ public class SlingPostServletTest extends TestCase {
                     if ("/".equals(token)) {
                         sb.append(token);
                     } else {
-                        sb.append(URLEncoder.encode(token, "UTF-8"));
+                        // URLEncoder would replace ' ' with '+'. Needs to be '%20' as the real wrapper does too
+                        sb.append(URIUtil.encodeWithinPath(token, "UTF-8"));
                     }
                 }
-            } catch (UnsupportedEncodingException e) {
+            } catch (URIException e) {
                 fail("Should have UTF-8?? " + e);
                 return null;
+            }
+            String queryPart = StringUtils.substringAfter(s, "?");
+            if (StringUtils.isNotEmpty(queryPart)) {
+                sb.append("?").append(queryPart);
             }
             return sb.toString();
         }
