@@ -463,9 +463,10 @@ public class SlingPostServlet extends SlingJakartaAllMethodsServlet {
                 URI redirectUri = new URI(encodedURL);
                 if (redirectUri.getAuthority() != null) {
                     // if it has a host information
+                    final String sanitizedResult = result.replace('\r', '_').replace('\n', '_');
                     log.warn(
                             "redirect target ({}) does include host information ({}). This is not allowed for security reasons!",
-                            result,
+                            sanitizedResult,
                             redirectUri.getAuthority());
                     return null;
                 }
