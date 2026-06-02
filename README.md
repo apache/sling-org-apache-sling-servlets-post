@@ -4,7 +4,7 @@
 
 # Apache Sling Default POST Servlets
 
-Provides default POST servlets for Apache Sling.
+Provides the default POST servlet bundle for Apache Sling.
 
 This module is part of the [Apache Sling](https://sling.apache.org) project. You can read more about this module on our [documentation site](https://sling.apache.org/documentation/bundles/manipulating-content-the-slingpostservlet-servlets-post.html).
 
@@ -16,10 +16,11 @@ The bundle provides the default `SlingPostServlet` and built-in POST operations 
 - delete
 - copy and move
 - import
+- restore
 - checkin/checkout and versioning helpers
 - file upload (regular, streamed, and chunked)
 
-The implementation is **Jakarta Servlet-first** and uses Sling Jakarta APIs. Legacy `javax.servlet` integration remains available through wrapper adapters under `impl/wrapper`.
+The implementation is **Jakarta Servlet-first** and uses Sling Jakarta APIs. Legacy `javax.servlet` SPI integration remains available through wrapper adapters under `impl/wrapper`.
 
 ## Extension points
 
@@ -47,20 +48,21 @@ For manual file-upload protocol checks against a running Sling instance on `loca
 
 `sh developer-tests/testFileUploads.sh <testfile>`
 
-See `developer-tests/README.md` and `Protocols.md` for protocol and script details.
+The script uploads using regular, streamed, and chunked streamed protocols, then downloads and compares content. See `developer-tests/README.md` and `Protocols.md` for protocol and script details.
 
 ## Repository layout
 
 ```text
 pom.xml                        Maven build descriptor (packaging: jar)
 bnd.bnd                        OSGi bundle instructions and embedded resources
+Protocols.md                   Protocol notes for POST and upload behavior
 src/
   main/java/org/apache/sling/servlets/post/
-    *.java                     Public API and SPI
+    *.java                     Public Jakarta-first API/SPI (+ legacy compatibility APIs)
     exceptions/                Persistence-related exceptions
-    impl/                      Internal servlet and operation implementation
+    impl/                      Internal servlet and operation implementations
       operations/              Built-in POST operations
-      helper/                  Internal helpers (upload, property handling, naming)
+      helper/                  Internal helpers (upload, property handling, naming, chunking)
       wrapper/                 Jakarta <-> javax bridging adapters
   main/resources/
     SLING-INF/nodetypes/chunk.cnd   Chunked upload node type definitions
@@ -74,4 +76,5 @@ developer-tests/               Manual developer test scripts
 
 - OSGi metadata is generated with bnd (`bnd-maven-plugin`), with API baseline checks via `bnd-baseline-maven-plugin`.
 - The build shades selected classes from `jackrabbit-jcr-commons` and `sling-jcr-contentparser` into internal `impl` packages.
-- JCR and `org.apache.sling.jcr.contentloader` imports are configured as dynamic for runtime flexibility.
+- JCR (`javax.jcr.*`) and `org.apache.sling.jcr.contentloader` imports are configured as dynamic for runtime flexibility.
+- The bundle depends on `jakarta.servlet-api` as primary API and keeps `javax.servlet-api` plus `org.apache.felix.http.wrappers` for compatibility adapters.
