@@ -4,6 +4,74 @@
 
 # Apache Sling Default POST Servlets
 
-Provides default POST servlets.
+Provides default POST servlets for Apache Sling.
 
 This module is part of the [Apache Sling](https://sling.apache.org) project. You can read more about this module on our [documentation site](https://sling.apache.org/documentation/bundles/manipulating-content-the-slingpostservlet-servlets-post.html).
+
+## Overview
+
+The bundle provides the default `SlingPostServlet` and built-in POST operations for Sling content changes, including:
+
+- create and modify
+- delete
+- copy and move
+- import
+- checkin/checkout and versioning helpers
+- file upload (regular, streamed, and chunked)
+
+The implementation is **Jakarta Servlet-first** and uses Sling Jakarta APIs. Legacy `javax.servlet` integration remains available through wrapper adapters under `impl/wrapper`.
+
+## Extension points
+
+Custom behavior can be provided via OSGi services such as:
+
+- `JakartaPostOperation`
+- `SlingJakartaPostProcessor`
+- `JakartaNodeNameGenerator`
+- `JakartaPostResponseCreator`
+
+## Build and test
+
+Java 17 is required.
+
+- Full build: `mvn clean install`
+- Build without tests: `mvn clean install -DskipTests`
+- Unit tests: `mvn test`
+- Integration tests (Failsafe, including `ModifyOperationIT`): `mvn verify`
+- Single unit test class: `mvn test -Dtest=HtmlResponseTest`
+- Single integration test class: `mvn verify -Dit.test=ModifyOperationIT`
+
+## Manual upload smoke tests
+
+For manual file-upload protocol checks against a running Sling instance on `localhost:8080` (`admin:admin`), use:
+
+`sh developer-tests/testFileUploads.sh <testfile>`
+
+See `developer-tests/README.md` and `Protocols.md` for protocol and script details.
+
+## Repository layout
+
+```text
+pom.xml                        Maven build descriptor (packaging: jar)
+bnd.bnd                        OSGi bundle instructions and embedded resources
+src/
+  main/java/org/apache/sling/servlets/post/
+    *.java                     Public API and SPI
+    exceptions/                Persistence-related exceptions
+    impl/                      Internal servlet and operation implementation
+      operations/              Built-in POST operations
+      helper/                  Internal helpers (upload, property handling, naming)
+      wrapper/                 Jakarta <-> javax bridging adapters
+  main/resources/
+    SLING-INF/nodetypes/chunk.cnd   Chunked upload node type definitions
+    org/apache/sling/servlets/post/ HTML response templates
+    system/sling.js            Bundled JS resource
+  test/java/                   Unit and integration tests
+developer-tests/               Manual developer test scripts
+```
+
+## Notes
+
+- OSGi metadata is generated with bnd (`bnd-maven-plugin`), with API baseline checks via `bnd-baseline-maven-plugin`.
+- The build shades selected classes from `jackrabbit-jcr-commons` and `sling-jcr-contentparser` into internal `impl` packages.
+- JCR and `org.apache.sling.jcr.contentloader` imports are configured as dynamic for runtime flexibility.
