@@ -20,7 +20,7 @@ The bundle provides the default `SlingPostServlet` and built-in POST operations 
 - checkin/checkout and versioning helpers
 - file upload (regular, streamed, and chunked)
 
-The implementation is **Jakarta Servlet-first** and uses Sling Jakarta APIs. Legacy `javax.servlet` SPI integration remains available through wrapper adapters under `impl/wrapper`.
+The implementation is **Jakarta Servlet-first** and uses Sling Jakarta APIs. Legacy `javax.servlet` SPI integration remains supported via adapters in `impl/wrapper` and service proxying in `PostOperationProxyProvider`.
 
 ## Extension points
 
@@ -30,6 +30,8 @@ Custom behavior can be provided via OSGi services such as:
 - `SlingJakartaPostProcessor`
 - `JakartaNodeNameGenerator`
 - `JakartaPostResponseCreator`
+
+The corresponding legacy extension types (`PostOperation`, `SlingPostProcessor`, `NodeNameGenerator`, `PostResponseCreator`) are still supported through compatibility wrappers.
 
 ## Build and test
 
@@ -41,6 +43,7 @@ Java 17 is required.
 - Integration tests (Failsafe, including `ModifyOperationIT`): `mvn verify`
 - Single unit test class: `mvn test -Dtest=HtmlResponseTest`
 - Single integration test class: `mvn verify -Dit.test=ModifyOperationIT`
+- Inspect generated bundle metadata: `jar tf target/org.apache.sling.servlets.post-*.jar | grep -E 'META-INF/MANIFEST.MF|SLING-INF/nodetypes/chunk.cnd'`
 
 ## Manual upload smoke tests
 
@@ -55,12 +58,14 @@ The script uploads using regular, streamed, and chunked streamed protocols, then
 ```text
 pom.xml                        Maven build descriptor (packaging: jar)
 bnd.bnd                        OSGi bundle instructions and embedded resources
+Jenkinsfile                    ASF Jenkins pipeline definition
 Protocols.md                   Protocol notes for POST and upload behavior
 src/
   main/java/org/apache/sling/servlets/post/
     *.java                     Public Jakarta-first API/SPI (+ legacy compatibility APIs)
     exceptions/                Persistence-related exceptions
     impl/                      Internal servlet and operation implementations
+      PostOperationProxyProvider.java  Legacy service proxy registration
       operations/              Built-in POST operations
       helper/                  Internal helpers (upload, property handling, naming, chunking)
       wrapper/                 Jakarta <-> javax bridging adapters
@@ -77,4 +82,5 @@ developer-tests/               Manual developer test scripts
 - OSGi metadata is generated with bnd (`bnd-maven-plugin`), with API baseline checks via `bnd-baseline-maven-plugin`.
 - The build shades selected classes from `jackrabbit-jcr-commons` and `sling-jcr-contentparser` into internal `impl` packages.
 - JCR (`javax.jcr.*`) and `org.apache.sling.jcr.contentloader` imports are configured as dynamic for runtime flexibility.
-- The bundle depends on `jakarta.servlet-api` as primary API and keeps `javax.servlet-api` plus `org.apache.felix.http.wrappers` for compatibility adapters.
+- The bundle uses `jakarta.servlet-api` as the primary servlet API while keeping `javax.servlet-api` and `org.apache.felix.http.wrappers` for compatibility adapters.
+- JSON support is split between Jakarta JSON APIs for Jakarta responses and legacy JSON support for backwards-compatible APIs.

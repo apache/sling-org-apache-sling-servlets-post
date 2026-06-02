@@ -21,10 +21,11 @@ bnd.bnd                        OSGi bundle manifest overrides and bnd instructio
 Protocols.md                   Protocol notes for POST/file upload behavior
 src/
   main/java/org/apache/sling/servlets/post/
-    *.java                     Public API/SPI: Jakarta-first interfaces plus legacy compatibility APIs
+    *.java                     Public API/SPI: Jakarta-first interfaces plus legacy compatibility APIs (operations, responses, processors, naming)
     exceptions/                PreconditionViolatedPersistenceException, TemporaryPersistenceException
     impl/
       SlingPostServlet.java    Core servlet; dispatches to PostOperation implementations
+      PostOperationProxyProvider.java  Registers compatibility wrappers for legacy services
       operations/              Built-in operations: Modify, Delete, Copy, Move, Import, Restore, Checkin/out, streamed upload
       helper/                  Internal helpers: file upload, property value handling, node naming, chunked upload
       wrapper/                 Jakarta↔javax bridging adapters for legacy SPI consumers
@@ -49,6 +50,7 @@ developer-tests/
 - **Shading:** `maven-shade-plugin` inlines selected classes from `jackrabbit-jcr-commons` and `sling-jcr-contentparser` (relocated under `impl.*` packages) to avoid runtime dependency conflicts.
 - **Dynamic imports:** JCR packages and `org.apache.sling.jcr.contentloader` are `resolution:=dynamic` in `bnd.bnd`; the bundle works without JCR at runtime.
 - **Dual servlet API dependencies:** `jakarta.servlet-api` is primary, while `javax.servlet-api` and `org.apache.felix.http.wrappers` remain for compatibility adapters.
+- **JSON stack:** Jakarta JSON (`jakarta.json-api`) is used for Jakarta responses, while legacy JSON support remains for compatibility APIs.
 
 # Git Workflow
 
@@ -65,6 +67,7 @@ developer-tests/
 - **Test placement:** Mirror the main source package structure under `src/test/java`.
 - **Coverage:** No coverage gate configured; rely on code review.
 - **Sling Mock:** Use `org.apache.sling.testing.sling-mock.junit4` for tests needing a resource resolver. `ModifyOperationIT` uses Sling Mock Oak.
+- **Response tests:** Both legacy and Jakarta response implementations have dedicated tests (`HtmlResponseTest`/`JakartaHtmlResponseTest`, `JsonResponseTest`/`JakartaJsonResponseTest`).
 
 # Gotchas
 
