@@ -77,3 +77,10 @@ developer-tests/
 - **`ModifyOperationIT` classpath details:** Failsafe excludes `jackrabbit-api` and the default `jackrabbit-jcr-commons`, then adds a newer `jackrabbit-jcr-commons` for Oak compatibility. Re-check this setup when changing JCR/Oak dependencies.
 - **File upload chunking:** The chunked upload protocol uses custom JCR node types defined in `chunk.cnd`. Changes to chunk handling must account for the `ChunkCleanUpTask` scheduled cleanup.
 - **`:redirect` URI validation:** `SlingPostServlet` validates redirect URIs against the request host to prevent open-redirect. Tests must provide a proper `Host` header or mock the URI check.
+
+# Security
+
+<!-- sling-security-default:start -->
+The threat model for this project is https://github.com/apache/sling/blob/master/docs/threat-model.md .
+<!-- sling-security-default:end -->
+
