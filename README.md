@@ -39,8 +39,8 @@ Java 17 is required.
 
 - Full build: `mvn clean install`
 - Build without tests: `mvn clean install -DskipTests`
-- Unit tests: `mvn test`
-- Integration tests (Failsafe, including `ModifyOperationIT`): `mvn verify`
+- Unit tests (Surefire, `*Test.java`): `mvn test`
+- Integration tests (Failsafe, `*IT.java`, currently including `ModifyOperationIT`): `mvn verify`
 - Single unit test class: `mvn test -Dtest=HtmlResponseTest`
 - Single integration test class: `mvn verify -Dit.test=ModifyOperationIT`
 - Inspect generated bundle metadata and embedded resources:
@@ -53,15 +53,21 @@ For manual file-upload protocol checks against a running Sling instance on `loca
 
 `sh developer-tests/testFileUploads.sh <testfile>`
 
-The script uploads using regular, streamed, and chunked streamed protocols, then downloads and compares content. See `developer-tests/README.md` and `Protocols.md` for protocol and script details.
+The script uploads using regular, streamed, and streaming chunked protocols, then downloads and compares content. See `developer-tests/README.md` and `Protocols.md` for protocol and script details.
 
 ## Repository layout
 
 ```text
+AGENTS.md                      Repository-specific agent/developer guidance
+CLAUDE.md                      Additional repository instructions
+CODE_OF_CONDUCT.md             Community code of conduct
+CONTRIBUTING.md                Contribution guidelines
+LICENSE                        Apache License 2.0 text
 pom.xml                        Maven build descriptor (packaging: jar)
 bnd.bnd                        OSGi bundle instructions and embedded resources
 Jenkinsfile                    ASF Jenkins pipeline definition
 Protocols.md                   Protocol notes for POST and upload behavior
+README.md                      Project overview, build, and usage notes
 src/
   main/java/org/apache/sling/servlets/post/
     *.java                     Public Jakarta-first API/SPI (+ legacy compatibility APIs)
@@ -85,6 +91,7 @@ developer-tests/               Manual developer test scripts
 - OSGi metadata is generated with bnd (`bnd-maven-plugin`), with API baseline checks via `bnd-baseline-maven-plugin`.
 - The build shades and relocates selected classes from `jackrabbit-jcr-commons` and `sling-jcr-contentparser` into internal `impl` packages.
 - JCR (`javax.jcr.*`) and `org.apache.sling.jcr.contentloader` imports are configured as dynamic for runtime flexibility.
+- Integration tests run with Sling Mock Oak and include explicit classpath adjustments for Jackrabbit/Oak compatibility.
 - The bundle uses `jakarta.servlet-api` as the primary servlet API while keeping `javax.servlet-api` and `org.apache.felix.http.wrappers` for compatibility adapters.
 - JSON support is split between Jakarta JSON APIs for Jakarta responses and legacy JSON support for backwards-compatible APIs.
 - The project security posture follows the Apache Sling threat model: https://github.com/apache/sling/blob/master/docs/threat-model.md .
