@@ -375,6 +375,10 @@ public class SlingPostServlet extends SlingJakartaAllMethodsServlet {
 
     private static final Pattern REDIRECT_WITH_SCHEME_PATTERN = Pattern.compile("^(https?://[^/]+)(.*)$");
 
+    private static String sanitizeForLog(final String value) {
+        return value == null ? null : value.replace('\r', '_').replace('\n', '_');
+    }
+
     /**
      * Creates an instance of a PostResponse.
      * @param req The request being serviced
@@ -458,6 +462,7 @@ public class SlingPostServlet extends SlingJakartaAllMethodsServlet {
         // redirect param has priority (but see below, magic star)
         String result = request.getParameter(SlingPostConstants.RP_REDIRECT_TO);
         if (result != null) {
+            final String sanitizedRedirectTarget = sanitizeForLog(result);
             try {
                 String encodedURL = encodeRedirectUrl(result, response, request);
                 URI redirectUri = new URI(encodedURL);
@@ -465,20 +470,20 @@ public class SlingPostServlet extends SlingJakartaAllMethodsServlet {
                     // if it has a host information
                     log.warn(
                             "redirect target ({}) does include host information ({}). This is not allowed for security reasons!",
-                            result,
-                            redirectUri.getAuthority());
+                            sanitizedRedirectTarget,
+                            sanitizeForLog(redirectUri.getAuthority()));
                     return null;
                 }
             } catch (URISyntaxException e) {
-                log.warn("given redirect target ({}) is not a valid uri: {}", result, e);
+                log.warn("given redirect target ({}) is not a valid uri: {}", sanitizedRedirectTarget, e);
                 return null;
             }
 
-            log.debug("redirect requested as [{}] for path [{}]", result, ctx.getPath());
+            log.debug("redirect requested as [{}] for path [{}]", sanitizedRedirectTarget, ctx.getPath());
 
             result = handleStarResource(result, ctx, request);
 
-            log.debug("Will redirect to {}", result);
+            log.debug("Will redirect to {}", sanitizeForLog(result));
         }
         return encodeRedirectUrl(result, response, request);
     }
