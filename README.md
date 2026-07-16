@@ -43,7 +43,9 @@ Java 17 is required.
 - Integration tests (Failsafe, including `ModifyOperationIT`): `mvn verify`
 - Single unit test class: `mvn test -Dtest=HtmlResponseTest`
 - Single integration test class: `mvn verify -Dit.test=ModifyOperationIT`
-- Inspect generated bundle metadata: `jar tf target/org.apache.sling.servlets.post-*.jar | grep -E 'META-INF/MANIFEST.MF|SLING-INF/nodetypes/chunk.cnd'`
+- Inspect generated bundle metadata and embedded resources:
+  - `jar tf target/org.apache.sling.servlets.post-*.jar | grep -E 'META-INF/MANIFEST.MF|SLING-INF/nodetypes/chunk.cnd'`
+  - `unzip -p target/org.apache.sling.servlets.post-*.jar META-INF/MANIFEST.MF`
 
 ## Manual upload smoke tests
 
@@ -65,6 +67,7 @@ src/
     *.java                     Public Jakarta-first API/SPI (+ legacy compatibility APIs)
     exceptions/                Persistence-related exceptions
     impl/                      Internal servlet and operation implementations
+      SlingPostServlet.java    Core POST servlet
       PostOperationProxyProvider.java  Legacy service proxy registration
       operations/              Built-in POST operations
       helper/                  Internal helpers (upload, property handling, naming, chunking)
@@ -80,7 +83,8 @@ developer-tests/               Manual developer test scripts
 ## Notes
 
 - OSGi metadata is generated with bnd (`bnd-maven-plugin`), with API baseline checks via `bnd-baseline-maven-plugin`.
-- The build shades selected classes from `jackrabbit-jcr-commons` and `sling-jcr-contentparser` into internal `impl` packages.
+- The build shades and relocates selected classes from `jackrabbit-jcr-commons` and `sling-jcr-contentparser` into internal `impl` packages.
 - JCR (`javax.jcr.*`) and `org.apache.sling.jcr.contentloader` imports are configured as dynamic for runtime flexibility.
 - The bundle uses `jakarta.servlet-api` as the primary servlet API while keeping `javax.servlet-api` and `org.apache.felix.http.wrappers` for compatibility adapters.
 - JSON support is split between Jakarta JSON APIs for Jakarta responses and legacy JSON support for backwards-compatible APIs.
+- The project security posture follows the Apache Sling threat model: https://github.com/apache/sling/blob/master/docs/threat-model.md .
