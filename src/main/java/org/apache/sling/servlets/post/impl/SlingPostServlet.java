@@ -462,28 +462,35 @@ public class SlingPostServlet extends SlingJakartaAllMethodsServlet {
         // redirect param has priority (but see below, magic star)
         String result = request.getParameter(SlingPostConstants.RP_REDIRECT_TO);
         if (result != null) {
-            final String sanitizedRedirectTarget = sanitizeForLog(result);
             try {
                 String encodedURL = encodeRedirectUrl(result, response, request);
                 URI redirectUri = new URI(encodedURL);
                 if (redirectUri.getAuthority() != null) {
                     // if it has a host information
-                    log.warn(
-                            "redirect target ({}) does include host information ({}). This is not allowed for security reasons!",
-                            sanitizedRedirectTarget,
-                            sanitizeForLog(redirectUri.getAuthority()));
+                    if (log.isWarnEnabled()) {
+                        log.warn(
+                                "redirect target ({}) does include host information ({}). This is not allowed for security reasons!",
+                                sanitizeForLog(result),
+                                sanitizeForLog(redirectUri.getAuthority()));
+                    }
                     return null;
                 }
             } catch (URISyntaxException e) {
-                log.warn("given redirect target ({}) is not a valid uri: {}", sanitizedRedirectTarget, e);
+                if (log.isWarnEnabled()) {
+                    log.warn("given redirect target ({}) is not a valid uri: {}", sanitizeForLog(result), e);
+                }
                 return null;
             }
 
-            log.debug("redirect requested as [{}] for path [{}]", sanitizedRedirectTarget, ctx.getPath());
+            if (log.isDebugEnabled()) {
+                log.debug("redirect requested as [{}] for path [{}]", sanitizeForLog(result), ctx.getPath());
+            }
 
             result = handleStarResource(result, ctx, request);
 
-            log.debug("Will redirect to {}", sanitizeForLog(result));
+            if (log.isDebugEnabled()) {
+                log.debug("Will redirect to {}", sanitizeForLog(result));
+            }
         }
         return encodeRedirectUrl(result, response, request);
     }
